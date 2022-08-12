@@ -5,42 +5,27 @@
  *      Author: jiaxiang
  */
 
+#include "LegacyTypes.h"
+//#include "llvm/Support/raw_ostream.h"
 #include <sstream>
 
-#include "Types.h"
-#include "Utils.h"
-
-using namespace cryptoline;
-
-std::string toString(CryptoLineType t) {
-    switch (t) {
-    case CryptoLineType::uint:
-        return "uint";
-    case CryptoLineType::sint:
-        return "sint";
-    default:
-        return "";
-    }
-}
+using namespace legacy;
 
 SymbolicAddress::SymbolicAddress() {
     // this should never be used
     this->sym = -1;
     this->offset = 0;
-    this->name = "";
 }
 
-SymbolicAddress::SymbolicAddress(int s, int o, std::string n) {
+SymbolicAddress::SymbolicAddress(int s, int o) {
     this->sym = s;
     this->offset = o;
-    this->name = n;
 }
 
 SymbolicAddress SymbolicAddress::add(int o) {
-    return SymbolicAddress(this->sym, this->offset + o, this->name);
+    return SymbolicAddress(this->sym, this->offset + o);
 }
 
-/*
 std::string SymbolicAddress::toStr() {
     std::ostringstream s;
     s << "L" << this->sym << "_";
@@ -51,30 +36,10 @@ std::string SymbolicAddress::toStr() {
     }
     return s.str();
 }
-*/
-
-Variable SymbolicAddress::toVariable(CryptoLineType t, unsigned w) {
-    if (this->name == "") {
-        return Variable(t, w, "mem" + std::to_string(this->sym), this->offset);
-    } else {
-        return Variable(t, w, this->name, this->offset);
-    }
-
-}
-
-Variable SymbolicAddress::toUVar(unsigned w) {
-    return this->toVariable(CryptoLineType::uint, w);
-    //return Variable::UVar(w, "mem" + std::to_string(this->sym), this->offset);
-}
 
 SymbolicAddress PointerTable::getSymAddr(llvm::Value* v) {
     if (this->table.count(v) == 0) {
-        if (v->hasName()) {
-            this->table[v] = SymbolicAddress(this->symNum, 0,
-                                             Utils::replaceChar(v->getName(), '.', '_'));
-        } else {
-            this->table[v] = SymbolicAddress(this->symNum);
-        }
+        this->table[v] = SymbolicAddress(this->symNum);
         this->symNum++;
         return this->table[v];
     } else {
@@ -89,59 +54,36 @@ void PointerTable::add(llvm::Value* v, SymbolicAddress s) {
 Argument::Argument() {
 }
 
-Argument::Argument(CryptoLineOps opcode, CryptoLineType t, unsigned w, std::string value){
+Argument::Argument(CryptoLineOps opcode, std::string value) {
     this->op = opcode;
-    this->typ = t;
-    this->width = w;
     this->val = value;
 }
 
-Argument Argument::UConst(unsigned w, std::string val) {
-    return Argument(CryptoLineOps::Const, CryptoLineType::uint, w, val);
+Argument Argument::Const(std::string val) {
+    return Argument(CryptoLineOps::Const, val);
 }
 
-Argument Argument::SConst(unsigned w, std::string val) {
-    return Argument(CryptoLineOps::Const, CryptoLineType::sint, w, val);
-}
-
-Argument Argument::Var(CryptoLineType t, unsigned w, std::string val) {
-    return Argument(CryptoLineOps::Var, t, w, val);
-}
-
-Argument Argument::UVar(unsigned w, std::string val) {
-    return Argument(CryptoLineOps::Var, CryptoLineType::uint, w, val);
-}
-
-Argument Argument::SVar(unsigned w, std::string val) {
-    return Argument(CryptoLineOps::Var, CryptoLineType::sint, w, val);
+Argument Argument::Var(std::string val) {
+    return Argument(CryptoLineOps::Var, val);
 }
 
 Argument Argument::Flag(std::string val) {
-    return Argument(CryptoLineOps::Flag, CryptoLineType::uint, 1, val);
+    return Argument(CryptoLineOps::Flag, val);
 }
 
 Argument Argument::Num(unsigned val) {
-    return Argument(CryptoLineOps::Num, CryptoLineType::uint, 0, std::to_string(val));
-}
-
-std::map<CryptoLineType, std::string> Argument::typeName = {
-        {CryptoLineType::uint, "uint"},
-        {CryptoLineType::sint, "sint"}
-};
-
-std::string Argument::getType() const {
-    return Argument::typeName[this->typ] + std::to_string(this->width);
+    return Argument(CryptoLineOps::Num, std::to_string(val));
 }
 
 std::string Argument::toDst() {
     std::string s;
     switch (this->op) {
+    case CryptoLineOps::Const:
     case CryptoLineOps::Var:
     case CryptoLineOps::Flag:
+    case CryptoLineOps::Num:
         s = this->val;
         break;
-    case CryptoLineOps::Const:
-    case CryptoLineOps::Num:
     default:
         s = "NULL";
     }
@@ -151,13 +93,11 @@ std::string Argument::toDst() {
 std::string Argument::toSrc() {
     std::string s;
     switch (this->op) {
+    case CryptoLineOps::Const:
     case CryptoLineOps::Var:
     case CryptoLineOps::Flag:
     case CryptoLineOps::Num:
         s = this->val;
-        break;
-    case CryptoLineOps::Const:
-        s = "(" + this->val + ")@" + this->getType();
         break;
     default:
         s = "NULL";
@@ -168,7 +108,7 @@ std::string Argument::toSrc() {
 std::string Argument::toAlgArg() {
     std::string s;
     switch (this->op) {
-    case CryptoLineOps::Const: // TODO: check the const format
+    case CryptoLineOps::Const:
     case CryptoLineOps::Var:
     case CryptoLineOps::Flag:
     case CryptoLineOps::Num:
@@ -183,32 +123,13 @@ std::string Argument::toAlgArg() {
 std::string Argument::toRangeArg() {
     std::string s;
     switch (this->op) {
-    case CryptoLineOps::Const:  // TODO: check the const format
-        //s = "(const 64 " + this->val + ")";
-        //break;
-    case CryptoLineOps::Var:
-    case CryptoLineOps::Flag:
-    case CryptoLineOps::Num:
-        s = this->val;
-        break;
-    default:
-        s = "NULL";
-    }
-    return s;
-}
-
-std::string Argument::toTypedStr() {
-    std::string s;
-    switch (this->op) {
-    case CryptoLineOps::Num:
-        s = this->val;
-        break;
-    case CryptoLineOps::Var:
-    case CryptoLineOps::Flag:
-        s = this->val + "@" + this->getType();
-        break;
     case CryptoLineOps::Const:
-        s = "(" + this->val + ")@" + this->getType();
+        s = "(const 64 " + this->val + ")";
+        break;
+    case CryptoLineOps::Var:
+    case CryptoLineOps::Flag:
+    case CryptoLineOps::Num:
+        s = this->val;
         break;
     default:
         s = "NULL";
@@ -216,7 +137,6 @@ std::string Argument::toTypedStr() {
     return s;
 }
 
-/*
 std::string Argument::toDst_legacy() {
     std::string s;
     switch (this->op) {
@@ -284,54 +204,7 @@ std::string Argument::toRangeArg_legacy() {
     }
     return s;
 }
-*/
 
-Variable::Variable() {
-    this->op = CryptoLineOps::Var;
-}
-
-Variable::Variable(CryptoLineType t, unsigned w, std::string name) {
-    this->op = CryptoLineOps::Var;
-    this->typ = t;
-    this->width = w;
-    this->hasIndex = false;
-    this->name = name;
-    this->index = 0;
-    this->val = name;
-}
-
-Variable::Variable(CryptoLineType t, unsigned w, std::string name, int index) {
-    this->op = CryptoLineOps::Var;
-    this->typ = t;
-    this->width = w;
-    this->hasIndex = true;
-    this->name = name;
-    this->index = index;
-    if (index >= 0) {
-        this->val = name + "_" + std::to_string(index);
-    } else
-        this->val = name + "_m" + std::to_string((-1) * index);
-}
-
-Variable Variable::UVar(unsigned w, std::string name) {
-    return Variable(CryptoLineType::uint, w, name);
-}
-
-Variable Variable::SVar(unsigned w, std::string name) {
-    return Variable(CryptoLineType::sint, w, name);
-}
-
-Variable Variable::UVar(unsigned w, std::string name, int index) {
-    return Variable(CryptoLineType::uint, w, name, index);
-}
-
-Variable Variable::SVar(unsigned w, std::string name, int index) {
-    return Variable(CryptoLineType::sint, w, name, index);
-}
-
-std::string Variable::toDecl() const {
-    return this->getType() + " " + this->val;
-}
 
 Predicate Predicate::True() {
     Predicate p;
@@ -377,7 +250,6 @@ std::string Predicate::toRangePred() {
     return s;
 }
 
-/*
 std::string Predicate::toAlgPred_legacy() {
     std::string s;
     switch(this->op) {
@@ -409,7 +281,7 @@ std::string Predicate::toRangePred_legacy() {
     }
     return s;
 }
-*/
+
 
 std::map<CryptoLineOps, std::string> Statement::name = {
         {CryptoLineOps::Mov, "mov"},
@@ -427,17 +299,11 @@ std::map<CryptoLineOps, std::string> Statement::name = {
         {CryptoLineOps::Shl, "shl"},
         {CryptoLineOps::Split, "split"},
         {CryptoLineOps::And, "and"},
-        {CryptoLineOps::Or, "or"},
-        {CryptoLineOps::Xor, "xor"},
         {CryptoLineOps::Nondet, "nondet"},
-        {CryptoLineOps::Cast, "cast"},
-        {CryptoLineOps::Vpc, "vpc"},
-        {CryptoLineOps::Call, "call"},
         {CryptoLineOps::Assume, "assume"},
         {CryptoLineOps::Assert, "assert"}
 };
 
-/*
 std::map<CryptoLineOps, std::string> Statement::name_legacy = {
         {CryptoLineOps::Mov, "bvAssign"},
         {CryptoLineOps::Add, "bvAdd"},
@@ -458,7 +324,6 @@ std::map<CryptoLineOps, std::string> Statement::name_legacy = {
         {CryptoLineOps::Assume, "bvAssume"},
         {CryptoLineOps::Assert, "bvAssert"}
 };
-*/
 
 Statement Statement::Comment(std::string t){
     Statement s;
@@ -613,51 +478,10 @@ Statement Statement::And(Argument dst, Argument src1, Argument src2) {
     return s;
 }
 
-Statement Statement::Or(Argument dst, Argument src1, Argument src2) {
-    Statement s;
-    s.op = CryptoLineOps::Or;
-    s.args.push_back(dst);
-    s.args.push_back(src1);
-    s.args.push_back(src2);
-    return s;
-}
-
-Statement Statement::Xor(Argument dst, Argument src1, Argument src2) {
-    Statement s;
-    s.op = CryptoLineOps::Xor;
-    s.args.push_back(dst);
-    s.args.push_back(src1);
-    s.args.push_back(src2);
-    return s;
-}
-
 Statement Statement::Nondet(Argument dst) {
     Statement s;
     s.op = CryptoLineOps::Nondet;
     s.args.push_back(dst);
-    return s;
-}
-
-Statement Statement::Cast(Argument dst, Argument src) {
-    Statement s;
-    s.op = CryptoLineOps::Cast;
-    s.args.push_back(dst);
-    s.args.push_back(src);
-    return s;
-}
-
-Statement Statement::Vpc(Argument dst, Argument src) {
-    Statement s;
-    s.op = CryptoLineOps::Vpc;
-    s.args.push_back(dst);
-    s.args.push_back(src);
-    return s;
-}
-
-Statement Statement::Call(std::string fn) {
-    Statement s;
-    s.op = CryptoLineOps::Call;
-    s.text = fn;
     return s;
 }
 
@@ -692,6 +516,8 @@ std::string Statement::toStr() {
     case CryptoLineOps::Sbb:
     case CryptoLineOps::Mul:
     case CryptoLineOps::Shl:
+    case CryptoLineOps::And:
+    case CryptoLineOps::Nondet:
         s = Statement::name[this->op] + " " + this->args[0].toDst();
         for (int i = 1; i < this->args.size(); i++) {
             s += " " + this->args[i].toSrc();
@@ -713,42 +539,6 @@ std::string Statement::toStr() {
         }
         s += ";";
         break;
-    // and
-    case CryptoLineOps::And:
-        s = Statement::name[this->op] + " " + this->args[0].getType() + " "
-            + this->args[0].toDst()
-            + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
-        break;
-    // or
-    case CryptoLineOps::Or:
-        s = Statement::name[this->op] + " " + this->args[0].getType() + " "
-            + this->args[0].toDst()
-            + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
-        break;
-    // xor
-    case CryptoLineOps::Xor:
-        s = Statement::name[this->op] + " " + this->args[0].getType() + " "
-            + this->args[0].toDst()
-            + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
-        break;
-    // nondet
-    case CryptoLineOps::Nondet:
-        s = Statement::name[this->op] + " " + this->args[0].toTypedStr() + ";";
-        break;
-    // cast && vpc
-    case CryptoLineOps::Cast:
-    case CryptoLineOps::Vpc:
-        s = Statement::name[this->op] + " " + this->args[0].toTypedStr()
-            + " " + this->args[1].toTypedStr() + ";";
-        break;
-    // call
-    case CryptoLineOps::Call:
-        s = Statement::name[this->op] + " " + this->text + "(";
-        for (int i = 1; i < this->args.size(); i++) {
-            s += this->args[i].toSrc() + ", ";
-        }
-        s += this->args[0].toSrc() + ");";
-        break;
     // assume/assert
     case CryptoLineOps::Assume:
     case CryptoLineOps::Assert:
@@ -761,7 +551,6 @@ std::string Statement::toStr() {
     return s;
 }
 
-/*
 std::string Statement::toStr_legacy() {
     std::string s;
     switch(this->op) {
@@ -811,4 +600,3 @@ std::string Statement::toStr_legacy() {
     }
     return s;
 }
-*/

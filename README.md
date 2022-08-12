@@ -11,6 +11,7 @@ Cryptoline domain-specific language.
 1. cmake (>= 3.4.3, lower version may be viable, you are welcomed to
 have a try)
 2. LLVM (>= 3.7.0, checked until version 7.0.0)
+3. ANTLR runtime library (https://github.com/antlr/antlr4/blob/master/doc/cpp-target.md#where-can-i-get-the-runtime)
 
 NOTE: the LLVM version used for compiling llvm2cryptoline SHOULD be 
 the same as the one corresponding to the IR code.
@@ -81,11 +82,13 @@ your LLVM (i.e. INSTALL_DIR in the previous part).
 
 Use the following command line:
 
-    translate FILE FUNCTION_NAME [BLOCK_NAME]
+    translate FILE FUNCTION_NAME CONDITION [BLOCK_NAME]
 
     - FILE    	       the LLVM IR code (.ll) file
 
     - FUNCTION_NAME    the translated function name
+    
+    - CONDITION	the pre- and post-condition file
 
     - BLOCK_NAME       the translated basic block name
 

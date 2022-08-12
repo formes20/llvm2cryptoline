@@ -36,3 +36,6 @@ llvm_map_components_to_libnames(llvm_libs support core irreader)
 
 # Link against LLVM libraries
 target_link_libraries(translate ${llvm_libs})
+
+find_library(ANTLR_LIB antlr4-runtime /usr/local/lib)
+target_link_libraries(translate ${ANTLR_LIB})

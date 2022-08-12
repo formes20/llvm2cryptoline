@@ -7,19 +7,24 @@
 #include <llvm/Support/SourceMgr.h>
 #include "Types.h"
 #include "Translator.h"
+#include "LegacyTypes.h"
+#include "LegacyTranslator.h"
+
 
 using namespace llvm;
+using namespace llvm2cryptoline;
 
 int main(int argc, char* const* argv) {
 
-    if (argc < 3) {
-        std::cout << "Usage: translate FILE FUNCTION_NAME [BLOCK_NAME]" << std::endl;
+    if (argc < 4) {
+        std::cout << "Usage: translate FILE FUNCTION_NAME CONDITION [BLOCK_NAME]" << std::endl;
         exit(0);
     }
 
     std::string path = argv[1];
     std::string fileName = path.substr(path.find_last_of('/') + 1);
     std::string functionName = argv[2];
+    std::string condition = argv[3];
 
     //LLVMContext &context = getGlobalContext();
     LLVMContext context;
@@ -36,9 +41,9 @@ int main(int argc, char* const* argv) {
 
     bool inBlock = false;
     std::string entry = "";
-    if (argc >= 4) {
+    if (argc >= 5) {
         inBlock = true;
-        entry = argv[3];
+        entry = argv[4];
     }
 
     std::cout << "Translating "
@@ -67,7 +72,7 @@ int main(int argc, char* const* argv) {
     if (inBlock) {
         outputName += "_" + entry;
     }
-    t.tranlate({block, inst}, outputName, inBlock);
+    t.tranlate({block, inst}, condition, outputName, inBlock);
 
     std::cout << "Done!!!" << std::endl;
 
