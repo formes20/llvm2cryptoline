@@ -14,10 +14,26 @@
 using namespace llvm;
 using namespace llvm2cryptoline;
 
+void print_usage()
+{
+    std::cout<<"\nUsage: translate FILE FUNCTION_NAME CONDITION " << " [options]" << std::endl
+        << "Options:" << std::endl
+        << "  -block       have block \n"
+        << "  -dh          disable heuristics \n"
+        << "  -dheq        disable heuristics_eq \n"
+        << "  -dhs         disable heuristcs_sound \n"
+        << "  -unsigned    defaultType uint  \n"
+        << "  -signed      defaultType sint \n" 
+        << "  -h, --help   print this help info \n"   
+        << "\n"
+        << std::endl;
+}
+
 int main(int argc, char* const* argv) {
 
     if (argc < 4) {
-        std::cout << "Usage: translate FILE FUNCTION_NAME CONDITION [BLOCK_NAME]" << std::endl;
+        // std::cout << "Usage: translate FILE FUNCTION_NAME CONDITION [BLOCK_NAME]" << std::endl;
+        print_usage();
         exit(0);
     }
 
@@ -25,6 +41,35 @@ int main(int argc, char* const* argv) {
     std::string fileName = path.substr(path.find_last_of('/') + 1);
     std::string functionName = argv[2];
     std::string condition = argv[3];
+
+    Translator t;
+    bool inBlock = false;
+    std::string entry = "";
+    for (int i=4; i<argc; i++) 
+    {
+        std::string t_arg = std::string(argv[i]);
+        if ( t_arg == "-block" ) {
+            inBlock = true;
+            std::cout << "input entry:" <<std::endl;
+            std::cin >> entry;
+        }
+        else if(t_arg == "-dh"){
+            t.heuristcs = false ;
+        }else if(t_arg == "-dheq"){
+            t.heuristcs_equiv = false ;
+        }else if(t_arg == "-dhs"){
+            t.heuristcs_sound = false;
+        }else if(t_arg == "-unsigned"){
+            t.setType("unsigned");
+        }else if(t_arg == "-signed"){
+            t.setType("signed");
+            
+        }else if(t_arg == "-h" || t_arg == "--help"){
+            print_usage();
+        }else{
+            print_usage();
+        }
+    }
 
     //LLVMContext &context = getGlobalContext();
     LLVMContext context;
@@ -39,19 +84,18 @@ int main(int argc, char* const* argv) {
 
     //module->dump();
 
-    bool inBlock = false;
-    std::string entry = "";
-    if (argc >= 5) {
-        inBlock = true;
-        entry = argv[4];
-    }
+    //bool inBlock = false;
+    //std::string entry = "";
+    // if (argc >= 4) {
+    //     inBlock = true;
+    //     entry = argv[3];
+    // }
 
     std::cout << "Translating "
               << (inBlock ? "block [" + entry + "] of " : "")
               << "function [" << functionName << "] "
               << "in file [" << fileName << "] ..." << std::endl;
 
-    Translator t;
     BasicBlock *block;
     Function *function = module->getFunction(functionName);
 

@@ -1,4 +1,4 @@
-lexer grammar mytestLexer;
+lexer grammar conditionLexer;
 options { language=Cpp; }
 
 //operators
@@ -24,6 +24,7 @@ OROP: '|';
 
 //symbols
 AT: '@';
+PERCENT: '%';
 COMMA: ',';
 Colon: ':';
 Semicolon: ';';
@@ -56,16 +57,23 @@ UMOD: 'umod';
 SREM: 'srem';
 SMOD: 'smod';
 
+ASSERT: 'assert';
+ASSUME: 'assume';
+
 AND: 'and';
 OR: 'or';
 VARS: 'vars';
 
 
+//Digit: [0-9];
+INT: [0-9]+;
+HEX: '0x'[0-9a-fA-F]+;
 
-INT: Digit+ | '0x'[0-9a-fA-F]+;
-Digit: [0-9];
-VAR: LETTER (LETTER | '0'..'9')*;
+
+VAR: LETTER (LETTER | '0'..'9')* ;
+LL_VAR: PERCENT (LETTER | '0'..'9')* ;
 fragment LETTER : [a-zA-Z_];
+
 UINT: 'uint';
 SINT: 'sint';
 

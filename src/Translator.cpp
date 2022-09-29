@@ -9,11 +9,9 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include "llvm/IR/Constants.h"
-// #include "llvm/IR/ConstantsContext.h"
 #include "llvm/Support/FileSystem.h"
-#include "parsecondition.h"
 #include "Translator.h"
-#include "Utils.h"
+#include "parsecondition.h"
 
 using namespace llvm;
 using namespace std;
@@ -73,6 +71,48 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
     } else {
         errs() << "No translation:" << *inst
                << "(instruction non-supported!)\n";
+    }
+
+    if(MDNode *N = inst->getMetadata("annotation")){
+        std::string ant = cast<MDString>(N->getOperand(0))->getString();
+        ParseCondition p;
+        Statement s;
+        s = Statement::Comment("Translate from annotation");
+        this->result.push_back(s);
+        VarSymbol *anno;
+        anno = p.parse_annotation(ant);
+        Arg left,right;
+        unsigned width;
+        std::string val;
+
+        if(anno->containsKey("l_var")!=""){
+           left = getvar(anno->containsKey("l_var"));
+           
+        }else{
+            width = stoi(anno->containsKey("l_const_width"));
+            val = anno->containsKey("l_const_val");
+            if (this->defaultType == CryptoLineType::sint) {
+                left = Arg::SConst(width, val);
+            }else{
+                left = Arg::UConst(width, val);
+            }
+        }
+
+        if(anno->containsKey("r_var")!=""){
+            right = getvar(anno->containsKey("r_var"));
+        }else{
+            width = stoi(anno->containsKey("r_const_width"));
+            val = anno->containsKey("r_const_val");
+            if (this->defaultType == CryptoLineType::sint) {
+                right = Arg::SConst(width, val);
+            }else{
+                right = Arg::UConst(width, val);
+            }
+        }
+        s = Statement::Assert(Predicate::True(),Predicate::Eq(left,right));
+        this->result.push_back(s);
+        s = Statement::Assume(Predicate::Eq(left,right),Predicate::True());
+        this->result.push_back(s);
     }
 
     inst++;
@@ -148,10 +188,9 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
             head += "  true\n";
         }
         head += "}\n\n\n";
-        */
 
         // compute the tail
-        /*string tail = "\n\n";
+        string tail = "\n\n";
         tail += "{\n";
         if (this->legacy) {
             tail += "  bveTrue\n";
@@ -204,7 +243,7 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         //return false;
     //}
 }
-/*
+
 std::string Translator::replaceChar(std::string str, char target, char c) {
   for (int i = 0; i < str.length(); i++) {
     if (str[i] == target)
@@ -212,13 +251,13 @@ std::string Translator::replaceChar(std::string str, char target, char c) {
   }
   return str;
 }
-*/
+
 std::string Translator::getName(llvm::Value* v) {
     if (v->hasName()) {
         if (this->legacy) {
-            return Utils::replaceChar(v->getName(), '.', '_');
+            return replaceChar(v->getName(), '.', '_');
         } else {
-            return "v_" + Utils::replaceChar(v->getName(), '.', '_');
+            return "v_" + replaceChar(v->getName(), '.', '_');
         }
     } else {
         std::string s;
@@ -288,6 +327,27 @@ void Translator::define(Variable var) {
     this->unusedVars.insert(var);
 }
 
+cryptoline::Argument Translator::getvar(std::string s)
+{
+    for (auto i = this->defVars.begin(); i != this->defVars.end(); i++) {
+        if(i->val == s){
+                return *i;
+                }
+        }
+    errs() << "No variable named " << s << "\n";
+    return Var();
+
+}
+
+void Translator::setType(std::string s){
+    if( s == "signed"){
+        this->defaultType = CryptoLineType::sint;
+    }else{
+        this->defaultType = CryptoLineType::uint;
+    }
+    return;
+}
+
 string Translator::toString(llvm::Instruction* inst) {
     std::string s;
     llvm::raw_string_ostream os(s);
@@ -304,19 +364,7 @@ void Translator::evalLoad(LoadInst* li) {
     if (type->isIntegerTy()) {
         width = type->getIntegerBitWidth();
         Var dst = Var(this->defaultType, width, getName(li));
-
-        // probably, ad is a getelementptr expr
-        if (ConstantExpr* gepe = dyn_cast<ConstantExpr>(ad)) {
-            if (gepe->isGEPWithNoNotionalOverIndexing()) {
-                if (GEPOperator* gepo = dyn_cast<GEPOperator>(gepe)) {
-                    if (!evalGEPOperator(gepo)) {
-                        errs() << "No translation:" << *li << "\n";
-                        return;
-                    }
-                }
-            }
-        }
-
+        // Var dst = Var::UVar(width, getName(li));
         Var src = this->pointerTable.getSymAddr(ad).toVariable(this->defaultType, width);
         // Var src = this->pointerTable.getSymAddr(ad).toUVar(width);
 
@@ -1359,110 +1407,6 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
 */
 }
 
-void Translator::evalBinaryOpOr(BinaryOperator* bo) {
-    Statement s;
-    Value* t1 = bo->getOperand(0);
-    Value* t2 = bo->getOperand(1);
-    Type *type = bo->getType();
-    unsigned width;
-
-    s = Statement::Comment("You may need to modify here");
-    this->result.push_back(s);
-
-    if (type->isIntegerTy()) {
-        width = type->getIntegerBitWidth();
-        // Var dst = Var::UVar(width, getName(bo));
-        Var dst = Var(this->defaultType, width, getName(bo));
-        Arg src1,src2;
-
-        if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
-            if (this->defaultType == CryptoLineType::sint) {
-                src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
-            } else {
-                src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
-            }
-        } else {
-            Var v = Var(this->defaultType, width, getName(t1));
-            src1 = v;
-            this->use(v);
-        }
-
-        if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
-            if (this->defaultType == CryptoLineType::sint) {
-                src2 = Arg::SConst(width, "0x" + c2->getValue().toString(16, false));
-            } else {
-                src2 = Arg::UConst(width, "0x" + c2->getValue().toString(16, false));
-            }
-
-        } else {
-            // Var v = Var::UVar(width, getName(t2));
-            Var v = Var(this->defaultType, width, getName(t2));
-            src2 = v;
-            this->use(v);
-        }
-
-        s = Statement::Or(dst, src1, src2);
-        this->result.push_back(s);
-        this->define(dst);
-
-    } else {
-        errs() << "No translation:" << *bo << " (Unknown type!)\n";
-    }
-
-}
-
-void Translator::evalBinaryOpXor(BinaryOperator* bo) {
-    Statement s;
-    Value* t1 = bo->getOperand(0);
-    Value* t2 = bo->getOperand(1);
-    Type *type = bo->getType();
-    unsigned width;
-
-    s = Statement::Comment("You may need to modify here");
-    this->result.push_back(s);
-
-    if (type->isIntegerTy()) {
-        width = type->getIntegerBitWidth();
-        // Var dst = Var::UVar(width, getName(bo));
-        Var dst = Var(this->defaultType, width, getName(bo));
-        Arg src1,src2;
-
-        if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
-            if (this->defaultType == CryptoLineType::sint) {
-                src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
-            } else {
-                src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
-            }
-        } else {
-            Var v = Var(this->defaultType, width, getName(t1));
-            src1 = v;
-            this->use(v);
-        }
-
-        if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
-            if (this->defaultType == CryptoLineType::sint) {
-                src2 = Arg::SConst(width, "0x" + c2->getValue().toString(16, false));
-            } else {
-                src2 = Arg::UConst(width, "0x" + c2->getValue().toString(16, false));
-            }
-
-        } else {
-            // Var v = Var::UVar(width, getName(t2));
-            Var v = Var(this->defaultType, width, getName(t2));
-            src2 = v;
-            this->use(v);
-        }
-
-        s = Statement::Xor(dst, src1, src2);
-        this->result.push_back(s);
-        this->define(dst);
-
-    } else {
-        errs() << "No translation:" << *bo << " (Unknown type!)\n";
-    }
-
-}
-
 void Translator::evalBinaryOp(BinaryOperator* bo) {
     switch (bo->getOpcode()) {
         case Instruction::BinaryOps::Add:
@@ -1487,17 +1431,13 @@ void Translator::evalBinaryOp(BinaryOperator* bo) {
             evalBinaryOpAnd(bo);
             break;
 
-        case Instruction::BinaryOps::Or:
-            evalBinaryOpOr(bo);
+        case Instruction::BinaryOps::SDiv:
+            // TODO
             break;
 
         case Instruction::BinaryOps::Xor:
-            evalBinaryOpXor(bo);
+            // TODO
             break;
-
-        // case Instruction::BinaryOps::SDiv:
-        //     // TODO
-        //     break;
 
         default:
             // non-supported binary operator
@@ -1507,58 +1447,7 @@ void Translator::evalBinaryOp(BinaryOperator* bo) {
 
 }
 
-// return true if translation succeeds, false otherwise
-bool Translator::evalGEPOperator(GEPOperator* gepo) {
-    Type *eTy =	gepo->getSourceElementType();
-    auto i = gepo->idx_begin();
-    if (ConstantInt* ci = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
-        int index = ci->getSExtValue();
-
-        SymbolicAddress baseAddr = this->pointerTable.getSymAddr(gepo->getPointerOperand());
-        SymbolicAddress newAddr = baseAddr.add(index * sizeOf(eTy));
-
-        i++;
-        while (i != gepo->idx_end()) {
-            if (ConstantInt* ci2 = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
-                index = ci2->getSExtValue();
-
-                if (eTy->isArrayTy()) {
-                    eTy = eTy->getArrayElementType();
-                    newAddr = newAddr.add(index * sizeOf(eTy));
-                } else if (eTy->isStructTy()) {
-                    newAddr = newAddr.add(offsetAt(eTy, index));
-                    eTy = eTy->getStructElementType(index);
-                } else { // error indexing or does not support
-                    // errs() << "No translation:" << *li << "\n";
-                    return false;
-                }
-
-                i++;
-            } else {
-                // errs() << "No translation:" << *li << "\n";
-                return false;
-            }
-        }
-
-        this->pointerTable.add(gepo, newAddr);
-
-    } else {
-        // errs() << "No translation:" << *li << "\n";
-        return false;
-    }
-
-    return true;
-}
-
 void Translator::evalGetElementPtr(GetElementPtrInst* gepi) {
-    if (GEPOperator* gepo = dyn_cast<GEPOperator>(gepi)) {
-        if (!evalGEPOperator(gepo))
-            errs() << "No translation:" << *gepi << "\n";
-    } else {
-        errs() << "No translation:" << *gepi << "\n";
-    }
-
-    /*
     Type *eTy = gepi->getSourceElementType();
     auto i = gepi->idx_begin();
     if (ConstantInt* ci = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
@@ -1594,7 +1483,7 @@ void Translator::evalGetElementPtr(GetElementPtrInst* gepi) {
     } else {
         errs() << "No translation:" << *gepi << "\n";
     }
-    */
+
 }
 
 void Translator::evalInsertElement(InsertElementInst* iei) {

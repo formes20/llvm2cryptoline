@@ -7,10 +7,10 @@ std::string VarSymbol::containsKey(std::string s)
     {
         return m_it->second;
     }
-    else return NULL;
+    else return "";
 }
 
-antlrcpp::Any EvalVisitor::visitSpec(mytestParser::SpecContext *ctx)
+antlrcpp::Any EvalVisitor::visitSpec(conditionParser::SpecContext *ctx)
 {
     std::string result;
     antlrcpp::Any value1 = visit(ctx->bpre());
@@ -22,7 +22,7 @@ antlrcpp::Any EvalVisitor::visitSpec(mytestParser::SpecContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitBpre(mytestParser::BpreContext *ctx)
+antlrcpp::Any EvalVisitor::visitBpre(conditionParser::BpreContext *ctx)
 {
     std::string result= ctx->LBRAC()->getText();
     result.append("\n\t");
@@ -41,7 +41,7 @@ antlrcpp::Any EvalVisitor::visitBpre(mytestParser::BpreContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitBpos(mytestParser::BposContext *ctx)
+antlrcpp::Any EvalVisitor::visitBpos(conditionParser::BposContext *ctx)
 {
     std::string result= ctx->LBRAC()->getText();
     result.append("\n\t");
@@ -60,12 +60,12 @@ antlrcpp::Any EvalVisitor::visitBpos(mytestParser::BposContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitA_true(mytestParser::A_trueContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_true(conditionParser::A_trueContext *ctx)
 {
    return ctx->TRUE()->getText();
 }
 
-antlrcpp::Any EvalVisitor::visitA_parens(mytestParser::A_parensContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_parens(conditionParser::A_parensContext *ctx)
 {
     std::string result = ctx->LPAR()->getText();
     antlrcpp::Any value = visit(ctx->abexp_atom());
@@ -74,7 +74,7 @@ antlrcpp::Any EvalVisitor::visitA_parens(mytestParser::A_parensContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitA_eq(mytestParser::A_eqContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_eq(conditionParser::A_eqContext *ctx)
 {
     std::string result = ctx->EQ()->getText();
     result.append("\n");
@@ -87,7 +87,7 @@ antlrcpp::Any EvalVisitor::visitA_eq(mytestParser::A_eqContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitA_eqmod(mytestParser::A_eqmodContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_eqmod(conditionParser::A_eqmodContext *ctx)
 {
     std::string result = ctx->EQMOD()->getText();
     result.append("\n\t");
@@ -102,18 +102,18 @@ antlrcpp::Any EvalVisitor::visitA_eqmod(mytestParser::A_eqmodContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitA_and(mytestParser::A_andContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_and(conditionParser::A_andContext *ctx)
 {
     std::string result = ctx->AND()->getText();
     result.append(ctx->LSQUARE()->getText());
-    result.append("\n\t");
+    result.append("\n\t\t");
     antlrcpp::Any value1 = visit(ctx->abexps());
     result.append(value1.as<std::string>());
     result.append(ctx->RSQUARE()->getText());
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitA_eqop(mytestParser::A_eqopContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_eqop(conditionParser::A_eqopContext *ctx)
 {
     std::string result ;
     antlrcpp::Any value1 = visit(ctx->aexp(0));
@@ -127,7 +127,7 @@ antlrcpp::Any EvalVisitor::visitA_eqop(mytestParser::A_eqopContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitAdds_aexp(mytestParser::Adds_aexpContext *ctx)
+antlrcpp::Any EvalVisitor::visitAdds_aexp(conditionParser::Adds_aexpContext *ctx)
 {
     std::string result = ctx->INST_ADD()->getText();
     result.append(ctx->LSQUARE()->getText());
@@ -137,7 +137,7 @@ antlrcpp::Any EvalVisitor::visitAdds_aexp(mytestParser::Adds_aexpContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitAexp_pow(mytestParser::Aexp_powContext *ctx)
+antlrcpp::Any EvalVisitor::visitAexp_pow(conditionParser::Aexp_powContext *ctx)
 {
     std::string result ;
     antlrcpp::Any value1 = visit(ctx->aexp());
@@ -150,7 +150,15 @@ antlrcpp::Any EvalVisitor::visitAexp_pow(mytestParser::Aexp_powContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitA_sc(mytestParser::A_scContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_inst_sq(conditionParser::A_inst_sqContext *ctx)
+{
+    std::string result = ctx->INST_SQ()->getText();
+    antlrcpp::Any value1 = visit(ctx->aexp());
+    result.append(value1.as<std::string>());
+    return std::string(result);
+}
+
+antlrcpp::Any EvalVisitor::visitA_sc(conditionParser::A_scContext *ctx)
 {
     std::string result ;
     antlrcpp::Any value1 = visit(ctx->simple_const());
@@ -158,7 +166,7 @@ antlrcpp::Any EvalVisitor::visitA_sc(mytestParser::A_scContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitAexp_oprations(mytestParser::Aexp_oprationsContext *ctx)
+antlrcpp::Any EvalVisitor::visitAexp_oprations(conditionParser::Aexp_oprationsContext *ctx)
 {
     std::string result ;
     antlrcpp::Any l = visit(ctx->aexp(0)); 
@@ -169,19 +177,7 @@ antlrcpp::Any EvalVisitor::visitAexp_oprations(mytestParser::Aexp_oprationsConte
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitAdd_aexp(mytestParser::Add_aexpContext *ctx)
-{
-    std::string result = ctx->INST_ADD()->getText();
-    antlrcpp::Any value1 = visit(ctx->aexp(0));
-    result.append(value1.as<std::string>());
-    result.append("\t");
-    antlrcpp::Any value2 = visit(ctx->aexp(1));
-    result.append(value2.as<std::string>());
-    result.append("\t");
-    return std::string(result);
-}
-
-antlrcpp::Any EvalVisitor::visitAexp_limbs(mytestParser::Aexp_limbsContext *ctx)
+antlrcpp::Any EvalVisitor::visitAexp_limbs(conditionParser::Aexp_limbsContext *ctx)
 {
     //ULIMBS num LSQUARE aexps RSQUARE
     std::string result = ctx->ULIMBS()->getText();
@@ -196,17 +192,9 @@ antlrcpp::Any EvalVisitor::visitAexp_limbs(mytestParser::Aexp_limbsContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitSq_aexp(mytestParser::Sq_aexpContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_inst(conditionParser::A_instContext *ctx)
 {
-    std::string result = ctx->INST_SQ()->getText();
-    antlrcpp::Any value1 = visit(ctx->aexp());
-    result.append(value1.as<std::string>());
-    return std::string(result);
-}
-
-antlrcpp::Any EvalVisitor::visitSub_aexp(mytestParser::Sub_aexpContext *ctx)
-{
-    std::string result = ctx->INST_SUB()->getText();
+    std::string result = ctx->op->getText();
     antlrcpp::Any value1 = visit(ctx->aexp(0));
     result.append(value1.as<std::string>());
     result.append("\t");
@@ -216,12 +204,18 @@ antlrcpp::Any EvalVisitor::visitSub_aexp(mytestParser::Sub_aexpContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitA_var(mytestParser::A_varContext *ctx)
+antlrcpp::Any EvalVisitor::visitA_var(conditionParser::A_varContext *ctx)
 {
-    return std::string(ctx->VAR()->getText());
+    std::string result;
+    result.append(ctx->var()->VAR()->getText());
+    if(ctx->var()->array()){
+        result.append(ctx->var()->array()->INT()->getText());
+    }
+    
+    return result;
 }
 
-antlrcpp::Any EvalVisitor::visitAexp_parents(mytestParser::Aexp_parentsContext *ctx)
+antlrcpp::Any EvalVisitor::visitAexp_parents(conditionParser::Aexp_parentsContext *ctx)
 {
     std::string result = ctx->LPAR()->getText();
     antlrcpp::Any value = visit(ctx->aexp());
@@ -230,19 +224,28 @@ antlrcpp::Any EvalVisitor::visitAexp_parents(mytestParser::Aexp_parentsContext *
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitMul_aexp(mytestParser::Mul_aexpContext *ctx)
+antlrcpp::Any EvalVisitor::visitAexp_listlimbs(conditionParser::Aexp_listlimbsContext *ctx)
 {
-    std::string result = ctx->INST_MUL()->getText();
-    antlrcpp::Any value1 = visit(ctx->aexp(0));
-    result.append(value1.as<std::string>());
-    result.append("\t");
-    antlrcpp::Any value2 = visit(ctx->aexp(1));
-    result.append(value2.as<std::string>());
-    result.append("\t");
+    std::string result = ctx->ULIMBS()->getText();
+    result.append("  ");
+    result.append(ctx->num()->getText());
+    result.append("  [");
+    std::string s1 = ctx->list()->INT(0)->getText();
+    std::string s2 = ctx->list()->INT(1)->getText();
+    int a = stoi(s1);
+    int b = stoi(s2);
+    for(int i = a; i < b; i++){
+        result.append(ctx->VAR()->getText());
+        result += std::to_string(i);
+        result.append(",");
+    }
+    result.append(ctx->VAR()->getText());
+    result += std::to_string(b);
+    result.append("]");
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitMuls_aexp(mytestParser::Muls_aexpContext *ctx)
+antlrcpp::Any EvalVisitor::visitMuls_aexp(conditionParser::Muls_aexpContext *ctx)
 {
     std::string result = ctx->INST_MUL()->getText();
     result.append(ctx->LSQUARE()->getText());
@@ -252,7 +255,7 @@ antlrcpp::Any EvalVisitor::visitMuls_aexp(mytestParser::Muls_aexpContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitAbexps(mytestParser::AbexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitAbexps(conditionParser::AbexpsContext *ctx)
 {
     std::string result;
     antlrcpp::Any value1 = visit(ctx->abexp_atom());
@@ -264,17 +267,17 @@ antlrcpp::Any EvalVisitor::visitAbexps(mytestParser::AbexpsContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_abexp_atom(mytestParser::Extend_abexp_atomContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_abexp_atom(conditionParser::Extend_abexp_atomContext *ctx)
 {
     return visit(ctx->abexp_atom());
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_abexps(mytestParser::Extend_abexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_abexps(conditionParser::Extend_abexpsContext *ctx)
 {
     return visit(ctx->abexps());
 }
 
-antlrcpp::Any EvalVisitor::visitAexps(mytestParser::AexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitAexps(conditionParser::AexpsContext *ctx)
 {
     std::string result;
     antlrcpp::Any value1 = visit(ctx->aexp());
@@ -285,22 +288,22 @@ antlrcpp::Any EvalVisitor::visitAexps(mytestParser::AexpsContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_aexp(mytestParser::Extend_aexpContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_aexp(conditionParser::Extend_aexpContext *ctx)
 {
     return visit(ctx->aexp());
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_aexps(mytestParser::Extend_aexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_aexps(conditionParser::Extend_aexpsContext *ctx)
 {
     return visit(ctx->aexps());
 }
 
-antlrcpp::Any EvalVisitor::visitR_true(mytestParser::R_trueContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_true(conditionParser::R_trueContext *ctx)
 {
     return ctx->TRUE()->getText();
 }
 
-antlrcpp::Any EvalVisitor::visitR_parents(mytestParser::R_parentsContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_parents(conditionParser::R_parentsContext *ctx)
 {
     std::string result = ctx->LPAR()->getText();
     antlrcpp::Any value = visit(ctx->rbexp_atom());
@@ -309,7 +312,7 @@ antlrcpp::Any EvalVisitor::visitR_parents(mytestParser::R_parentsContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitR_eq(mytestParser::R_eqContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_eq(conditionParser::R_eqContext *ctx)
 {
     std::string result = ctx->EQ()->getText();
     result.append("\t");
@@ -321,18 +324,18 @@ antlrcpp::Any EvalVisitor::visitR_eq(mytestParser::R_eqContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitR_and(mytestParser::R_andContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_and(conditionParser::R_andContext *ctx)
 {
     std::string result = ctx->AND()->getText();
     result.append(ctx->LSQUARE()->getText());
-    result.append("\n\t");
+    result.append("\n\t\t");
     antlrcpp::Any value1 = visit(ctx->rbexps());
     result.append(value1.as<std::string>());
     result.append(ctx->RSQUARE()->getText());
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitR_or(mytestParser::R_orContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_or(conditionParser::R_orContext *ctx)
 {
     std::string result = ctx->OR()->getText();
     result.append(ctx->LSQUARE()->getText());
@@ -344,7 +347,7 @@ antlrcpp::Any EvalVisitor::visitR_or(mytestParser::R_orContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitR_mod(mytestParser::R_modContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_mod(conditionParser::R_modContext *ctx)
 {
     std::string result ;
     antlrcpp::Any value1 = visit(ctx->rexp(0)); 
@@ -361,7 +364,7 @@ antlrcpp::Any EvalVisitor::visitR_mod(mytestParser::R_modContext *ctx)
         
 }
 
-antlrcpp::Any EvalVisitor::visitR_cmpop(mytestParser::R_cmpopContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_cmpop(conditionParser::R_cmpopContext *ctx)
 {
     std::string result ;
     antlrcpp::Any value1 = visit(ctx->rexp(0)); 
@@ -374,7 +377,36 @@ antlrcpp::Any EvalVisitor::visitR_cmpop(mytestParser::R_cmpopContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_const_at_const(mytestParser::Rexp_const_at_constContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_list(conditionParser::R_listContext *ctx)
+{
+    std::string result ;
+    antlrcpp::Any value = visit(ctx->rexp());
+    std::string s1 = ctx->list()->INT(0)->getText();
+    std::string s2 = ctx->list()->INT(1)->getText();
+    int a = stoi(s1);
+    int b = stoi(s2);
+    result.append("\t and [\n\t\t\t");
+    for(int i=a;i<b;i++){
+        result.append(ctx->VAR()->getText()); 
+        result += std::to_string(i);
+        result.append("\t");
+        result.append(ctx->op->getText());
+        result.append("\t");
+        result.append(value.as<std::string>());
+        result.append(",");
+        result.append("\n\t\t\t");
+    }
+    result.append(ctx->VAR()->getText()); 
+    result += std::to_string(b);
+    result.append("\t");
+    result.append(ctx->op->getText());
+    result.append("\t");
+    result.append(value.as<std::string>());
+    result.append("]");
+    return std::string(result);
+}
+
+antlrcpp::Any EvalVisitor::visitRexp_const_at_const(conditionParser::Rexp_const_at_constContext *ctx)
 {
     //num AT num 0@64 0xfffff@64
     std::string result ;
@@ -386,7 +418,28 @@ antlrcpp::Any EvalVisitor::visitRexp_const_at_const(mytestParser::Rexp_const_at_
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_adds(mytestParser::Rexp_addsContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_listlimbs(conditionParser::R_listlimbsContext *ctx)
+{
+    std::string result = ctx->op->getText();
+    result.append("  ");
+    result.append(ctx->num()->getText());
+    result.append("  [");
+    std::string s1 = ctx->list()->INT(0)->getText();
+    std::string s2 = ctx->list()->INT(1)->getText();
+    int a = stoi(s1);
+    int b = stoi(s2);
+    for(int i = a; i < b; i++){
+        result.append(ctx->VAR()->getText());
+        result += std::to_string(i);
+        result.append(",");
+    }
+    result.append(ctx->VAR()->getText());
+    result += std::to_string(b);
+    result.append("]");
+    return std::string(result);
+}
+
+antlrcpp::Any EvalVisitor::visitRexp_adds(conditionParser::Rexp_addsContext *ctx)
 {
     std::string result = ctx->INST_ADD()->getText();
     result.append(ctx->LSQUARE()->getText());
@@ -396,17 +449,22 @@ antlrcpp::Any EvalVisitor::visitRexp_adds(mytestParser::Rexp_addsContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitR_var(mytestParser::R_varContext *ctx)
+antlrcpp::Any EvalVisitor::visitR_var(conditionParser::R_varContext *ctx)
 {
-    return std::string(ctx->VAR()->getText());
+    std::string result;
+    result.append(ctx->var()->VAR()->getText());
+        if(ctx->var()->array()){
+        result.append(ctx->var()->array()->INT()->getText());
+    }
+    return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_num(mytestParser::Rexp_numContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_num(conditionParser::Rexp_numContext *ctx)
 {
     return visit(ctx->num());
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_muls(mytestParser::Rexp_mulsContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_muls(conditionParser::Rexp_mulsContext *ctx)
 {
     std::string result = ctx->INST_MUL()->getText();
     result.append(ctx->LSQUARE()->getText());
@@ -416,7 +474,7 @@ antlrcpp::Any EvalVisitor::visitRexp_muls(mytestParser::Rexp_mulsContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_parents(mytestParser::Rexp_parentsContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_parents(conditionParser::Rexp_parentsContext *ctx)
 {
     std::string result = ctx->LPAR()->getText();
     antlrcpp::Any value = visit(ctx->rexp());
@@ -425,11 +483,11 @@ antlrcpp::Any EvalVisitor::visitRexp_parents(mytestParser::Rexp_parentsContext *
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_limb(mytestParser::Rexp_limbContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_limb(conditionParser::Rexp_limbContext *ctx)
 {
     // op=(ULIMBS|SLIMBS) num LSQUARE rexps RSQUARE
     std::string result ;
-    if (ctx->op->getType() == mytestParser::ULIMBS){
+    if (ctx->op->getType() == conditionParser::ULIMBS){
         result.append(ctx->ULIMBS()->getText());
     }
     else{
@@ -446,7 +504,7 @@ antlrcpp::Any EvalVisitor::visitRexp_limb(mytestParser::Rexp_limbContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_const(mytestParser::Rexp_constContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_const(conditionParser::Rexp_constContext *ctx)
 {
     // CONST num num
     std::string result = ctx->CONST()->getText();
@@ -459,7 +517,7 @@ antlrcpp::Any EvalVisitor::visitRexp_const(mytestParser::Rexp_constContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_const_at_typ_const(mytestParser::Rexp_const_at_typ_constContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_const_at_typ_const(conditionParser::Rexp_const_at_typ_constContext *ctx)
 {
     // num AT typ num   0@uint64
     std::string result;
@@ -472,7 +530,7 @@ antlrcpp::Any EvalVisitor::visitRexp_const_at_typ_const(mytestParser::Rexp_const
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_mod(mytestParser::Rexp_modContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_mod(conditionParser::Rexp_modContext *ctx)
 {
     // op=(UMOD|SREM|SMOD) rexp rexp
     std::string result = ctx->op->getText();
@@ -485,7 +543,7 @@ antlrcpp::Any EvalVisitor::visitRexp_mod(mytestParser::Rexp_modContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_notop(mytestParser::Rexp_notopContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_notop(conditionParser::Rexp_notopContext *ctx)
 {
     std::string result = ctx->NOTOP()->getText();
     antlrcpp::Any value1 = visit(ctx->rexp());
@@ -493,7 +551,7 @@ antlrcpp::Any EvalVisitor::visitRexp_notop(mytestParser::Rexp_notopContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_op(mytestParser::Rexp_opContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_op(conditionParser::Rexp_opContext *ctx)
 {
     std::string result;
     antlrcpp::Any value1 = visit(ctx->rexp(0));
@@ -506,7 +564,7 @@ antlrcpp::Any EvalVisitor::visitRexp_op(mytestParser::Rexp_opContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_binary(mytestParser::Rexp_binaryContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_binary(conditionParser::Rexp_binaryContext *ctx)
 {
     std::string result = ctx->op->getText();
     result.append("\n");
@@ -518,7 +576,7 @@ antlrcpp::Any EvalVisitor::visitRexp_binary(mytestParser::Rexp_binaryContext *ct
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRexp_sq(mytestParser::Rexp_sqContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexp_sq(conditionParser::Rexp_sqContext *ctx)
 {
     std::string result = ctx->INST_SQ()->getText();
     result.append("\n");
@@ -527,7 +585,7 @@ antlrcpp::Any EvalVisitor::visitRexp_sq(mytestParser::Rexp_sqContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitRbexps(mytestParser::RbexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitRbexps(conditionParser::RbexpsContext *ctx)
 {
     std::string result;
     antlrcpp::Any value1 = visit(ctx->rbexp_atom());
@@ -539,17 +597,17 @@ antlrcpp::Any EvalVisitor::visitRbexps(mytestParser::RbexpsContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_rbexp_atom(mytestParser::Extend_rbexp_atomContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_rbexp_atom(conditionParser::Extend_rbexp_atomContext *ctx)
 {
     return visit(ctx->rbexp_atom());
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_rbexps(mytestParser::Extend_rbexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_rbexps(conditionParser::Extend_rbexpsContext *ctx)
 {
     return visit(ctx->rbexps());
 }
 
-antlrcpp::Any EvalVisitor::visitRexps(mytestParser::RexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitRexps(conditionParser::RexpsContext *ctx)
 {
     std::string result;
     antlrcpp::Any value1 = visit(ctx->rexp());
@@ -561,22 +619,22 @@ antlrcpp::Any EvalVisitor::visitRexps(mytestParser::RexpsContext *ctx)
     return std::string(result);
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_rexp(mytestParser::Extend_rexpContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_rexp(conditionParser::Extend_rexpContext *ctx)
 {
     return visit(ctx->rexp());
 }
 
-antlrcpp::Any EvalVisitor::visitExtend_rexps(mytestParser::Extend_rexpsContext *ctx)
+antlrcpp::Any EvalVisitor::visitExtend_rexps(conditionParser::Extend_rexpsContext *ctx)
 {
     return visit(ctx->rexps());
 }
 
-antlrcpp::Any EvalVisitor::visitSc(mytestParser::ScContext *ctx)
+antlrcpp::Any EvalVisitor::visitSc(conditionParser::ScContext *ctx)
 {
     return visit(ctx->simple_const());
 }
 
-antlrcpp::Any EvalVisitor::visitCc(mytestParser::CcContext *ctx)
+antlrcpp::Any EvalVisitor::visitCc(conditionParser::CcContext *ctx)
 {
     std::string result = ctx->LPAR()->getText();
     antlrcpp::Any value1 = visit(ctx->complex_const());
@@ -586,17 +644,21 @@ antlrcpp::Any EvalVisitor::visitCc(mytestParser::CcContext *ctx)
 }
 
 
-antlrcpp::Any EvalVisitor::visitSimple_const(mytestParser::Simple_constContext *ctx)
+antlrcpp::Any EvalVisitor::visitSimple_const(conditionParser::Simple_constContext *ctx)
 {
-    return ctx->INT()->getText();
+    if(ctx->INT()!=nullptr){
+        return ctx->INT()->getText();
+    }else{
+        return ctx->HEX()->getText();
+    }
 }
 
-antlrcpp::Any EvalVisitor::visitCc_n(mytestParser::Cc_nContext *ctx)
+antlrcpp::Any EvalVisitor::visitCc_n(conditionParser::Cc_nContext *ctx)
 {
     return visit(ctx->num());
 }
 
-antlrcpp::Any EvalVisitor::visitCc_op(mytestParser::Cc_opContext *ctx)
+antlrcpp::Any EvalVisitor::visitCc_op(conditionParser::Cc_opContext *ctx)
 {
     std::string result;
     antlrcpp::Any value1 = visit(ctx->complex_const(0));
@@ -607,12 +669,58 @@ antlrcpp::Any EvalVisitor::visitCc_op(mytestParser::Cc_opContext *ctx)
     return result;
 }
 
-antlrcpp::Any EvalVisitor::visitAbexp_prove_with(mytestParser::Abexp_prove_withContext *ctx)
+antlrcpp::Any EvalVisitor::visitAbexp_prove_with(conditionParser::Abexp_prove_withContext *ctx)
 {
     return visit(ctx->abexp_atom());
 }
 
-antlrcpp::Any EvalVisitor::visitRbexp_prove_with(mytestParser::Rbexp_prove_withContext *ctx)
+antlrcpp::Any EvalVisitor::visitRbexp_prove_with(conditionParser::Rbexp_prove_withContext *ctx)
 {
     return visit(ctx->rbexp_atom());
 }
+
+antlrcpp::Any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext *ctx)
+{
+    std::string result1;
+    if(ctx->ll_var(0)->LL_VAR()!=nullptr){ //variable
+        std::string tmp1 = ctx->ll_var(0)->LL_VAR()->getText();
+        if(isdigit(tmp1[1])){
+            result1.append("v");
+            result1.append(tmp1,1);
+        }
+        else{
+            result1.append("v_");
+            result1.append(tmp1,1);
+        }
+        anno->put("l_var",result1);
+    }
+    else{
+        if(ctx->ll_var(0)->AT()!=nullptr){
+            anno->put("l_const_val",ctx->ll_var(0)->INT(0)->getText());
+            anno->put("l_const_width",ctx->ll_var(0)->INT(1)->getText());
+        }
+        
+    }
+
+    std::string result2;
+    if(ctx->ll_var(1)->LL_VAR()!=nullptr){ //variable
+        std::string tmp2 = ctx->ll_var(1)->LL_VAR()->getText();
+        if(isdigit(tmp2[1])){
+            result2.append("v");
+            result2.append(tmp2,1);
+        }
+        else{
+            result2.append("v_");
+            result2.append(tmp2,1);
+        }
+        anno->put("r_var",result2);
+    }else{
+        if(ctx->ll_var(1)->AT()!=nullptr){
+            anno->put("r_const_val",ctx->ll_var(1)->INT(0)->getText());
+            anno->put("r_const_width",ctx->ll_var(1)->INT(1)->getText());
+        }
+    }
+
+    return 0;
+}
+

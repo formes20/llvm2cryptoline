@@ -1,6 +1,6 @@
 
 #pragma once
-#include "mytestParserBaseVisitor.h"
+#include "conditionParserBaseVisitor.h"
 #include <map>
 #include <iostream>
 
@@ -14,140 +14,147 @@ public:
     std::string containsKey(std::string s); 
 };
 
-class EvalVisitor : public mytestParserBaseVisitor 
+class EvalVisitor : public conditionParserBaseVisitor 
 {
     
 public:
 
     VarSymbol *var ;  
+    VarSymbol *anno;
 
     EvalVisitor(){
       var = new VarSymbol;
+      anno = new VarSymbol;
     }
     ~EvalVisitor(){
       delete var;
+      delete anno;
     }
-  antlrcpp::Any visitSpec(mytestParser::SpecContext *ctx) ;
+  antlrcpp::Any visitSpec(conditionParser::SpecContext *ctx) ;
 
-  antlrcpp::Any visitBpre(mytestParser::BpreContext *ctx) ;
+  antlrcpp::Any visitBpre(conditionParser::BpreContext *ctx) ;
 
-  antlrcpp::Any visitBpos(mytestParser::BposContext *ctx) ;
+  antlrcpp::Any visitBpos(conditionParser::BposContext *ctx) ;
 
-  antlrcpp::Any visitA_true(mytestParser::A_trueContext *ctx) ;
+  antlrcpp::Any visitA_true(conditionParser::A_trueContext *ctx) ;
 
-  antlrcpp::Any visitA_parens(mytestParser::A_parensContext *ctx) ;
+  antlrcpp::Any visitA_parens(conditionParser::A_parensContext *ctx) ;
 
-  antlrcpp::Any visitA_eq(mytestParser::A_eqContext *ctx) ;
+  antlrcpp::Any visitA_eq(conditionParser::A_eqContext *ctx) ;
 
-  antlrcpp::Any visitA_eqmod(mytestParser::A_eqmodContext *ctx) ;
+  antlrcpp::Any visitA_eqmod(conditionParser::A_eqmodContext *ctx) ;
 
-  antlrcpp::Any visitA_and(mytestParser::A_andContext *ctx) ;
+  antlrcpp::Any visitA_and(conditionParser::A_andContext *ctx) ;
 
-  antlrcpp::Any visitA_eqop(mytestParser::A_eqopContext *ctx) ;
+  antlrcpp::Any visitA_eqop(conditionParser::A_eqopContext *ctx) ;
 
-  antlrcpp::Any visitAdds_aexp(mytestParser::Adds_aexpContext *ctx) ;
+  antlrcpp::Any visitAdds_aexp(conditionParser::Adds_aexpContext *ctx) ;
 
-  antlrcpp::Any visitAexp_pow(mytestParser::Aexp_powContext *ctx) ;
+  antlrcpp::Any visitAexp_pow(conditionParser::Aexp_powContext *ctx) ;
 
-  antlrcpp::Any visitA_sc(mytestParser::A_scContext *ctx) ;
+  antlrcpp::Any visitA_inst_sq(conditionParser::A_inst_sqContext *ctx);
 
-  antlrcpp::Any visitAexp_oprations(mytestParser::Aexp_oprationsContext *ctx) ;
+  antlrcpp::Any visitA_sc(conditionParser::A_scContext *ctx) ;
 
-  antlrcpp::Any visitAdd_aexp(mytestParser::Add_aexpContext *ctx);
+  antlrcpp::Any visitAexp_oprations(conditionParser::Aexp_oprationsContext *ctx) ;
 
-  antlrcpp::Any visitAexp_limbs(mytestParser::Aexp_limbsContext *ctx);
+  antlrcpp::Any visitAexp_limbs(conditionParser::Aexp_limbsContext *ctx);
 
-  antlrcpp::Any visitSq_aexp(mytestParser::Sq_aexpContext *ctx);
+  antlrcpp::Any visitA_inst(conditionParser::A_instContext *ctx);
 
-  antlrcpp::Any visitSub_aexp(mytestParser::Sub_aexpContext *ctx);
+  antlrcpp::Any visitA_var(conditionParser::A_varContext *ctx);
 
-  antlrcpp::Any visitA_var(mytestParser::A_varContext *ctx);
+  antlrcpp::Any visitAexp_parents(conditionParser::Aexp_parentsContext *ctx);
 
-  antlrcpp::Any visitAexp_parents(mytestParser::Aexp_parentsContext *ctx);
+  antlrcpp::Any visitAexp_listlimbs(conditionParser::Aexp_listlimbsContext *ctx);
 
-  antlrcpp::Any visitMul_aexp(mytestParser::Mul_aexpContext *ctx);
+  antlrcpp::Any visitMuls_aexp(conditionParser::Muls_aexpContext *ctx);
 
-  antlrcpp::Any visitMuls_aexp(mytestParser::Muls_aexpContext *ctx);
+  antlrcpp::Any visitAbexps(conditionParser::AbexpsContext *ctx);
 
-  antlrcpp::Any visitAbexps(mytestParser::AbexpsContext *ctx);
+  antlrcpp::Any visitExtend_abexp_atom(conditionParser::Extend_abexp_atomContext *ctx);
 
-  antlrcpp::Any visitExtend_abexp_atom(mytestParser::Extend_abexp_atomContext *ctx);
+  antlrcpp::Any visitExtend_abexps(conditionParser::Extend_abexpsContext *ctx);
 
-  antlrcpp::Any visitExtend_abexps(mytestParser::Extend_abexpsContext *ctx);
+  antlrcpp::Any visitAexps(conditionParser::AexpsContext *ctx);
 
-  antlrcpp::Any visitAexps(mytestParser::AexpsContext *ctx);
+  antlrcpp::Any visitExtend_aexp(conditionParser::Extend_aexpContext *ctx);
 
-  antlrcpp::Any visitExtend_aexp(mytestParser::Extend_aexpContext *ctx);
+  antlrcpp::Any visitExtend_aexps(conditionParser::Extend_aexpsContext *ctx);
 
-  antlrcpp::Any visitExtend_aexps(mytestParser::Extend_aexpsContext *ctx);
+  antlrcpp::Any visitR_true(conditionParser::R_trueContext *ctx);
 
-  antlrcpp::Any visitR_true(mytestParser::R_trueContext *ctx);
+  antlrcpp::Any visitR_parents(conditionParser::R_parentsContext *ctx);
 
-  antlrcpp::Any visitR_parents(mytestParser::R_parentsContext *ctx);
+  antlrcpp::Any visitR_eq(conditionParser::R_eqContext *ctx);
 
-  antlrcpp::Any visitR_eq(mytestParser::R_eqContext *ctx);
+  antlrcpp::Any visitR_and(conditionParser::R_andContext *ctx);
 
-  antlrcpp::Any visitR_and(mytestParser::R_andContext *ctx);
+  antlrcpp::Any visitR_or(conditionParser::R_orContext *ctx);
 
-  antlrcpp::Any visitR_or(mytestParser::R_orContext *ctx);
+  antlrcpp::Any visitR_mod(conditionParser::R_modContext *ctx);
 
-  antlrcpp::Any visitR_mod(mytestParser::R_modContext *ctx);
+  antlrcpp::Any visitR_cmpop(conditionParser::R_cmpopContext *ctx);
 
-  antlrcpp::Any visitR_cmpop(mytestParser::R_cmpopContext *ctx);
+  antlrcpp::Any visitR_list(conditionParser::R_listContext *ctx);
 
-  antlrcpp::Any visitRexp_const_at_const(mytestParser::Rexp_const_at_constContext *ctx);
+  antlrcpp::Any visitRexp_const_at_const(conditionParser::Rexp_const_at_constContext *ctx);
 
-  antlrcpp::Any visitRexp_adds(mytestParser::Rexp_addsContext *ctx);
+  antlrcpp::Any visitR_listlimbs(conditionParser::R_listlimbsContext *ctx);
 
-  antlrcpp::Any visitR_var(mytestParser::R_varContext *ctx);
+  antlrcpp::Any visitRexp_adds(conditionParser::Rexp_addsContext *ctx);
 
-  antlrcpp::Any visitRexp_num(mytestParser::Rexp_numContext *ctx);
+  antlrcpp::Any visitR_var(conditionParser::R_varContext *ctx);
 
-  antlrcpp::Any visitRexp_muls(mytestParser::Rexp_mulsContext *ctx);
+  antlrcpp::Any visitRexp_num(conditionParser::Rexp_numContext *ctx);
 
-  antlrcpp::Any visitRexp_parents(mytestParser::Rexp_parentsContext *ctx);
+  antlrcpp::Any visitRexp_muls(conditionParser::Rexp_mulsContext *ctx);
 
-  antlrcpp::Any visitRexp_limb(mytestParser::Rexp_limbContext *ctx);
+  antlrcpp::Any visitRexp_parents(conditionParser::Rexp_parentsContext *ctx);
 
-  antlrcpp::Any visitRexp_const(mytestParser::Rexp_constContext *ctx);
+  antlrcpp::Any visitRexp_limb(conditionParser::Rexp_limbContext *ctx);
 
-  antlrcpp::Any visitRexp_const_at_typ_const(mytestParser::Rexp_const_at_typ_constContext *ctx);
+  antlrcpp::Any visitRexp_const(conditionParser::Rexp_constContext *ctx);
 
-  antlrcpp::Any visitRexp_mod(mytestParser::Rexp_modContext *ctx);
+  antlrcpp::Any visitRexp_const_at_typ_const(conditionParser::Rexp_const_at_typ_constContext *ctx);
 
-  antlrcpp::Any visitRexp_notop(mytestParser::Rexp_notopContext *ctx);
+  antlrcpp::Any visitRexp_mod(conditionParser::Rexp_modContext *ctx);
 
-  antlrcpp::Any visitRexp_op(mytestParser::Rexp_opContext *ctx);
+  antlrcpp::Any visitRexp_notop(conditionParser::Rexp_notopContext *ctx);
 
-  antlrcpp::Any visitRexp_binary(mytestParser::Rexp_binaryContext *ctx);
+  antlrcpp::Any visitRexp_op(conditionParser::Rexp_opContext *ctx);
 
-  antlrcpp::Any visitRexp_sq(mytestParser::Rexp_sqContext *ctx);
+  antlrcpp::Any visitRexp_binary(conditionParser::Rexp_binaryContext *ctx);
 
-  antlrcpp::Any visitRbexps(mytestParser::RbexpsContext *ctx);
+  antlrcpp::Any visitRexp_sq(conditionParser::Rexp_sqContext *ctx);
 
-  antlrcpp::Any visitExtend_rbexp_atom(mytestParser::Extend_rbexp_atomContext *ctx);
+  antlrcpp::Any visitRbexps(conditionParser::RbexpsContext *ctx);
 
-  antlrcpp::Any visitExtend_rbexps(mytestParser::Extend_rbexpsContext *ctx);
+  antlrcpp::Any visitExtend_rbexp_atom(conditionParser::Extend_rbexp_atomContext *ctx);
 
-  antlrcpp::Any visitRexps(mytestParser::RexpsContext *ctx);
+  antlrcpp::Any visitExtend_rbexps(conditionParser::Extend_rbexpsContext *ctx);
 
-  antlrcpp::Any visitExtend_rexp(mytestParser::Extend_rexpContext *ctx);
+  antlrcpp::Any visitRexps(conditionParser::RexpsContext *ctx);
 
-  antlrcpp::Any visitExtend_rexps(mytestParser::Extend_rexpsContext *ctx);
+  antlrcpp::Any visitExtend_rexp(conditionParser::Extend_rexpContext *ctx);
 
-  antlrcpp::Any visitSc(mytestParser::ScContext *ctx);
+  antlrcpp::Any visitExtend_rexps(conditionParser::Extend_rexpsContext *ctx);
 
-  antlrcpp::Any visitCc(mytestParser::CcContext *ctx);
+  antlrcpp::Any visitSc(conditionParser::ScContext *ctx);
 
-  antlrcpp::Any visitSimple_const(mytestParser::Simple_constContext *ctx);
+  antlrcpp::Any visitCc(conditionParser::CcContext *ctx);
 
-  antlrcpp::Any visitCc_n(mytestParser::Cc_nContext *ctx);
+  antlrcpp::Any visitSimple_const(conditionParser::Simple_constContext *ctx);
 
-  antlrcpp::Any visitCc_op(mytestParser::Cc_opContext *ctx);
+  antlrcpp::Any visitCc_n(conditionParser::Cc_nContext *ctx);
 
-  antlrcpp::Any visitAbexp_prove_with(mytestParser::Abexp_prove_withContext *ctx);
+  antlrcpp::Any visitCc_op(conditionParser::Cc_opContext *ctx);
 
-  antlrcpp::Any visitRbexp_prove_with(mytestParser::Rbexp_prove_withContext *ctx);
+  antlrcpp::Any visitAbexp_prove_with(conditionParser::Abexp_prove_withContext *ctx);
+
+  antlrcpp::Any visitRbexp_prove_with(conditionParser::Rbexp_prove_withContext *ctx);
+
+  antlrcpp::Any visitAssert_rule(conditionParser::Assert_ruleContext *ctx);
 
   
 

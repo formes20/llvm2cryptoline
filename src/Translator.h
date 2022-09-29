@@ -10,7 +10,6 @@
 
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Instructions.h"
-#include "llvm/IR/Operator.h"
 
 #include "Types.h"
 
@@ -42,19 +41,19 @@ public:
     bool isDefined(Variable var);
     void use(Variable var);
     void define(Variable var);
+    cryptoline::Argument getvar(std::string s);
+    void setType(std::string s);
     std::string toString(llvm::Instruction* inst);
 
 private:
-    //std::string replaceChar(std::string str, char target, char c);
+    std::string replaceChar(std::string str, char target, char c);
     bool legacy = false;
-    CryptoLineType defaultType = CryptoLineType::uint;
+    CryptoLineType defaultType = CryptoLineType::sint;
 
     void evalLoad(LoadInst* li);
     void evalStore(StoreInst* si);
     void evalBinaryOp(BinaryOperator* bo);
-    bool evalGEPOperator(GEPOperator* gepo);
     void evalGetElementPtr(GetElementPtrInst* gepi);
-    //void evalGetElementPtr(Value* gepi);
     void evalInsertElement(InsertElementInst* iei);
     void evalExtractElement(ExtractElementInst* eei);
     void evalZExt(ZExtInst* zei);
@@ -68,8 +67,6 @@ private:
     void evalBinaryOpLShr(BinaryOperator* bo);
     void evalBinaryOpAShr(BinaryOperator* bo);
     void evalBinaryOpAnd(BinaryOperator* bo);
-    void evalBinaryOpOr(BinaryOperator* bo);
-    void evalBinaryOpXor(BinaryOperator* bo);
 };
 
 }

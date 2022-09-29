@@ -40,7 +40,7 @@ enum class CryptoLineOps {
     Adc,
     Adcs,
     Sub,
-    Subb,
+    Subs,
     Sbb,
     Sbbs,
     Mul,
@@ -49,8 +49,6 @@ enum class CryptoLineOps {
     Shl,
     Split,
     And,
-    Or,
-    Xor,
     Nondet,
     Cast,
     Vpc,
@@ -168,7 +166,7 @@ public:
     static Statement Adc(Argument dst, Argument src1, Argument src2, Argument c);
     static Statement Adcs(Argument carry, Argument dst, Argument src1, Argument src2, Argument c);
     static Statement Sub(Argument dst, Argument src1, Argument src2);
-    static Statement Subb(Argument borrow, Argument dst, Argument src1, Argument src2);
+    static Statement Subs(Argument borrow, Argument dst, Argument src1, Argument src2);
     static Statement Sbb(Argument dst, Argument src1, Argument src2, Argument b);
     static Statement Sbbs(Argument borrow, Argument dst, Argument src1, Argument src2, Argument b);
     static Statement Mul(Argument dst, Argument src1, Argument src2);
@@ -177,8 +175,6 @@ public:
     static Statement Shl(Argument dst, Argument src, Argument n);
     static Statement Split(Argument dstH, Argument dstL, Argument src, Argument n);
     static Statement And(Argument dst, Argument src1, Argument src2);
-    static Statement Or(Argument dst, Argument src1, Argument src2);
-    static Statement Xor(Argument dst, Argument src1, Argument src2);
     static Statement Nondet(Argument dst);
     static Statement Cast(Argument dst, Argument src);
     static Statement Vpc(Argument dst, Argument src);
@@ -200,11 +196,10 @@ class SymbolicAddress {
 public:
     int sym;
     int offset;
-    std::string name;
 
 public:
     SymbolicAddress();
-    SymbolicAddress(int s, int o = 0, std::string n = "");
+    SymbolicAddress(int s, int o = 0);
 
     SymbolicAddress add(int o);
     cryptoline::Variable toVariable(cryptoline::CryptoLineType, unsigned);

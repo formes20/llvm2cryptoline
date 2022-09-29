@@ -1,5 +1,5 @@
 
-// Generated from mytestLexer.g4 by ANTLR 4.9.3
+// Generated from conditionLexer.g4 by ANTLR 4.9.3
 
 #pragma once
 
@@ -9,23 +9,24 @@
 
 
 
-class  mytestLexer : public antlr4::Lexer {
+class  conditionLexer : public antlr4::Lexer {
 public:
   enum {
     ULTOP = 1, ULEOP = 2, UGTOP = 3, UGEOP = 4, SLTOP = 5, SLEOP = 6, SGTOP = 7, 
     SGEOP = 8, EQOP = 9, ADDOP = 10, SUBOP = 11, MULOP = 12, POWOP = 13, 
-    ANDOP = 14, NOTOP = 15, OROP = 16, AT = 17, COMMA = 18, Colon = 19, 
-    Semicolon = 20, LPAR = 21, RPAR = 22, LBRAC = 23, RBRAC = 24, LSQUARE = 25, 
-    RSQUARE = 26, VBAR = 27, DOTDOT = 28, TRUE = 29, EQ = 30, EQMOD = 31, 
-    EQSMOD = 32, EQUMOD = 33, EQSREM = 34, ULIMBS = 35, SLIMBS = 36, CONST = 37, 
-    INST_ADD = 38, INST_SUB = 39, INST_MUL = 40, INST_SQ = 41, UMOD = 42, 
-    SREM = 43, SMOD = 44, AND = 45, OR = 46, VARS = 47, INT = 48, Digit = 49, 
-    VAR = 50, UINT = 51, SINT = 52, LINE_COMMENT_ONE = 53, LINE_COMMENT_TWO = 54, 
-    C_BLOCK_COMMENT = 55, M_BLOCK_COMMENT = 56, WS = 57
+    ANDOP = 14, NOTOP = 15, OROP = 16, AT = 17, PERCENT = 18, COMMA = 19, 
+    Colon = 20, Semicolon = 21, LPAR = 22, RPAR = 23, LBRAC = 24, RBRAC = 25, 
+    LSQUARE = 26, RSQUARE = 27, VBAR = 28, DOTDOT = 29, TRUE = 30, EQ = 31, 
+    EQMOD = 32, EQSMOD = 33, EQUMOD = 34, EQSREM = 35, ULIMBS = 36, SLIMBS = 37, 
+    CONST = 38, INST_ADD = 39, INST_SUB = 40, INST_MUL = 41, INST_SQ = 42, 
+    UMOD = 43, SREM = 44, SMOD = 45, ASSERT = 46, ASSUME = 47, AND = 48, 
+    OR = 49, VARS = 50, INT = 51, HEX = 52, VAR = 53, LL_VAR = 54, UINT = 55, 
+    SINT = 56, LINE_COMMENT_ONE = 57, LINE_COMMENT_TWO = 58, C_BLOCK_COMMENT = 59, 
+    M_BLOCK_COMMENT = 60, WS = 61
   };
 
-  explicit mytestLexer(antlr4::CharStream *input);
-  ~mytestLexer();
+  explicit conditionLexer(antlr4::CharStream *input);
+  ~conditionLexer();
 
   virtual std::string getGrammarFileName() const override;
   virtual const std::vector<std::string>& getRuleNames() const override;
