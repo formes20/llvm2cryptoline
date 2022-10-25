@@ -74,7 +74,7 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
     }
 
     if(MDNode *N = inst->getMetadata("annotation")){
-        std::string ant = cast<MDString>(N->getOperand(0))->getString();
+        std::string ant = cast<MDString>(N->getOperand(0))->getString().str();
         ParseCondition p;
         Statement s;
         s = Statement::Comment("Translate from annotation");
@@ -121,7 +121,7 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
 
 bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string outputName, bool inBlock) {
     std::error_code ec;
-    raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::F_None);
+    raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::OF_None);
 
     //if (out.is_open()) {
         BasicBlock *entry = pc.b;
@@ -255,9 +255,9 @@ std::string Translator::replaceChar(std::string str, char target, char c) {
 std::string Translator::getName(llvm::Value* v) {
     if (v->hasName()) {
         if (this->legacy) {
-            return replaceChar(v->getName(), '.', '_');
+            return replaceChar(v->getName().str(), '.', '_');
         } else {
-            return "v_" + replaceChar(v->getName(), '.', '_');
+            return "v_" + replaceChar(v->getName().str(), '.', '_');
         }
     } else {
         std::string s;
@@ -284,8 +284,11 @@ unsigned int Translator::sizeOf(Type* ty) {
     } else if (ty->isIntegerTy(128)) {
         return 16;
     } else if (ty->isVectorTy()) {
-        int num = ty->getVectorNumElements();
-        Type *eleType = ty->getVectorElementType();
+        //int num = ty->getVectorNumElements();
+        int num = cast<FixedVectorType>(ty)->getNumElements();
+        
+        //Type *eleType = ty->getVectorElementType();
+        Type *eleType = cast<VectorType>(ty)->getElementType();
         return num * sizeOf(eleType);
     } else if (ty->isArrayTy()) {
         int num = ty->getArrayNumElements();
@@ -377,8 +380,10 @@ void Translator::evalLoad(LoadInst* li) {
         this->define(dst);
 
     } else if (type->isVectorTy()) {
-        int eleNum = type->getVectorNumElements();
-        Type *eleType = type->getVectorElementType();
+        //int eleNum = type->getVectorNumElements();
+        int eleNum = cast<FixedVectorType>(type)->getNumElements();
+        //Type *eleType = type->getVectorElementType();
+        Type *eleType = cast<VectorType>(type)->getElementType();
         width = eleType->getIntegerBitWidth(); // assume the element type is integer
         Var dst, src;
         for (int i = 0; i < eleNum; i++) {
@@ -421,8 +426,10 @@ void Translator::evalStore(StoreInst* si) {
         this->define(dst);
 
     } else if (type->isVectorTy()) {
-        int eleNum = type->getVectorNumElements();
-        Type *eleType = type->getVectorElementType();
+        //int eleNum = type->getVectorNumElements();
+        int eleNum = cast<FixedVectorType>(type)->getNumElements();
+        //Type *eleType = type->getVectorElementType();
+        Type *eleType = cast<VectorType>(type)->getElementType();
         width = eleType->getIntegerBitWidth();
         Var dst, src;
 
@@ -457,10 +464,15 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
         Arg src1,src2;
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            SmallString<40> S;
             if (this->defaultType == CryptoLineType::sint) {
-                src1 = Arg::SConst(width, c1->getValue().toString(10, true));
+                c1->getValue().toString(S, 10, true, false);
+                src1 = Arg::SConst(width, S.str().str());
+                //src1 = Arg::SConst(width, c1->getValue().toString(10, true));
             } else {
-                src1 = Arg::UConst(width, c1->getValue().toString(10, false));
+                c1->getValue().toString(S, 10, false, false);
+                src1 = Arg::UConst(width, S.str().str());
+                //src1 = Arg::UConst(width, c1->getValue().toString(10, false));
             }
         } else {
             Var v = Var(this->defaultType, width, getName(t1));
@@ -469,10 +481,15 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
         }
 
         if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+            SmallString<40> S;
             if (this->defaultType == CryptoLineType::sint) {
-                src2 = Arg::SConst(width, c2->getValue().toString(10, true));
+                c2->getValue().toString(S, 10, true, false);
+                src2 = Arg::SConst(width, S.str().str());
+                //src2 = Arg::SConst(width, c2->getValue().toString(10, true));
             } else {
-                src2 = Arg::UConst(width, c2->getValue().toString(10, false));
+                c2->getValue().toString(S, 10, false, false);
+                src2 = Arg::UConst(width, S.str().str());
+                //src2 = Arg::UConst(width, c2->getValue().toString(10, false));
             }
         } else {
             Var v = Var(this->defaultType, width, getName(t2));
@@ -498,8 +515,10 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
         this->define(dst);
 
     } else if (type->isVectorTy()) {
-        int eleNum = type->getVectorNumElements();
-        Type *eleType = type->getVectorElementType();
+        //int eleNum = type->getVectorNumElements();
+        int eleNum = cast<FixedVectorType>(type)->getNumElements();
+        //Type *eleType = type->getVectorElementType();
+        Type *eleType = cast<VectorType>(type)->getElementType();
         width = eleType->getIntegerBitWidth();
 
         Var dst;
@@ -521,12 +540,17 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
             dst = Var(this->defaultType, width, getName(bo), i);
 
             if (t1isConstant) {
+                SmallString<40> S;
                 if (this->defaultType == CryptoLineType::sint) {
-                    src1 = Arg::SConst(width,
-                                       ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
+                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 10, true, false);
+                    src1 = Arg::SConst(width,S.str().str());
+                    // src1 = Arg::SConst(width,
+                    //                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
                 } else {
-                    src1 = Arg::UConst(width,
-                                       ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, false));
+                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 10, false, false);
+                    src1 = Arg::UConst(width,S.str().str());
+                    // src1 = Arg::UConst(width,
+                    //                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, false));
                 }
             } else {
                 v1 = Var(this->defaultType, width, getName(t1), i);
@@ -535,12 +559,17 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
             }
 
             if (t2isConstant) {
+                SmallString<40> S;
                 if (this->defaultType == CryptoLineType::sint) {
-                    src2 = Arg::SConst(width,
-                                       ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(10, true));
+                    ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(S, 10, true, false);
+                    src2 = Arg::SConst(width,S.str().str());
+                    // src2 = Arg::SConst(width,
+                    //                    ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(10, true));
                 } else {
-                    src2 = Arg::UConst(width,
-                                       ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(10, false));
+                    ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(S, 10, false, false);
+                    src2 = Arg::UConst(width,S.str().str());
+                    // src2 = Arg::UConst(width,
+                    //                    ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(10, false));
                 }
             } else {
                 v2 = Var(this->defaultType, width, getName(t2), i);
@@ -790,10 +819,15 @@ void Translator::evalBinaryOpLShr(BinaryOperator* bo) {
         Arg src1;
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            SmallString<40> S;
             if (this->defaultType == CryptoLineType::sint) {
-                src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
+               c1->getValue().toString(S, 16, false, false);
+                src1 = Arg::SConst(width, "0x" + S.str().str());
+               // src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
             } else {
-                src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
+                c1->getValue().toString(S, 16, false, false);
+                src1 = Arg::UConst(width, "0x" + S.str().str());
+                //src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
             }
         } else {
             Var v = Var(this->defaultType, width, getName(t1));
@@ -988,7 +1022,10 @@ void Translator::evalBinaryOpAShr(BinaryOperator* bo) {
         Arg src1;
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
-            src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
+            SmallString<40> S;
+            c1->getValue().toString(S, 16, false, false);
+            src1 = Arg::SConst(width, "0x" + S.str().str());
+            //src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
         } else {
             Var v = Var::SVar(width, getName(t1));
             src1 = v;
@@ -1180,10 +1217,15 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
         Arg src1,src2;
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            SmallString<40> S;
             if (this->defaultType == CryptoLineType::sint) {
-                src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
+                c1->getValue().toString(S, 16, false, false);
+                src1 = Arg::SConst(width, "0x" + S.str().str());
+                //src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
             } else {
-                src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
+                c1->getValue().toString(S, 16, false, false);
+                src1 = Arg::UConst(width, "0x" + S.str().str());
+                //src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
             }
         } else {
             Var v = Var(this->defaultType, width, getName(t1));
@@ -1194,10 +1236,15 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
         bool h_low64 = false; // heuristic: get low 64 bits
 
         if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+            SmallString<40> S;
             if (this->defaultType == CryptoLineType::sint) {
-                src2 = Arg::SConst(width, "0x" + c2->getValue().toString(16, false));
+                c2->getValue().toString(S, 16, false, false);
+                src2 = Arg::SConst(width, "0x" + S.str().str());
+                //src2 = Arg::SConst(width, "0x" + c2->getValue().toString(16, false));
             } else {
-                src2 = Arg::UConst(width, "0x" + c2->getValue().toString(16, false));
+                c2->getValue().toString(S, 16, false, false);
+                src2 = Arg::UConst(width, "0x" + S.str().str());
+                //src2 = Arg::UConst(width, "0x" + c2->getValue().toString(16, false));
             }
 
             if (width == 128 && c2->getValue().countTrailingOnes() == 64
@@ -1228,8 +1275,10 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
         }
 
     } else if (type->isVectorTy()) {
-        int eleNum = type->getVectorNumElements();
-        Type *eleType = type->getVectorElementType();
+        //int eleNum = type->getVectorNumElements();
+        int eleNum = cast<FixedVectorType>(type)->getNumElements();
+        //Type *eleType = type->getVectorElementType();
+        Type *eleType = cast<VectorType>(type)->getElementType();
         width = eleType->getIntegerBitWidth();
 
         Var dst;
@@ -1251,12 +1300,17 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
             dst = Var(this->defaultType, width, getName(bo), i);
 
             if (t1isConstant) {
+                SmallString<40> S;
                 if (this->defaultType == CryptoLineType::sint) {
-                    src1 = Arg::SConst(width, "0x" +
-                                       ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(16, false));
+                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 16, false,false);
+                    src1 = Arg::SConst(width, "0x" + S.str().str());
+                    // src1 = Arg::SConst(width, "0x" +
+                    //                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(16, false));
                 } else {
-                    src1 = Arg::UConst(width, "0x" +
-                                       ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(16, false));
+                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 16, false,false);
+                    src1 = Arg::UConst(width, "0x" + S.str().str());
+                    // src1 = Arg::UConst(width, "0x" +
+                    //                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(16, false));
                 }
             } else {
                 // v1 = Var::UVar(width, getName(t1), i);
@@ -1266,8 +1320,11 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
             }
 
             if (t2isConstant) {
-                src2 = Arg::UConst(width, "0x" +
-                                   ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(16, false));
+                SmallString<40> S;
+                ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(S, 16, false,false);
+                src2 = Arg::UConst(width, "0x" + S.str().str());
+                // src2 = Arg::UConst(width, "0x" +
+                //                    ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(16, false));
             } else {
                 v2 = Var::UVar(width, getName(t2), i);
                 src2 = v2;
@@ -1492,7 +1549,8 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
     Value* t2 = iei->getOperand(1);
     Value* t3 = iei->getOperand(2);
     int index = dyn_cast<ConstantInt>(t3)->getSExtValue();
-    int eleNum = iei->getType()->getVectorNumElements();
+    //int eleNum = iei->getType()->getVectorNumElements();
+    int eleNum =cast<FixedVectorType>(iei->getType())->getNumElements(); 
     Type *eleType = t2->getType();
     unsigned width = eleType->getIntegerBitWidth();
 
@@ -1504,10 +1562,15 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
             dst = Var(this->defaultType, width, getName(iei), i);
             if (i == index) {
                 if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+                    SmallString<40> S;
                     if (this->defaultType == CryptoLineType::sint) {
-                        src = Arg::SConst(width, c2->getValue().toString(10, true));
+                        c2->getValue().toString(S, 10, true, false);
+                        src = Arg::SConst(width,S.str().str());
+                        //src = Arg::SConst(width, c2->getValue().toString(10, true));
                     } else {
-                        src = Arg::UConst(width, c2->getValue().toString(10, false));
+                        c2->getValue().toString(S, 10, false, false);
+                        src = Arg::UConst(width,S.str().str());
+                        //src = Arg::UConst(width, c2->getValue().toString(10, false));
                     }
                 } else {
                     // Var v = Var::UVar(width, getName(t2));
@@ -1533,10 +1596,15 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
             dst = Var(this->defaultType, width, getName(iei), i);
             if (i == index) {
                 if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+                    SmallString<40> S;
                     if (this->defaultType == CryptoLineType::sint) {
-                        src = Arg::SConst(width, c2->getValue().toString(10, true));
+                        c2->getValue().toString(S, 10, true, false);
+                        src = Arg::SConst(width,S.str().str());
+                        //src = Arg::SConst(width, c2->getValue().toString(10, true));
                     } else {
-                        src = Arg::UConst(width, c2->getValue().toString(10, false));
+                        c2->getValue().toString(S, 10, false, false);
+                        src = Arg::UConst(width,S.str().str());
+                        //src = Arg::UConst(width, c2->getValue().toString(10, false));
                     }
                 } else {
                     Var v = Var(this->defaultType, width, getName(t2));
@@ -1640,7 +1708,10 @@ void Translator::evalZExt(ZExtInst* zei) {
 
         Arg src;
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
-            src = Arg::UConst(srcWidth, c1->getValue().toString(10, false));
+            SmallString<40> S;
+            c1->getValue().toString(S, 10, false, false);
+            src = Arg::UConst(srcWidth, S.str().str());
+            //src = Arg::UConst(srcWidth, c1->getValue().toString(10, false));
         } else {
             Var v = Var::UVar(srcWidth, getName(t1));
             src = v;
@@ -1652,9 +1723,13 @@ void Translator::evalZExt(ZExtInst* zei) {
         this->result.push_back(s);
         this->define(dst);
     } else if (dstType->isVectorTy()) {
-        int eleNum = dstType->getVectorNumElements();
-        unsigned srcWidth = t1->getType()->getVectorElementType()->getIntegerBitWidth();
-        unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
+        //int eleNum = dstType->getVectorNumElements();
+        int eleNum = cast<FixedVectorType>(dstType)->getNumElements();
+        //unsigned srcWidth = t1->getType()->getVectorElementType()->getIntegerBitWidth();
+        unsigned srcWidth = cast<VectorType>(t1->getType())->getElementType()->getIntegerBitWidth();
+        //unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
+        unsigned dstWidth = cast<VectorType>(dstType)->getElementType()->getIntegerBitWidth();
+
 
         Arg src;
         bool t1isConstant = false;
@@ -1670,8 +1745,11 @@ void Translator::evalZExt(ZExtInst* zei) {
             dst = Var::UVar(dstWidth, getName(zei), i);
 
             if (t1isConstant) {
-                src = Arg::UConst(srcWidth,
-                                  ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, false));
+                SmallString<40> S;
+                ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 10, false, false);
+                src = Arg::UConst(srcWidth, S.str().str());
+                // src = Arg::UConst(srcWidth,
+                //                   ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, false));
             } else {
                 v = Var::UVar(srcWidth, getName(t1), i);
                 src = v;
@@ -1698,7 +1776,10 @@ void Translator::evalSExt(SExtInst* sei) {
 
         Arg src;
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
-            src = Arg::SConst(srcWidth, c1->getValue().toString(10, true));
+            SmallString<40> S;
+            c1->getValue().toString(S, 10, true, false);
+            src = Arg::SConst(srcWidth, S.str().str());
+            //src = Arg::SConst(srcWidth, c1->getValue().toString(10, true));
         } else {
             Var v = Var::SVar(srcWidth, getName(t1));
             src = v;
@@ -1710,9 +1791,12 @@ void Translator::evalSExt(SExtInst* sei) {
         this->result.push_back(s);
         this->define(dst);
     } else if (dstType->isVectorTy()) {
-        int eleNum = dstType->getVectorNumElements();
-        unsigned srcWidth = t1->getType()->getVectorElementType()->getIntegerBitWidth();
-        unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
+        //int eleNum = dstType->getVectorNumElements();
+        int eleNum = cast<FixedVectorType>(dstType)->getNumElements();
+        //unsigned srcWidth = t1->getType()->getVectorElementType()->getIntegerBitWidth();
+        unsigned srcWidth = cast<VectorType>(t1->getType())->getElementType()->getIntegerBitWidth();
+        //unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
+        unsigned dstWidth = cast<VectorType>(dstType)->getElementType()->getIntegerBitWidth();
 
         Arg src;
         bool t1isConstant = false;
@@ -1728,8 +1812,11 @@ void Translator::evalSExt(SExtInst* sei) {
             dst = Var::SVar(dstWidth, getName(sei), i);
 
             if (t1isConstant) {
-                src = Arg::SConst(srcWidth,
-                                  ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
+                SmallString<40> S;
+                ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 10, true, false);
+                src = Arg::SConst(srcWidth, S.str().str());
+                // src = Arg::SConst(srcWidth,
+                //                   ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
             } else {
                 v = Var::SVar(srcWidth, getName(t1), i);
                 src = v;
@@ -1758,10 +1845,15 @@ void Translator::evalTrunc(TruncInst* ti) {
 
         Arg src;
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            SmallString<40> S;
             if (this->defaultType == CryptoLineType::sint) {
-                src = Arg::SConst(srcWidth, c1->getValue().toString(10, true));
+                c1->getValue().toString(S, 10, true, false);
+                src = Arg::SConst(srcWidth, S.str().str());
+                //src = Arg::SConst(srcWidth, c1->getValue().toString(10, true));
             } else {
-                src = Arg::UConst(srcWidth, c1->getValue().toString(10, false));
+                c1->getValue().toString(S, 10, false, false);
+                src = Arg::UConst(srcWidth, S.str().str());
+                //src = Arg::UConst(srcWidth, c1->getValue().toString(10, false));
             }
         } else {
             Var v = Var(this->defaultType, srcWidth, getName(t1));
@@ -1778,9 +1870,12 @@ void Translator::evalTrunc(TruncInst* ti) {
         this->result.push_back(s);
         this->define(dst);
     } else if (dstType->isVectorTy()) {
-        int eleNum = dstType->getVectorNumElements();
-        unsigned srcWidth = t1->getType()->getVectorElementType()->getIntegerBitWidth();
-        unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
+        // int eleNum = dstType->getVectorNumElements();
+        // unsigned srcWidth = t1->getType()->getVectorElementType()->getIntegerBitWidth();
+        // unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
+        int eleNum = cast<FixedVectorType>(dstType)->getNumElements();
+        unsigned srcWidth = cast<VectorType>(t1->getType())->getElementType()->getIntegerBitWidth();
+        unsigned dstWidth = cast<VectorType>(dstType)->getElementType()->getIntegerBitWidth();
 
         Arg src;
         bool t1isConstant = false;
@@ -1797,12 +1892,17 @@ void Translator::evalTrunc(TruncInst* ti) {
             dst = Var(this->defaultType, dstWidth, getName(ti), i);
 
             if (t1isConstant) {
+                SmallString<40> S;
                 if (this->defaultType == CryptoLineType::sint) {
-                    src = Arg::SConst(srcWidth,
-                                      ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
+                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 10, true, false);
+                    src = Arg::SConst(srcWidth, S.str().str());
+                    // src = Arg::SConst(srcWidth,
+                    //                   ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
                 } else {
-                    src = Arg::UConst(srcWidth,
-                                      ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, false));
+                    ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 10, false, false);
+                    src = Arg::UConst(srcWidth, S.str().str());
+                    // src = Arg::UConst(srcWidth,
+                    //                   ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, false));
                 }
             } else {
                 v = Var(this->defaultType, srcWidth, getName(t1), i);
@@ -1863,13 +1963,14 @@ void Translator::evalCall(CallInst* ci) {
                 dst = Var::UVar(dstWidth, getName(ci));
             }
 
-            Statement s = Statement::Call(ci->getCalledFunction()->getName());
+            Statement s = Statement::Call(ci->getCalledFunction()->getName().str());
             s.args.push_back(dst);
             this->define(dst);
 
             Value* t;
             Var arg;
-            for (int i = 0; i < ci->getNumArgOperands(); i++) {
+            //for (int i = 0; i < ci->getNumArgOperands(); i++) {
+            for (int i = 0; i < ci->getNumOperands()-1; i++) {
                 t = ci->getArgOperand(i);
                 arg = Var(this->defaultType, t->getType()->getIntegerBitWidth(), getName(t));
                 s.args.push_back(arg);

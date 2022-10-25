@@ -64,7 +64,7 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
 
 bool Translator::tranlate(ProgramCounter pc, std::string outputName, bool inBlock) {
     std::error_code ec;
-    raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::F_None);
+    raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::OF_None);
 
     //if (out.is_open()) {
         BasicBlock *entry = pc.b;
@@ -151,9 +151,9 @@ std::string Translator::replaceChar(std::string str, char target, char c) {
 std::string Translator::getName(llvm::Value* v) {
     if (v->hasName()) {
         if (this->legacy) {
-            return replaceChar(v->getName(), '.', '_');
+            return replaceChar(v->getName().str(), '.', '_');
         } else {
-            return "v_" + replaceChar(v->getName(), '.', '_');
+            return "v_" + replaceChar(v->getName().str(), '.', '_');
         }
     } else {
         std::string s;
@@ -180,8 +180,10 @@ unsigned int Translator::sizeOf(Type* ty) {
     } else if (ty->isIntegerTy(128)) {
         return 16;
     } else if (ty->isVectorTy()) {
-        int num = ty->getVectorNumElements();
-        Type *eleType = ty->getVectorElementType();
+        //int num = ty->getVectorNumElements();
+        //Type *eleType = ty->getVectorElementType();
+        int num = cast<FixedVectorType>(ty)->getNumElements();
+        Type *eleType = cast<VectorType>(ty)->getElementType();
         return num * sizeOf(eleType);
     } else if (ty->isArrayTy()) {
         int num = ty->getArrayNumElements();
@@ -269,8 +271,10 @@ void Translator::evalLoad(LoadInst* li) {
             this->defVars.insert(dst);
         }
     } else if (type->isVectorTy()) {
-        int eleNum = type->getVectorNumElements();
-        Type *eleType = type->getVectorElementType();
+        //int eleNum = type->getVectorNumElements();
+        //Type *eleType = type->getVectorElementType();
+        int eleNum = cast<FixedVectorType>(type)->getNumElements();
+        Type *eleType = cast<VectorType>(type)->getElementType();
         string dst, src;
         for (int i = 0; i < eleNum; i++) {
             dst = getName(li) + "_" + to_string(i);
@@ -332,8 +336,10 @@ void Translator::evalStore(StoreInst* si) {
             this->defVars.insert(dst);
         }
     } else if (type->isVectorTy()) {
-        int eleNum = type->getVectorNumElements();
-        Type *eleType = type->getVectorElementType();
+        //int eleNum = type->getVectorNumElements();
+        //Type *eleType = type->getVectorElementType();
+        int eleNum = cast<FixedVectorType>(type)->getNumElements();
+        Type *eleType = cast<VectorType>(type)->getElementType();
         string dst, src;
         for (int i = 0; i < eleNum; i++) {
             dst = this->pointerTable.getSymAddr(ad).add(i*sizeOf(eleType)).toStr();
@@ -367,8 +373,13 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
         Arg a1L, a1H, a2L, a2H;
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
-            src1L = c1->getValue().getLoBits(64).toString(10, false);
-            src1H = c1->getValue().getHiBits(64).toString(10, false);
+            SmallString<40> SL,SH;
+            c1->getValue().getLoBits(64).toString(SL, 10, false, false);
+            c1->getValue().getHiBits(64).toString(SH, 10, false, false);
+            src1L = SL.str().str();
+            src1H = SH.str().str();
+            //src1L = c1->getValue().getLoBits(64).toString(10, false);
+            //src1H = c1->getValue().getHiBits(64).toString(10, false);
             a1L = Arg::Const(src1L);
             a1H = Arg::Const(src1H);
         } else {
@@ -381,8 +392,13 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
         }
 
         if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
-            src2L = c2->getValue().getLoBits(64).toString(10, false);
-            src2H = c2->getValue().getHiBits(64).toString(10, false);
+            SmallString<40> SL,SH;
+            c2->getValue().getLoBits(64).toString(SL, 10, false, false);
+            c2->getValue().getHiBits(64).toString(SH, 10, false, false);
+            src2L = SL.str().str();
+            src2H = SH.str().str();
+            //src2L = c2->getValue().getLoBits(64).toString(10, false);
+            //src2H = c2->getValue().getHiBits(64).toString(10, false);
             a2L = Arg::Const(src2L);
             a2H = Arg::Const(src2H);
         } else {
@@ -486,8 +502,10 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
         this->defVars.insert(dst);
 
     } else if (type->isVectorTy()) {
-        int eleNum = type->getVectorNumElements();
-        Type *eleType = type->getVectorElementType();
+        //int eleNum = type->getVectorNumElements();
+        //Type *eleType = type->getVectorElementType();
+        int eleNum = cast<FixedVectorType>(type)->getNumElements();
+        Type *eleType = cast<VectorType>(type)->getElementType();
         string dst, src1, src2;
         bool t1isConstant = false;
         bool t2isConstant = false;
@@ -680,8 +698,10 @@ void Translator::evalBinaryOpShl(BinaryOperator* bo) {
             }
         } else if (type->isVectorTy()) {
             if (Constant* c2 = llvm::dyn_cast<llvm::Constant>(t2)) {
-                int eleNum = type->getVectorNumElements();
-                Type *eleType = type->getVectorElementType();
+                //int eleNum = type->getVectorNumElements();
+                //Type *eleType = type->getVectorElementType();
+                int eleNum = cast<FixedVectorType>(type)->getNumElements();
+                Type *eleType = cast<VectorType>(type)->getElementType();
                 string dst, src;
                 unsigned n;
 
@@ -898,9 +918,14 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
                 this->result.push_back(s);
             }
 
+            SmallString<40> S1;
+            c2->getValue().toString(S1, 16, false, false);
+            // s = Statement::And(Arg::Var(dst),
+            //                    Arg::Var(src),
+            //                    Arg::Const("0x" + c2->getValue().toString(16, false)));
             s = Statement::And(Arg::Var(dst),
                                Arg::Var(src),
-                               Arg::Const("0x" + c2->getValue().toString(16, false)));
+                               Arg::Const("0x" + S1.str().str()));
             this->result.push_back(s);
 
             if (rule_and_after_lshr) {
@@ -945,9 +970,14 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
                 this->result.push_back(s);
             }
 
+            SmallString<40> S2;
+            c2->getValue().getLoBits(64).toString(S2, 16, false, false);
             s = Statement::And(Arg::Var(dstL),
                                Arg::Var(srcL),
-                               Arg::Const("0x" + c2->getValue().getLoBits(64).toString(16, false)));
+                               Arg::Const("0x" + S2.str().str()));
+            // s = Statement::And(Arg::Var(dstL),
+            //                    Arg::Var(srcL),
+            //                    Arg::Const("0x" + c2->getValue().getLoBits(64).toString(16, false)));
             this->result.push_back(s);
 
             if (rule_all_ones) {
@@ -962,9 +992,14 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
                 this->result.push_back(s);
             }
 
+            SmallString<40> S3;
+            c2->getValue().getHiBits(64).toString(S3, 16, false, false);
+            // s = Statement::And(Arg::Var(dstH),
+            //                    Arg::Var(srcH),
+            //                    Arg::Const("0x" + c2->getValue().getHiBits(64).toString(16, false)));
             s = Statement::And(Arg::Var(dstH),
                                Arg::Var(srcH),
-                               Arg::Const("0x" + c2->getValue().getHiBits(64).toString(16, false)));
+                               Arg::Const("0x" + S3.str().str()));
             this->result.push_back(s);
 
             if (rule_all_zeros) {
@@ -1091,7 +1126,9 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
     Value* t2 = iei->getOperand(1);
     Value* t3 = iei->getOperand(2);
     int index = dyn_cast<ConstantInt>(t3)->getSExtValue();
-    int eleNum = iei->getType()->getVectorNumElements();
+    //int eleNum = iei->getType()->getVectorNumElements();
+    int eleNum = cast<FixedVectorType>(iei->getType())->getNumElements();
+
 
     if (UndefValue* uv = dyn_cast<UndefValue>(t1)) {
         string dst, src;

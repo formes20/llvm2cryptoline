@@ -25,7 +25,7 @@ include_directories(${PROJECT_SRC_DIR})
 add_definitions(${LLVM_DEFINITIONS})
 
 # set compile flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # Now build our tools
 add_executable(translate ${SRC_FILES})
