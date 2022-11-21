@@ -33,7 +33,7 @@ entry:
   %tmp1 = alloca [5 x i64], align 16
   %e = alloca [32 x i8], align 16
   %0 = bitcast [5 x i64]* %x1 to i8*
-  call void @llvm.lifetime.start(i64 40, i8* %0) #1
+  call void @llvm.letime.start(i64 40, i8* %0) #1
   %1 = bitcast [5 x i64]* %x2 to i8*
   call void @llvm.lifetime.start(i64 40, i8* %1) #1
   %2 = bitcast [5 x i64]* %z2 to i8*

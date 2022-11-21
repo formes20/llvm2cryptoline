@@ -71,7 +71,7 @@ SymbolicAddress PointerTable::getSymAddr(llvm::Value* v) {
     if (this->table.count(v) == 0) {
         if (v->hasName()) {
             this->table[v] = SymbolicAddress(this->symNum, 0,
-                                             Utils::replaceChar(v->getName(), '.', '_'));
+                                             Utils::replaceChar(v->getName().str(), '.', '_'));
         } else {
             this->table[v] = SymbolicAddress(this->symNum);
         }
@@ -168,7 +168,7 @@ std::string Argument::toSrc() {
 std::string Argument::toAlgArg() {
     std::string s;
     switch (this->op) {
-    case CryptoLineOps::Const: // TODO: check the const format // TODO: check the const format
+    case CryptoLineOps::Const: // TODO: check the const format 
         s =  this->val + "@" + std::to_string(this->width) ;
         break;
     case CryptoLineOps::Var:

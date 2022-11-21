@@ -79,7 +79,7 @@ public:
 
 
     Argument();
-    Argument(CryptoLineOps opcode, CryptoLineType t, unsigned w, CryptoLineType t, unsigned w, std::string value);
+    Argument(CryptoLineOps opcode, CryptoLineType t, unsigned w, std::string value);
 
     bool operator==(const Argument& a) const {
         return val == a.val;

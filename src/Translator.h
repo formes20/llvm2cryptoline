@@ -12,6 +12,11 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Operator.h"
 
+#include "Types.h"
+
+
+
+namespace llvm2cryptoline {
 
 using namespace llvm;
 using namespace cryptoline;
@@ -45,7 +50,8 @@ private:
     //std::string replaceChar(std::string str, char target, char c);
     bool legacy = false;
     CryptoLineType defaultType = CryptoLineType::uint;
-    bool safety = false;
+    bool safety = true;
+    //bool safety = false;
     bool mulSafety = true;
 
     unsigned int discardCount = 0;

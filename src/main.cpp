@@ -50,7 +50,7 @@ int main(int argc, char* const* argv) {
         std::string t_arg = std::string(argv[i]);
         if ( t_arg == "-block" ) {
             inBlock = true;
-            std::cout << "input entry:" <<std::endl;
+            std::cout << "input block name:" <<std::endl;
             std::cin >> entry;
         }
         else if(t_arg == "-dh"){
