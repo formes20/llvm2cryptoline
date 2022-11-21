@@ -5,13 +5,12 @@
  *      Author: jiaxiang
  */
 
-#include <iostream>
+#include "Translator.h"
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include "llvm/IR/Constants.h"
+// #include "llvm/IR/ConstantsContext.h"
 #include "llvm/Support/FileSystem.h"
-#include "Translator.h"
-#include "parsecondition.h"
 
 using namespace llvm;
 using namespace std;
@@ -175,6 +174,17 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         }
         */
 
+
+        /*
+        if (!outputVars.empty()) {
+            auto i = outputVars.begin();
+            cout << "output vars: " << (*i).val;
+            for (i++; i != outputVars.end(); i++) {
+                cout << ", " << (*i).val;
+            }
+        }
+        */
+
         head += ") =\n";
         /*
         head += "{\n";
@@ -225,6 +235,23 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
 
 
         /*
+
+        for (auto j = this->result.begin(); j != this->result.end(); j++) {
+            out << (*j).toStr() << "\n";
+        }
+
+        // output the possible output vars
+        if (!outputVars.empty()) {
+            string output = "\n\n";
+            output += "(* Outputs *)\n";
+            out << output << "\n";
+            for (auto i = outputVars.begin(); i != outputVars.end(); i++) {
+                out << "mov _ "<< (*i).val << "@" << (*i).getType() << ";\n";
+            }
+        }
+
+
+        /*
         if (this->legacy) {
             for (auto j = this->result.begin(); j != this->result.end(); j++) {
                 out << (*j).toStr_legacy() << "\n";
@@ -243,7 +270,7 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         //return false;
     //}
 }
-
+/*
 std::string Translator::replaceChar(std::string str, char target, char c) {
   for (int i = 0; i < str.length(); i++) {
     if (str[i] == target)
@@ -251,13 +278,13 @@ std::string Translator::replaceChar(std::string str, char target, char c) {
   }
   return str;
 }
-
+*/
 std::string Translator::getName(llvm::Value* v) {
     if (v->hasName()) {
         if (this->legacy) {
-            return replaceChar(v->getName().str(), '.', '_');
+            return Utils::replaceChar(v->getName().str(), '.', '_');
         } else {
-            return "v_" + replaceChar(v->getName().str(), '.', '_');
+            return "v_" + Utils::replaceChar(v->getName().str(), '.', '_');
         }
     } else {
         std::string s;
@@ -363,11 +390,27 @@ void Translator::evalLoad(LoadInst* li) {
     Value* ad = li->getPointerOperand();
     Type *type = li->getType();
     unsigned width;
+    unsigned width;
 
     if (type->isIntegerTy()) {
         width = type->getIntegerBitWidth();
         Var dst = Var(this->defaultType, width, getName(li));
         // Var dst = Var::UVar(width, getName(li));
+        Var src = this->pointerTable.getSymAddr(ad).toVariable(this->defaultType, width);
+        // Var src = this->pointerTable.getSymAddr(ad).toUVar(width);
+
+        // probably, ad is a getelementptr expr
+        if (ConstantExpr* gepe = dyn_cast<ConstantExpr>(ad)) {
+            if (gepe->isGEPWithNoNotionalOverIndexing()) {
+                if (GEPOperator* gepo = dyn_cast<GEPOperator>(gepe)) {
+                    if (!evalGEPOperator(gepo)) {
+                        errs() << "No translation:" << *li << "\n";
+                        return;
+                    }
+                }
+            }
+        }
+
         Var src = this->pointerTable.getSymAddr(ad).toVariable(this->defaultType, width);
         // Var src = this->pointerTable.getSymAddr(ad).toUVar(width);
 
@@ -465,6 +508,7 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
             SmallString<40> S;
+
             if (this->defaultType == CryptoLineType::sint) {
                 c1->getValue().toString(S, 10, true, false);
                 src1 = Arg::SConst(width, S.str().str());
@@ -499,13 +543,61 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
 
         switch (bo->getOpcode()) {
         case Instruction::BinaryOps::Add:
-            s = Statement::Add(dst, src1, src2);
+            if (safety) {
+                s = Statement::Add(dst, src1, src2);
+                this->result.push_back(s);
+            } else {
+                Arg dis = Arg::Flag("discard_" + to_string(discardCount));
+                discardCount++;
+                s = Statement::Adds(dis, dst, src1, src2);
+                this->result.push_back(s);
+
+                // heuristic for P434
+                if (this->heuristcs) {
+                //if (false) {
+                if (BinaryOperator* t1c = dyn_cast<BinaryOperator>(t1)) {
+                    if (BinaryOperator* t2c = dyn_cast<BinaryOperator>(t2)) {
+                        if ((t1c->getOpcode() == Instruction::BinaryOps::Add
+                                || t1c->getOpcode() == Instruction::BinaryOps::And
+                                || t1c->getOpcode() == Instruction::BinaryOps::LShr)
+                            && (t2c->getOpcode() != Instruction::BinaryOps::Add
+                               || t2c->getOpcode() != Instruction::BinaryOps::And
+                               || t2c->getOpcode() != Instruction::BinaryOps::LShr)) {
+                            s = Statement::Comment("Heuristics applied.");
+                            this->result.push_back(s);
+                            s = Statement::Assert(Predicate::True(),
+                                                  Predicate::Eq(Arg::Flag("discard_" + to_string(discardCount-1)),
+                                                                Arg::Flag("0@1")));
+                            this->result.push_back(s);
+                            s = Statement::Assume(Predicate::Eq(Arg::Flag("discard_" + to_string(discardCount-1)),
+                                                                Arg::Flag("0")),
+                                                  Predicate::True());
+                            this->result.push_back(s);
+                        }
+                    }
+                }
+                }
+            }
             break;
         case Instruction::BinaryOps::Sub:
-            s = Statement::Sub(dst, src1, src2);
+            if (safety)
+                s = Statement::Sub(dst, src1, src2);
+            else {
+                Arg dis = Arg::Flag("discard_" + to_string(discardCount));
+                discardCount++;
+                s = Statement::Subb(dis, dst, src1, src2);
+            }
+            this->result.push_back(s);
             break;
         case Instruction::BinaryOps::Mul:
-            s = Statement::Mul(dst, src1, src2);
+            if (mulSafety)
+                s = Statement::Mul(dst, src1, src2);
+            else {
+                Arg dis = Arg::Flag("discard_" + to_string(discardCount));
+                discardCount++;
+                s = Statement::Muls(dis, dst, src1, src2);
+            }
+            this->result.push_back(s);
             break;
         default:    // which will not happen
             break;
@@ -579,13 +671,31 @@ void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
 
             switch (bo->getOpcode()) {
             case Instruction::BinaryOps::Add:
-                s = Statement::Add(dst, src1, src2);
+                if (safety)
+                    s = Statement::Add(dst, src1, src2);
+                else {
+                    Arg dis = Arg::Flag("discard_" + to_string(discardCount));
+                    discardCount++;
+                    s = Statement::Adds(dis, dst, src1, src2);
+                }
                 break;
             case Instruction::BinaryOps::Sub:
-                s = Statement::Sub(dst, src1, src2);
+                if (safety)
+                    s = Statement::Sub(dst, src1, src2);
+                else {
+                    Arg dis = Arg::Flag("discard_" + to_string(discardCount));
+                    discardCount++;
+                    s = Statement::Subb(dis, dst, src1, src2);
+                }
                 break;
             case Instruction::BinaryOps::Mul:
-                s = Statement::Mul(dst, src1, src2);
+                if (mulSafety)
+                    s = Statement::Mul(dst, src1, src2);
+                else {
+                    Arg dis = Arg::Flag("discard_" + to_string(discardCount));
+                    discardCount++;
+                    s = Statement::Muls(dis, dst, src1, src2);
+                }
                 break;
             default:    // which will not happen
                 break;
@@ -615,8 +725,29 @@ void Translator::evalBinaryOpShl(BinaryOperator* bo) {
             // Var src = Var::UVar(width, getName(t1));
             Var src = Var(this->defaultType, width, getName(t1));
 
-            s = Statement::Shl(dst, src, Arg::Num(n));
-            this->result.push_back(s);
+            if (safety) {
+                s = Statement::Shl(dst, src, Arg::Num(n));
+                this->result.push_back(s);
+            } else {
+                Arg dis = Arg::Flag("discard_" + to_string(discardCount));
+                discardCount++;
+                s = Statement::Shls(dis, dst, src, Arg::Num(n));
+                this->result.push_back(s);
+
+                // heuristic for P434
+                if (this->heuristcs) {
+                s = Statement::Comment("Heuristics applied.");
+                this->result.push_back(s);
+                s = Statement::Assert(Predicate::True(),
+                                      Predicate::Eq(dst,
+                                                    Arg::Flag("tmp_to_be_used * const 64 (2**32)")));
+                this->result.push_back(s);
+                s = Statement::Assume(Predicate::Eq(dst,
+                                                    Arg::Flag("tmp_to_be_used * (2**32)")),
+                                      Predicate::True());
+                this->result.push_back(s);
+                }
+            }
 
             // compute defined/undefined variables
             this->use(src);
@@ -820,6 +951,7 @@ void Translator::evalBinaryOpLShr(BinaryOperator* bo) {
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
             SmallString<40> S;
+
             if (this->defaultType == CryptoLineType::sint) {
                c1->getValue().toString(S, 16, false, false);
                 src1 = Arg::SConst(width, "0x" + S.str().str());
@@ -841,6 +973,21 @@ void Translator::evalBinaryOpLShr(BinaryOperator* bo) {
                              Arg::Num(n));
         this->result.push_back(s);
         this->define(dst);
+
+        // heurisitc
+        if (n == 32 && this->lowerPart.count(src1) != 0) {
+            s = Statement::Comment("Heuristics applied.");
+            this->result.push_back(s);
+            s = Statement::Assert(Predicate::True(),
+                                  Predicate::Eq(Var(this->defaultType, width, "tmp_to_be_used"),
+                                                this->lowerPart[src1]));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(Var(this->defaultType, width, "tmp_to_be_used"),
+                                                this->lowerPart[src1]),
+                                  Predicate::True());
+            this->result.push_back(s);
+            this->lowerPart.erase(src1);
+        }
 
     } else { // the second argument is a variable!
         // the shifted number cannot be a variable
@@ -1189,6 +1336,353 @@ void Translator::evalBinaryOpAShr(BinaryOperator* bo) {
                 this->result.push_back(s);
             }
 
+        // compute defined/undefined variables
+            this->checkDefinedness(src);
+            this->defVars.insert(dst);
+        }
+    } else {
+        // the shifted number cannot be a variable
+        errs() << "No translation:" << *bo << "\n";
+    }
+*/
+}
+void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
+    Statement s;
+    Value* t1 = bo->getOperand(0);
+    Value* t2 = bo->getOperand(1);
+    Type *type = bo->getType();
+    unsigned width;
+
+    s = Statement::Comment("You may need to modify here");
+    this->result.push_back(s);
+
+    if (type->isIntegerTy()) {
+        width = type->getIntegerBitWidth();
+        // Var dst = Var::UVar(width, getName(bo));
+        Var dst = Var(this->defaultType, width, getName(bo));
+        Arg src1,src2;
+
+        if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            SmallString<40> S;
+            if (this->defaultType == CryptoLineType::sint) {
+
+                src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
+            } else {
+                src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
+            }
+        } else {
+            Var v = Var(this->defaultType, width, getName(t1));
+            src1 = v;
+            this->use(v);
+        }
+
+
+        bool h_low64 = false; // heuristic: get low 64 bits
+        bool h_low32 = false; // heuristic for P434: get low 32 bits
+        bool h_high = false; // heuristic for P434: clear low 32 bits
+
+        if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+            if (this->defaultType == CryptoLineType::sint) {
+                src2 = Arg::SConst(width, "0x" + c2->getValue().toString(16, false));
+            } else {
+                src2 = Arg::UConst(width, "0x" + c2->getValue().toString(16, false));
+            }
+
+            if (width == 128 && c2->getValue().countTrailingOnes() == 64
+                    && c2->getValue().countLeadingZeros() == 64) {
+                h_low64 = true;
+            } else if (width == 64 && c2->getValue().countTrailingOnes() == 32
+                    && c2->getValue().countLeadingZeros() == 32) {
+                h_low32 = true;
+            } else if (width == 64 && c2->getValue().countTrailingZeros() == 32) {
+                h_high = true;
+            }
+        } else {
+            // Var v = Var::UVar(width, getName(t2));
+            Var v = Var(this->defaultType, width, getName(t2));
+            src2 = v;
+            this->use(v);
+        }
+
+        s = Statement::And(dst, src1, src2);
+        this->result.push_back(s);
+        this->define(dst);
+
+        // apply heuristic
+        if (h_low64) {
+            s = Statement::Comment("Heuristics applied.");
+            this->result.push_back(s);
+            s = Statement::Assert(Predicate::True(),
+                                  Predicate::Eq(dst, src1));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(dst, src1),
+                                  Predicate::True());
+            this->result.push_back(s);
+        } else if (h_low32) {
+            this->lowerPart[src1] = dst;
+        } else if (h_high && this->lowerPart.count(src1) != 0) {
+            s = Statement::Comment("Heuristics applied.");
+            this->result.push_back(s);
+            s = Statement::Assert(Predicate::True(),
+                                  Predicate::Eq(src1,
+                                                Arg::Flag(dst.toRangeArg() +
+                                                          " + " + this->lowerPart[src1].toAlgArg())));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(src1,
+                                                Arg::Flag(dst.toRangeArg() +
+                                                          " + " + this->lowerPart[src1].toAlgArg())),
+                                  Predicate::True());
+            this->result.push_back(s);
+            this->lowerPart.erase(src1);
+        }
+
+    } else if (type->isVectorTy()) {
+        int eleNum = type->getVectorNumElements();
+        Type *eleType = type->getVectorElementType();
+        width = eleType->getIntegerBitWidth();
+
+        Var dst;
+        Arg src1, src2;
+        bool t1isConstant = false;
+        bool t2isConstant = false;
+        Constant *c1, *c2;
+        Var v1, v2;
+
+        if ((c1 = llvm::dyn_cast<llvm::Constant>(t1))) {
+            t1isConstant = true;
+        }
+        if ((c2 = llvm::dyn_cast<llvm::Constant>(t2))) {
+            t2isConstant = true;
+        }
+
+        for (int i = 0; i < eleNum; i++) {
+            // dst = Var::UVar(width, getName(bo), i);
+            dst = Var(this->defaultType, width, getName(bo), i);
+
+            if (t1isConstant) {
+                if (this->defaultType == CryptoLineType::sint) {
+                    src1 = Arg::SConst(width, "0x" +
+                                       ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(16, false));
+                } else {
+                    src1 = Arg::UConst(width, "0x" +
+                                       ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(16, false));
+                }
+            } else {
+                // v1 = Var::UVar(width, getName(t1), i);
+                v1 = Var(this->defaultType, width, getName(t1), i);
+                src1 = v1;
+                this->use(v1);
+            }
+
+            if (t2isConstant) {
+                src2 = Arg::UConst(width, "0x" +
+                                   ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(16, false));
+            } else {
+                v2 = Var::UVar(width, getName(t2), i);
+                src2 = v2;
+                this->use(v2);
+            }
+
+            s = Statement::And(dst, src1, src2);
+            this->result.push_back(s);
+            this->define(dst);
+        }
+
+    } else {
+        errs() << "No translation:" << *bo << " (Unknown type!)\n";
+    }
+
+    /*
+    Statement s;
+    Value* t1 = bo->getOperand(0);
+    Value* t2 = bo->getOperand(1);
+    Type *type = bo->getType();
+
+    // Assume that the 1st operand t1 is a variable.
+    // otherwise, the translation is trivial.
+    if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+        if (type->isIntegerTy(64)) {
+            string dst = getName(bo);
+            string src = getName(t1);
+
+            // heuristics
+            bool rule_and_after_lshr = false;
+            if (this->heuristcs_sound) {
+                if (c2->getValue().countTrailingOnes()
+                    + c2->getValue().countLeadingZeros() == 64) {
+                    rule_and_after_lshr = true;
+                }
+            }
+
+            s = Statement::Comment("You may need to modify here");
+            this->result.push_back(s);
+
+            if (rule_and_after_lshr) {
+                s = Statement::Comment("Heuristics applied.");
+                this->result.push_back(s);
+            }
+
+            s = Statement::And(Arg::Var(dst),
+                               Arg::Var(src),
+                               Arg::Const("0x" + c2->getValue().toString(16, false)));
+            this->result.push_back(s);
+
+            if (rule_and_after_lshr) {
+                s = Statement::Assert(Predicate::True(),
+                                      Predicate::Eq(Arg::Var(dst),
+                                                    Arg::Var("tmp_to_be_used")));
+                this->result.push_back(s);
+
+                s = Statement::Assume(Predicate::Eq(Arg::Var(dst),
+                                                    Arg::Var("tmp_to_be_used")),
+                                      Predicate::True());
+                this->result.push_back(s);
+            }
+
+            // compute defined/undefined variables
+            this->checkDefinedness(src);
+            this->defVars.insert(dst);
+
+        } else if (type->isIntegerTy(128)) {
+            string dstL = getName(bo) + "_L";
+            string dstH = getName(bo) + "_H";
+            string srcL = getName(t1) + "_L";
+            string srcH = getName(t1) + "_H";
+
+            // heuristcs
+            bool rule_all_ones = false;
+            bool rule_all_zeros = false;
+            if (this->heuristcs_equiv) {
+                if (c2->getValue().getLoBits(64).countPopulation() == 64) {
+                    rule_all_ones = true;
+                }
+                if (c2->getValue().getHiBits(64).countPopulation() == 0) {
+                    rule_all_zeros = true;
+                }
+            }
+
+            s = Statement::Comment("You may need to modify here");
+            this->result.push_back(s);
+
+            bool rule_lshr_0bit = false;
+            bool rule_lshr_64bit = false;
+            if (this->heuristcs_equiv) {
+                if (n == 64) {
+                    rule_lshr_64bit = true;
+                } else if (n == 0) {
+                    rule_lshr_0bit = true;
+                }
+            }
+
+            if (rule_lshr_0bit) {
+                // heuristcs
+                s = Statement::Comment("Heuristics applied.");
+                this->result.push_back(s);
+
+                s = Statement::Mov(Arg::Var(dstL),
+                                   Arg::Var(srcL));
+                this->result.push_back(s);
+
+                s = Statement::Mov(Arg::Var(dstH),
+                                   Arg::Var(srcH));
+                this->result.push_back(s);
+
+            } else if (rule_lshr_64bit) {
+                // heuristcs
+                s = Statement::Comment("Heuristics applied.");
+                this->result.push_back(s);
+
+                s = Statement::Mov(Arg::Var(dstL),
+                                   Arg::Var(srcH));
+                this->result.push_back(s);
+
+                s = Statement::Mov(Arg::Var(dstH),
+                                   Arg::Const("0"));
+                this->result.push_back(s);
+
+            } else if (n < 64) {
+                s = Statement::Split(Arg::Var("tmpL_h"),
+                                     Arg::Var("tmp_to_be_used"),
+                                     Arg::Var(srcL),
+                                     Arg::Num(n));
+                this->result.push_back(s);
+
+                s = Statement::Split(Arg::Var("tmpH_h"),
+                                     Arg::Var("tmpH_l"),
+                                     Arg::Var(srcH),
+                                     Arg::Num(n));
+                this->result.push_back(s);
+
+                s = Statement::Shl(Arg::Var("tmp"),
+                                   Arg::Var("tmpH_l"),
+                                   Arg::Num(64 - n));
+                this->result.push_back(s);
+
+                s = Statement::Add(Arg::Var(dstL),
+                                   Arg::Var("tmp"),
+                                   Arg::Var("tmpL_h"));
+                this->result.push_back(s);
+
+                s = Statement::Mov(Arg::Var(dstH),
+                                   Arg::Var("tmpH_h"));
+                this->result.push_back(s);
+
+            } else { // 64 < n < 128
+                s = Statement::Split(Arg::Var(dstL),
+                                     Arg::Var("tmp_to_be_used"),
+                                     Arg::Var(srcH),
+                                     Arg::Num(n - 64));
+                this->result.push_back(s);
+
+                s = Statement::Mov(Arg::Var(dstH),
+                                   Arg::Const("0"));
+                this->result.push_back(s);
+
+            }
+
+            // compute defined/undefined variables
+            this->checkDefinedness(srcL);
+            this->checkDefinedness(srcH);
+            this->defVars.insert(dstL);
+            this->defVars.insert(dstH);
+
+        } else if (type->isIntegerTy(64)) {
+
+            if (n >= 64) {
+                errs() << "No translation:" << *bo
+                       << "(lshr argument error!)\n";
+                return;
+            }
+
+            string dst = getName(bo);
+            string src = getName(t1);
+
+            s = Statement::Comment("You may need to modify here");
+            this->result.push_back(s);
+
+            bool rule_lshr_0bit = false;
+            if (this->heuristcs_equiv && n == 0) {
+                rule_lshr_0bit = true;
+            }
+
+            if (rule_lshr_0bit) {
+                // heuristcs
+                s = Statement::Comment("Heuristics applied.");
+                this->result.push_back(s);
+
+                s = Statement::Mov(Arg::Var(dst),
+                                   Arg::Var(src));
+                this->result.push_back(s);
+
+
+            } else {
+                s = Statement::Split(Arg::Var(dst),
+                                     Arg::Var("tmp_to_be_used"),
+                                     Arg::Var(src),
+                                     Arg::Num(n));
+                this->result.push_back(s);
+            }
+
             // compute defined/undefined variables
             this->checkDefinedness(src);
             this->defVars.insert(dst);
@@ -1202,9 +1696,11 @@ void Translator::evalBinaryOpAShr(BinaryOperator* bo) {
 
 void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
     Statement s;
+
     Value* t1 = bo->getOperand(0);
     Value* t2 = bo->getOperand(1);
     Type *type = bo->getType();
+
     unsigned width;
 
     s = Statement::Comment("You may need to modify here");
@@ -1464,6 +1960,134 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
 */
 }
 
+void Translator::evalBinaryOpOr(BinaryOperator* bo) {
+    Statement s;
+    Value* t1 = bo->getOperand(0);
+    Value* t2 = bo->getOperand(1);
+    Type *type = bo->getType();
+    unsigned width;
+
+    s = Statement::Comment("You may need to modify here");
+    this->result.push_back(s);
+
+    if (type->isIntegerTy()) {
+        width = type->getIntegerBitWidth();
+        // Var dst = Var::UVar(width, getName(bo));
+        Var dst = Var(this->defaultType, width, getName(bo));
+        Arg src1,src2;
+
+        if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            if (this->defaultType == CryptoLineType::sint) {
+                src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
+            } else {
+                src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
+            }
+        } else {
+            Var v = Var(this->defaultType, width, getName(t1));
+            src1 = v;
+            this->use(v);
+        }
+
+        if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+            if (this->defaultType == CryptoLineType::sint) {
+                src2 = Arg::SConst(width, "0x" + c2->getValue().toString(16, false));
+            } else {
+                src2 = Arg::UConst(width, "0x" + c2->getValue().toString(16, false));
+            }
+
+        } else {
+            // Var v = Var::UVar(width, getName(t2));
+            Var v = Var(this->defaultType, width, getName(t2));
+            src2 = v;
+            this->use(v);
+        }
+
+        s = Statement::Or(dst, src1, src2);
+        this->result.push_back(s);
+        this->define(dst);
+
+        // heuristic for P434
+        if (this->heuristcs) {
+        if (BinaryOperator* t1c = dyn_cast<BinaryOperator>(t1)) {
+            if (BinaryOperator* t2c = dyn_cast<BinaryOperator>(t2)) {
+                if (t1c->getOpcode() != Instruction::BinaryOps::Xor
+                        && t2c->getOpcode() != Instruction::BinaryOps::Xor) {
+                    s = Statement::Comment("Heuristics applied.");
+                    this->result.push_back(s);
+                    s = Statement::Assert(Predicate::True(),
+                                          Predicate::Eq(dst,
+                                                        Arg::Flag(src1.toRangeArg() +
+                                                                  " + " + src2.toRangeArg())));
+                    this->result.push_back(s);
+                    s = Statement::Assume(Predicate::Eq(dst,
+                                                        Arg::Flag(src1.toAlgArg() +
+                                                                  " + " + src2.toAlgArg())),
+                                          Predicate::True());
+                    this->result.push_back(s);
+                }
+            }
+        }
+        }
+
+
+    } else {
+        errs() << "No translation:" << *bo << " (Unknown type!)\n";
+    }
+
+}
+
+void Translator::evalBinaryOpXor(BinaryOperator* bo) {
+    Statement s;
+    Value* t1 = bo->getOperand(0);
+    Value* t2 = bo->getOperand(1);
+    Type *type = bo->getType();
+    unsigned width;
+
+    s = Statement::Comment("You may need to modify here");
+    this->result.push_back(s);
+
+    if (type->isIntegerTy()) {
+        width = type->getIntegerBitWidth();
+        // Var dst = Var::UVar(width, getName(bo));
+        Var dst = Var(this->defaultType, width, getName(bo));
+        Arg src1,src2;
+
+        if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            if (this->defaultType == CryptoLineType::sint) {
+                src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
+            } else {
+                src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
+            }
+        } else {
+            Var v = Var(this->defaultType, width, getName(t1));
+            src1 = v;
+            this->use(v);
+        }
+
+        if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+            if (this->defaultType == CryptoLineType::sint) {
+                src2 = Arg::SConst(width, "0x" + c2->getValue().toString(16, false));
+            } else {
+                src2 = Arg::UConst(width, "0x" + c2->getValue().toString(16, false));
+            }
+
+        } else {
+            // Var v = Var::UVar(width, getName(t2));
+            Var v = Var(this->defaultType, width, getName(t2));
+            src2 = v;
+            this->use(v);
+        }
+
+        s = Statement::Xor(dst, src1, src2);
+        this->result.push_back(s);
+        this->define(dst);
+
+    } else {
+        errs() << "No translation:" << *bo << " (Unknown type!)\n";
+    }
+
+}
+
 void Translator::evalBinaryOp(BinaryOperator* bo) {
     switch (bo->getOpcode()) {
         case Instruction::BinaryOps::Add:
@@ -1488,13 +2112,17 @@ void Translator::evalBinaryOp(BinaryOperator* bo) {
             evalBinaryOpAnd(bo);
             break;
 
-        case Instruction::BinaryOps::SDiv:
-            // TODO
+        case Instruction::BinaryOps::Or:
+            evalBinaryOpOr(bo);
             break;
 
         case Instruction::BinaryOps::Xor:
-            // TODO
+            evalBinaryOpXor(bo);
             break;
+
+        // case Instruction::BinaryOps::SDiv:
+        //     // TODO
+        //     break;
 
         default:
             // non-supported binary operator
@@ -1504,7 +2132,58 @@ void Translator::evalBinaryOp(BinaryOperator* bo) {
 
 }
 
+// return true if translation succeeds, false otherwise
+bool Translator::evalGEPOperator(GEPOperator* gepo) {
+    Type *eTy =	gepo->getSourceElementType();
+    auto i = gepo->idx_begin();
+    if (ConstantInt* ci = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
+        int index = ci->getSExtValue();
+
+        SymbolicAddress baseAddr = this->pointerTable.getSymAddr(gepo->getPointerOperand());
+        SymbolicAddress newAddr = baseAddr.add(index * sizeOf(eTy));
+
+        i++;
+        while (i != gepo->idx_end()) {
+            if (ConstantInt* ci2 = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
+                index = ci2->getSExtValue();
+
+                if (eTy->isArrayTy()) {
+                    eTy = eTy->getArrayElementType();
+                    newAddr = newAddr.add(index * sizeOf(eTy));
+                } else if (eTy->isStructTy()) {
+                    newAddr = newAddr.add(offsetAt(eTy, index));
+                    eTy = eTy->getStructElementType(index);
+                } else { // error indexing or does not support
+                    // errs() << "No translation:" << *li << "\n";
+                    return false;
+                }
+
+                i++;
+            } else {
+                // errs() << "No translation:" << *li << "\n";
+                return false;
+            }
+        }
+
+        this->pointerTable.add(gepo, newAddr);
+
+    } else {
+        // errs() << "No translation:" << *li << "\n";
+        return false;
+    }
+
+    return true;
+}
+
 void Translator::evalGetElementPtr(GetElementPtrInst* gepi) {
+    if (GEPOperator* gepo = dyn_cast<GEPOperator>(gepi)) {
+        if (!evalGEPOperator(gepo))
+            errs() << "No translation:" << *gepi << "\n";
+    } else {
+        errs() << "No translation:" << *gepi << "\n";
+    }
+
+    /*
     Type *eTy = gepi->getSourceElementType();
     auto i = gepi->idx_begin();
     if (ConstantInt* ci = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
@@ -1540,7 +2219,7 @@ void Translator::evalGetElementPtr(GetElementPtrInst* gepi) {
     } else {
         errs() << "No translation:" << *gepi << "\n";
     }
-
+    */
 }
 
 void Translator::evalInsertElement(InsertElementInst* iei) {
@@ -1553,6 +2232,7 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
     int eleNum =cast<FixedVectorType>(iei->getType())->getNumElements(); 
     Type *eleType = t2->getType();
     unsigned width = eleType->getIntegerBitWidth();
+
 
     if (UndefValue* uv = dyn_cast<UndefValue>(t1)) {
         Var dst;
@@ -1605,6 +2285,75 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
                         c2->getValue().toString(S, 10, false, false);
                         src = Arg::UConst(width,S.str().str());
                         //src = Arg::UConst(width, c2->getValue().toString(10, false));
+                    }
+                } else {
+                    Var v = Var(this->defaultType, width, getName(t2));
+                    src = v;
+                    this->use(v);
+                }
+                s = Statement::Mov(dst, src);
+            } else {
+                Var v = Var(this->defaultType, width, getName(t1), i);
+                src = v;
+                this->use(v);
+                s = Statement::Mov(dst, src);
+            }
+            this->result.push_back(s);
+            this->define(dst);
+        }
+    }
+
+    /*
+    Statement s;
+    Value* t1 = iei->getOperand(0);
+    Value* t2 = iei->getOperand(1);
+    Value* t3 = iei->getOperand(2);
+    int index = dyn_cast<ConstantInt>(t3)->getSExtValue();
+    int eleNum = iei->getType()->getVectorNumElements();
+    Type *eleType = t2->getType();
+    unsigned width = eleType->getIntegerBitWidth();
+
+    if (UndefValue* uv = dyn_cast<UndefValue>(t1)) {
+        Var dst;
+        Arg src;
+        for (int i = 0; i < eleNum; i++) {
+            // dst = Var::UVar(width, getName(iei), i);
+            dst = Var(this->defaultType, width, getName(iei), i);
+            if (i == index) {
+                if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+                    if (this->defaultType == CryptoLineType::sint) {
+                        src = Arg::SConst(width, c2->getValue().toString(10, true));
+                    } else {
+                        src = Arg::UConst(width, c2->getValue().toString(10, false));
+                    }
+                } else {
+                    // Var v = Var::UVar(width, getName(t2));
+                    Var v = Var(this->defaultType, width, getName(t2));
+                    src = v;
+                    this->use(v);
+                }
+                s = Statement::Mov(dst, src);
+            } else {
+                src = Var(this->defaultType, width, "undef", i);
+                s = Statement::Nondet(src);
+                this->result.push_back(s);
+                s = Statement::Mov(dst, src);
+            }
+            this->result.push_back(s);
+            this->define(dst);
+        }
+    } else {
+        Var dst;
+        Arg src;
+        for (int i = 0; i < eleNum; i++) {
+            // dst = Var::UVar(width, getName(iei), i);
+            dst = Var(this->defaultType, width, getName(iei), i);
+            if (i == index) {
+                if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+                    if (this->defaultType == CryptoLineType::sint) {
+                        src = Arg::SConst(width, c2->getValue().toString(10, true));
+                    } else {
+                        src = Arg::UConst(width, c2->getValue().toString(10, false));
                     }
                 } else {
                     Var v = Var(this->defaultType, width, getName(t2));
@@ -1730,7 +2479,6 @@ void Translator::evalZExt(ZExtInst* zei) {
         //unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
         unsigned dstWidth = cast<VectorType>(dstType)->getElementType()->getIntegerBitWidth();
 
-
         Arg src;
         bool t1isConstant = false;
         Constant *c1;
@@ -1770,6 +2518,7 @@ void Translator::evalSExt(SExtInst* sei) {
     Type *dstType = sei->getDestTy();
     Value* t1 = sei->getOperand(0);
 
+
     if (dstType->isIntegerTy()) {
         unsigned srcWidth = t1->getType()->getIntegerBitWidth();
         unsigned dstWidth = dstType->getIntegerBitWidth();
@@ -1798,6 +2547,7 @@ void Translator::evalSExt(SExtInst* sei) {
         //unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
         unsigned dstWidth = cast<VectorType>(dstType)->getElementType()->getIntegerBitWidth();
 
+
         Arg src;
         bool t1isConstant = false;
         Constant *c1;
@@ -1817,6 +2567,7 @@ void Translator::evalSExt(SExtInst* sei) {
                 src = Arg::SConst(srcWidth, S.str().str());
                 // src = Arg::SConst(srcWidth,
                 //                   ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
+
             } else {
                 v = Var::SVar(srcWidth, getName(t1), i);
                 src = v;
@@ -1950,12 +2701,14 @@ void Translator::evalBitCast(BitCastInst* bci) {
     }
 }
 
+
 void Translator::evalCall(CallInst* ci) {
     // Currently only tail call is converted
     if (ci->isTailCall()) {
         Type *retType = ci->getFunctionType()->getReturnType();
         if (retType->isIntegerTy()) { // only deal with returned integer for now
             Var dst;
+
             unsigned dstWidth = retType->getIntegerBitWidth();
             if (ci->hasRetAttr(Attribute::AttrKind::SExt)) {
                 dst = Var::SVar(dstWidth, getName(ci));
@@ -1976,12 +2729,7 @@ void Translator::evalCall(CallInst* ci) {
                 s.args.push_back(arg);
                 this->use(arg);
             }
-
-            this->result.push_back(s);
-        } else {
-            errs() << "No translation:" << *ci << "\n";
         }
-
     } else { // Calls other than tail call are ignored.
         errs() << "No translation:" << *ci << "\n";
     }

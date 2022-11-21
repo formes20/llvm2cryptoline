@@ -40,15 +40,19 @@ enum class CryptoLineOps {
     Adc,
     Adcs,
     Sub,
-    Subs,
+    Subb,
     Sbb,
     Sbbs,
     Mul,
+    Muls,
     Mulf,
     ConcatShl,
     Shl,
+    Shls,
     Split,
     And,
+    Or,
+    Xor,
     Nondet,
     Cast,
     Vpc,
@@ -73,8 +77,17 @@ public:
     unsigned width;
     std::string val;
 
+
     Argument();
-    Argument(CryptoLineOps opcode, CryptoLineType t, unsigned w, std::string value);
+    Argument(CryptoLineOps opcode, CryptoLineType t, unsigned w, CryptoLineType t, unsigned w, std::string value);
+
+    bool operator==(const Argument& a) const {
+        return val == a.val;
+    }
+
+    bool operator<(const Argument& a) const {
+        return val < a.val;
+    }
 
     static Argument UConst(unsigned w, std::string val);
     static Argument SConst(unsigned w, std::string val);
@@ -98,6 +111,12 @@ public:
     //std::string toSrc_legacy();
     //std::string toAlgArg_legacy();
     //std::string toRangeArg_legacy();
+};
+
+struct Argument_hash {
+    size_t operator()(const Argument& a) const {
+        return std::hash<std::string>()(a.val);
+    }
 };
 
 class Variable : public Argument {
@@ -166,15 +185,19 @@ public:
     static Statement Adc(Argument dst, Argument src1, Argument src2, Argument c);
     static Statement Adcs(Argument carry, Argument dst, Argument src1, Argument src2, Argument c);
     static Statement Sub(Argument dst, Argument src1, Argument src2);
-    static Statement Subs(Argument borrow, Argument dst, Argument src1, Argument src2);
+    static Statement Subb(Argument borrow, Argument dst, Argument src1, Argument src2);
     static Statement Sbb(Argument dst, Argument src1, Argument src2, Argument b);
     static Statement Sbbs(Argument borrow, Argument dst, Argument src1, Argument src2, Argument b);
     static Statement Mul(Argument dst, Argument src1, Argument src2);
+    static Statement Muls(Argument flag, Argument dst, Argument src1, Argument src2);
     static Statement Mulf(Argument dstH, Argument dstL, Argument src1, Argument src2);
     static Statement ConcatShl(Argument dstH, Argument dstL, Argument src1, Argument src2, Argument n);
     static Statement Shl(Argument dst, Argument src, Argument n);
+    static Statement Shls(Argument flag, Argument dst, Argument src, Argument n);
     static Statement Split(Argument dstH, Argument dstL, Argument src, Argument n);
     static Statement And(Argument dst, Argument src1, Argument src2);
+    static Statement Or(Argument dst, Argument src1, Argument src2);
+    static Statement Xor(Argument dst, Argument src1, Argument src2);
     static Statement Nondet(Argument dst);
     static Statement Cast(Argument dst, Argument src);
     static Statement Vpc(Argument dst, Argument src);
@@ -196,10 +219,11 @@ class SymbolicAddress {
 public:
     int sym;
     int offset;
+    std::string name;
 
 public:
     SymbolicAddress();
-    SymbolicAddress(int s, int o = 0);
+    SymbolicAddress(int s, int o = 0, std::string n = "");
 
     SymbolicAddress add(int o);
     cryptoline::Variable toVariable(cryptoline::CryptoLineType, unsigned);

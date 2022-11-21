@@ -10,12 +10,8 @@
 
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Operator.h"
 
-#include "Types.h"
-
-
-
-namespace llvm2cryptoline {
 
 using namespace llvm;
 using namespace cryptoline;
@@ -28,7 +24,7 @@ public:
     VariableSet undefVars;
     VariableSet unusedVars;
     StatementList result;
-    bool heuristcs = true;
+    bool heuristcs = false;
     bool heuristcs_equiv = true;
     bool heuristcs_sound = true;
 
@@ -46,14 +42,22 @@ public:
     std::string toString(llvm::Instruction* inst);
 
 private:
-    std::string replaceChar(std::string str, char target, char c);
+    //std::string replaceChar(std::string str, char target, char c);
     bool legacy = false;
-    CryptoLineType defaultType = CryptoLineType::sint;
+    CryptoLineType defaultType = CryptoLineType::uint;
+    bool safety = false;
+    bool mulSafety = true;
+
+    unsigned int discardCount = 0;
+
+    std::map<cryptoline::Argument, Variable> lowerPart; // a map storing the lower parts of variables using AND inst
 
     void evalLoad(LoadInst* li);
     void evalStore(StoreInst* si);
     void evalBinaryOp(BinaryOperator* bo);
+    bool evalGEPOperator(GEPOperator* gepo);
     void evalGetElementPtr(GetElementPtrInst* gepi);
+    //void evalGetElementPtr(Value* gepi);
     void evalInsertElement(InsertElementInst* iei);
     void evalExtractElement(ExtractElementInst* eei);
     void evalZExt(ZExtInst* zei);
@@ -67,6 +71,8 @@ private:
     void evalBinaryOpLShr(BinaryOperator* bo);
     void evalBinaryOpAShr(BinaryOperator* bo);
     void evalBinaryOpAnd(BinaryOperator* bo);
+    void evalBinaryOpOr(BinaryOperator* bo);
+    void evalBinaryOpXor(BinaryOperator* bo);
 };
 
 }

@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "Types.h"
+#include "Utils.h"
 
 using namespace cryptoline;
 
@@ -26,15 +27,17 @@ SymbolicAddress::SymbolicAddress() {
     // this should never be used
     this->sym = -1;
     this->offset = 0;
+    this->name = "";
 }
 
-SymbolicAddress::SymbolicAddress(int s, int o) {
+SymbolicAddress::SymbolicAddress(int s, int o, std::string n) {
     this->sym = s;
     this->offset = o;
+    this->name = n;
 }
 
 SymbolicAddress SymbolicAddress::add(int o) {
-    return SymbolicAddress(this->sym, this->offset + o);
+    return SymbolicAddress(this->sym, this->offset + o, this->name);
 }
 
 /*
@@ -51,16 +54,27 @@ std::string SymbolicAddress::toStr() {
 */
 
 Variable SymbolicAddress::toVariable(CryptoLineType t, unsigned w) {
-    return Variable(t, w, "mem" + std::to_string(this->sym), this->offset);
+    if (this->name == "") {
+        return Variable(t, w, "mem" + std::to_string(this->sym), this->offset);
+    } else {
+        return Variable(t, w, this->name, this->offset);
+    }
+
 }
 
 Variable SymbolicAddress::toUVar(unsigned w) {
-    return Variable::UVar(w, "mem" + std::to_string(this->sym), this->offset);
+    return this->toVariable(CryptoLineType::uint, w);
+    //return Variable::UVar(w, "mem" + std::to_string(this->sym), this->offset);
 }
 
 SymbolicAddress PointerTable::getSymAddr(llvm::Value* v) {
     if (this->table.count(v) == 0) {
-        this->table[v] = SymbolicAddress(this->symNum);
+        if (v->hasName()) {
+            this->table[v] = SymbolicAddress(this->symNum, 0,
+                                             Utils::replaceChar(v->getName(), '.', '_'));
+        } else {
+            this->table[v] = SymbolicAddress(this->symNum);
+        }
         this->symNum++;
         return this->table[v];
     } else {
@@ -154,7 +168,7 @@ std::string Argument::toSrc() {
 std::string Argument::toAlgArg() {
     std::string s;
     switch (this->op) {
-    case CryptoLineOps::Const: // TODO: check the const format
+    case CryptoLineOps::Const: // TODO: check the const format // TODO: check the const format
         s =  this->val + "@" + std::to_string(this->width) ;
         break;
     case CryptoLineOps::Var:
@@ -406,15 +420,19 @@ std::map<CryptoLineOps, std::string> Statement::name = {
         {CryptoLineOps::Adc, "adc"},
         {CryptoLineOps::Adcs, "adcs"},
         {CryptoLineOps::Sub, "sub"},
-        {CryptoLineOps::Subs, "subs"},
+        {CryptoLineOps::Subb, "subb"},
         {CryptoLineOps::Sbb, "sbb"},
         {CryptoLineOps::Sbbs, "sbbs"},
         {CryptoLineOps::Mul, "mul"},
+        {CryptoLineOps::Muls, "muls"},
         {CryptoLineOps::Mulf, "mull"},
         {CryptoLineOps::ConcatShl, "cshl"},
         {CryptoLineOps::Shl, "shl"},
+        {CryptoLineOps::Shls, "shls"},
         {CryptoLineOps::Split, "split"},
         {CryptoLineOps::And, "and"},
+        {CryptoLineOps::Or, "or"},
+        {CryptoLineOps::Xor, "xor"},
         {CryptoLineOps::Nondet, "nondet"},
         {CryptoLineOps::Cast, "cast"},
         {CryptoLineOps::Vpc, "vpc"},
@@ -431,7 +449,7 @@ std::map<CryptoLineOps, std::string> Statement::name_legacy = {
         {CryptoLineOps::Adc, "bvAdc"},
         {CryptoLineOps::Adcs, "bvAdcC"},
         {CryptoLineOps::Sub, "bvSub"},
-        {CryptoLineOps::Subs, "bvSubC"},
+        {CryptoLineOps::Subb, "bvSubC"},
         {CryptoLineOps::Sbb, "bvSbb"},
         {CryptoLineOps::Sbbs, "bvSbbC"},
         {CryptoLineOps::Mul, "bvMul"},
@@ -510,9 +528,9 @@ Statement Statement::Sub(Argument dst, Argument src1, Argument src2) {
     return s;
 }
 
-Statement Statement::Subs(Argument borrow, Argument dst, Argument src1, Argument src2) {
+Statement Statement::Subb(Argument borrow, Argument dst, Argument src1, Argument src2) {
     Statement s;
-    s.op = CryptoLineOps::Subs;
+    s.op = CryptoLineOps::Subb;
     s.args.push_back(borrow);
     s.args.push_back(dst);
     s.args.push_back(src1);
@@ -550,6 +568,16 @@ Statement Statement::Mul(Argument dst, Argument src1, Argument src2) {
     return s;
 }
 
+Statement Statement::Muls(Argument flag, Argument dst, Argument src1, Argument src2) {
+    Statement s;
+    s.op = CryptoLineOps::Muls;
+    s.args.push_back(flag);
+    s.args.push_back(dst);
+    s.args.push_back(src1);
+    s.args.push_back(src2);
+    return s;
+}
+
 Statement Statement::Mulf(Argument dstH, Argument dstL, Argument src1, Argument src2) {
     Statement s;
     s.op = CryptoLineOps::Mulf;
@@ -580,6 +608,16 @@ Statement Statement::Shl(Argument dst, Argument src, Argument n) {
     return s;
 }
 
+Statement Statement::Shls(Argument flag, Argument dst, Argument src, Argument n) {
+    Statement s;
+    s.op = CryptoLineOps::Shls;
+    s.args.push_back(flag);
+    s.args.push_back(dst);
+    s.args.push_back(src);
+    s.args.push_back(n);
+    return s;
+}
+
 Statement Statement::Split(Argument dstH, Argument dstL, Argument src, Argument n) {
     Statement s;
     s.op = CryptoLineOps::Split;
@@ -593,6 +631,24 @@ Statement Statement::Split(Argument dstH, Argument dstL, Argument src, Argument 
 Statement Statement::And(Argument dst, Argument src1, Argument src2) {
     Statement s;
     s.op = CryptoLineOps::And;
+    s.args.push_back(dst);
+    s.args.push_back(src1);
+    s.args.push_back(src2);
+    return s;
+}
+
+Statement Statement::Or(Argument dst, Argument src1, Argument src2) {
+    Statement s;
+    s.op = CryptoLineOps::Or;
+    s.args.push_back(dst);
+    s.args.push_back(src1);
+    s.args.push_back(src2);
+    return s;
+}
+
+Statement Statement::Xor(Argument dst, Argument src1, Argument src2) {
+    Statement s;
+    s.op = CryptoLineOps::Xor;
     s.args.push_back(dst);
     s.args.push_back(src1);
     s.args.push_back(src2);
@@ -669,9 +725,11 @@ std::string Statement::toStr() {
     // instructions with 2 dsts
     case CryptoLineOps::Adds:
     case CryptoLineOps::Adcs:
-    case CryptoLineOps::Subs:
+    case CryptoLineOps::Subb:
     case CryptoLineOps::Sbbs:
+    case CryptoLineOps::Muls:
     case CryptoLineOps::Mulf:
+    case CryptoLineOps::Shls:
     case CryptoLineOps::ConcatShl:
     case CryptoLineOps::Split:
         s = Statement::name[this->op] + " " + this->args[0].toDst()
@@ -683,6 +741,18 @@ std::string Statement::toStr() {
         break;
     // and
     case CryptoLineOps::And:
+        s = Statement::name[this->op] + " " + this->args[0].getType() + " "
+            + this->args[0].toDst()
+            + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
+        break;
+    // or
+    case CryptoLineOps::Or:
+        s = Statement::name[this->op] + " " + this->args[0].getType() + " "
+            + this->args[0].toDst()
+            + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
+        break;
+    // xor
+    case CryptoLineOps::Xor:
         s = Statement::name[this->op] + " " + this->args[0].getType() + " "
             + this->args[0].toDst()
             + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
@@ -744,7 +814,7 @@ std::string Statement::toStr_legacy() {
     // instructions with 2 dsts
     case CryptoLineOps::Adds:
     case CryptoLineOps::Adcs:
-    case CryptoLineOps::Subs:
+    case CryptoLineOps::Subb:
     case CryptoLineOps::Sbbs:
     case CryptoLineOps::Mulf:
     case CryptoLineOps::ConcatShl:
