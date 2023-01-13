@@ -646,10 +646,15 @@ antlrcpp::Any EvalVisitor::visitCc(conditionParser::CcContext *ctx)
 
 antlrcpp::Any EvalVisitor::visitSimple_const(conditionParser::Simple_constContext *ctx)
 {
-    if(ctx->INT()!=nullptr){
-        return ctx->INT()->getText();
-    }else{
+    if(ctx->SUBOP()!=nullptr){
+        std::string result;
+        result.append(ctx->SUBOP()->getText());
+        result.append(ctx->INT()->getText());
+        return result;
+    }else if(ctx->HEX()!=nullptr){
         return ctx->HEX()->getText();
+    }else{
+        return ctx->INT()->getText();
     }
 }
 
@@ -690,11 +695,12 @@ antlrcpp::Any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext 
         }
         else{
             result1.append("v_");
-            result1.append(tmp1,1);
+            result1.append(tmp1,1);          
         }
+        //result1.append(tmp1,1);
         anno->put("l_var",result1);
     }
-    else{
+    else{ // e.g. : 0@128
         if(ctx->ll_var(0)->AT()!=nullptr){
             anno->put("l_const_val",ctx->ll_var(0)->INT(0)->getText());
             anno->put("l_const_width",ctx->ll_var(0)->INT(1)->getText());
@@ -713,6 +719,7 @@ antlrcpp::Any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext 
             result2.append("v_");
             result2.append(tmp2,1);
         }
+        //result2.append(tmp2,1);
         anno->put("r_var",result2);
     }else{
         if(ctx->ll_var(1)->AT()!=nullptr){

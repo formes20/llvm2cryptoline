@@ -84,7 +84,7 @@ typ:  UINT  | SINT ;
 num : simple_const					# sc
         | LPAR complex_const RPAR			# cc
         ;
-simple_const: INT | HEX;      
+simple_const: INT | HEX | SUBOP INT;      
 complex_const : num					# cc_n
                 | complex_const op=(ADDOP | SUBOP | MULOP | POWOP) complex_const	#cc_op
                 ;

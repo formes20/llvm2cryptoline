@@ -1,0 +1,33 @@
+{
+  true
+  &&
+  and [  
+    out_0 <= const 128 (2**116),
+    out_16 <= const 128 (2**116),
+    out_32 <= const 128 (2**116),
+    out_48 <= const 128 (2**116),
+    out_64 <= const 128 (2**116),
+    out_80 <= const 128 (2**116),
+    out_96 <= const 128 (2**116),
+    limbs 64 [v_scalar_coerce0, v_scalar_coerce1] <= const 128 8
+  ]
+}
+
+
+{
+  eq
+    (limbs 56 [out_0_prime, out_16_prime, out_32_prime, out_48_prime, out_64_prime, out_80_prime, out_96_prime])
+    (limbs 56 [out_0_init, out_16_init, out_32_init, out_48_init, out_64_init, out_80_init, out_96_init]) *  limbs 64 [v_scalar_coerce0, v_scalar_coerce1]
+    
+  &&
+  
+  and [
+    out_0_prime <= const 128 (2**119),
+    out_16_prime <= const 128 (2**119),
+    out_32_prime <= const 128 (2**119),
+    out_48_prime <= const 128 (2**119),
+    out_64_prime <= const 128 (2**119),
+    out_80_prime <= const 128 (2**119),
+    out_96_prime <= const 128 (2**119)
+  ]
+}

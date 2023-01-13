@@ -1,0 +1,26 @@
+{
+	true
+	&&
+	and[
+	in_0	<=	const  64  (2**57),
+	in_8	<=	const  64  (2**57),
+	in_16	<=	const  64  (2**57),
+	in_24	<=	const  64  (2**57)
+	]
+}
+
+{
+  eqmod
+    (limbs 56 [in_0,in_8,in_16,in_24])
+    (   0
+        -
+        (limbs 56 [out_0_prime,out_8_prime,out_16_prime,out_24_prime])
+    )
+   ((2	**  224)-(2  **  96)+1)
+  &&
+	and[
+	out_0_prime	<=	const  64  (2**56),
+	out_8_prime	<=	const  64  (2**56),
+	out_16_prime	<=	const  64  (2**56),
+	out_24_prime	<=	const  64  (2**56+2**16)]
+}

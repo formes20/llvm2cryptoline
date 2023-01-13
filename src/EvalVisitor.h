@@ -1,5 +1,5 @@
-
 #pragma once
+
 #include "conditionParserBaseVisitor.h"
 #include <map>
 #include <iostream>
@@ -27,8 +27,8 @@ public:
       anno = new VarSymbol;
     }
     ~EvalVisitor(){
-      delete var;
-      delete anno;
+      //delete var;
+      //delete anno;
     }
   antlrcpp::Any visitSpec(conditionParser::SpecContext *ctx) ;
 

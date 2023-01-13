@@ -1,0 +1,47 @@
+{
+  true 
+  &&
+  and [
+    in_0 <= const 64 (2**62 + 2**17), 
+    in_8 <= const 64 (2**62 + 2**17), 
+    in_16 <= const 64 (2**62 + 2**17), 
+    in_24 <= const 64 (2**62 + 2**17), 
+    in_32 <= const 64 (2**62 + 2**17), 
+    in_40 <= const 64 (2**62 + 2**17), 
+    in_48 <= const 64 (2**62 + 2**17), 
+    in_56 <= const 64 (2**62 + 2**17), 
+    in_64 <= const 64 (2**62 + 2**17), 
+    
+    out_0 <= const 128 (2**126), 
+    out_16 <= const 128 (2**126), 
+    out_32 <= const 128 (2**126), 
+    out_48 <= const 128 (2**126), 
+    out_64 <= const 128 (2**126), 
+    out_80 <= const 128 (2**126), 
+    out_96 <= const 128 (2**126), 
+    out_112 <= const 128 (2**126), 
+    out_128 <= const 128 (2**126)
+  ]
+}
+
+{
+  eqmod  (limbs 58 [out_0_prime,out_16_prime, out_32_prime, out_48_prime, out_64_prime, out_80_prime, out_96_prime, out_112_prime, out_128_prime])
+         ( (limbs 58 [out_0_init,out_16_init, out_32_init, out_48_init, out_64_init, out_80_init, out_96_init, out_112_init, out_128_init]) 
+          -
+          (limbs 58 [in_0_init, in_8_init, in_16_init, in_24_init, in_32_init, in_40_init, in_48_init, in_56_init, in_64_init])
+         )
+         (( 2**521) - (1))
+  &&
+  and [
+    out_0_prime   < out_0_init   +  const 128  (2**63) ,
+    out_16_prime  < out_16_init  +  const 128  (2**63) ,
+    out_32_prime  < out_32_init  +  const 128  (2**63) ,
+    out_48_prime  < out_48_init  +  const 128  (2**63) ,
+    out_64_prime  < out_64_init  +  const 128  (2**63) ,
+    out_80_prime  < out_80_init  +  const 128  (2**63) ,
+    out_96_prime  < out_96_init  +  const 128  (2**63) ,
+    out_112_prime < out_112_init +  const 128  (2**63) ,
+    out_128_prime < out_128_init +  const 128  (2**63) 
+  
+  ]
+}

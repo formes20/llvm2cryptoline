@@ -1,0 +1,28 @@
+{
+  true
+  &&
+  and [
+    in_0 <= const 64 (2**58),
+    in_8 <= const 64 (2**58),
+    in_16 <= const 64 (2**58),
+    in_24 <= const 64 (2**58)
+  ]
+}
+
+{
+  eq
+    (limbs 56 [out_0_prime, out_16_prime, out_32_prime, out_48_prime, out_64_prime, out_80_prime, out_96_prime])
+    (limbs 56 [in_0_init, in_8_init, in_16_init, in_24_init]) *  (limbs 56 [in_0_init, in_8_init, in_16_init, in_24_init])
+    
+  &&
+  
+  and [
+    out_0_prime <= const 128 (2**118),
+    out_16_prime <= const 128 (2**118),
+    out_32_prime <= const 128 (2**118),
+    out_48_prime <= const 128 (2**118),
+    out_64_prime <= const 128 (2**118),
+    out_80_prime <= const 128 (2**118),
+    out_96_prime <= const 128 (2**118)
+  ]
+}

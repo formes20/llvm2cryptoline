@@ -81,18 +81,17 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
         Statement s;
         s = Statement::Comment("Translate from annotation");
         this->result.push_back(s);
-        VarSymbol *anno;
-        anno = p.parse_annotation(ant);
+        VarSymbol *annotation = p.parse_annotation(ant);
         Arg left,right;
         unsigned width;
         std::string val;
 
-        if(anno->containsKey("l_var")!=""){
-           left = getvar(anno->containsKey("l_var"));
+        if(annotation->containsKey("l_var")!=""){
+           left = getvar(annotation->containsKey("l_var"));
            
         }else{
-            width = stoi(anno->containsKey("l_const_width"));
-            val = anno->containsKey("l_const_val");
+            width = stoi(annotation->containsKey("l_const_width"));
+            val = annotation->containsKey("l_const_val");
             if (this->defaultType == CryptoLineType::sint) {
                 left = Arg::SConst(width, val);
             }else{
@@ -100,11 +99,11 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
             }
         }
 
-        if(anno->containsKey("r_var")!=""){
-            right = getvar(anno->containsKey("r_var"));
+        if(annotation->containsKey("r_var")!=""){
+            right = getvar(annotation->containsKey("r_var"));
         }else{
-            width = stoi(anno->containsKey("r_const_width"));
-            val = anno->containsKey("r_const_val");
+            width = stoi(annotation->containsKey("r_const_width"));
+            val = annotation->containsKey("r_const_val");
             if (this->defaultType == CryptoLineType::sint) {
                 right = Arg::SConst(width, val);
             }else{
@@ -210,7 +209,17 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         head += p.parse_precondition(condition);
         string tail = "\n\n";
         tail += p.parse_postcondition(condition);
-        out << head << "\n";
+        out << head << "\n\n";
+
+        if (!inputVars.empty()) {
+            string input = "\n\n";
+            input += "(* Initialize Inputs *)\n";
+            out << input << "\n";
+            for (auto i = inputVars.begin(); i != inputVars.end(); i++) {
+                out << "mov " << (*i).val << "_init " << (*i).val << ";\n";
+            }
+        }
+        out << "\n";
 
         for (auto j = this->result.begin(); j != this->result.end(); j++) {
             out << (*j).toStr() << "\n";
@@ -222,7 +231,8 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
             output += "(* Outputs *)\n";
             out << output << "\n";
             for (auto i = outputVars.begin(); i != outputVars.end(); i++) {
-                out << "mov _ "<< (*i).val << "@" << (*i).getType() << ";\n";
+                //out << "mov _ "<< (*i).val << "@" << (*i).getType() << ";\n";
+                out << "mov " << (*i).val << "_prime " << (*i).val << "@" << (*i).getType() << ";\n";
             }
         }
 
@@ -335,6 +345,11 @@ void Translator::define(Variable var) {
 cryptoline::Argument Translator::getvar(std::string s)
 {
     for (auto i = this->defVars.begin(); i != this->defVars.end(); i++) {
+        if(i->val == s){
+                return *i;
+                }
+        }
+    for (auto i = this->undefVars.begin(); i != this->undefVars.end(); i++) {
         if(i->val == s){
                 return *i;
                 }
@@ -1350,6 +1365,8 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
             this->use(v);
         }
 
+         // heuristics
+            bool rule_and_after_lshr = false;
 
         bool h_low64 = false; // heuristic: get low 64 bits
         bool h_low32 = false; // heuristic for P434: get low 32 bits
@@ -1362,6 +1379,13 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
                 src2 = Arg::SConst(width, "0x" + S.str().str());
             } else {
                 src2 = Arg::UConst(width, "0x" + S.str().str());
+            }
+
+            if (this->heuristcs_sound) {
+                if (c2->getValue().countTrailingOnes()
+                    + c2->getValue().countLeadingZeros() == 64) {
+                    rule_and_after_lshr = true;
+                }
             }
 
             if (width == 128 && c2->getValue().countTrailingOnes() == 64
@@ -1385,8 +1409,24 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
         this->define(dst);
 
         // apply heuristic
+        if (rule_and_after_lshr) {
+            s = Statement::Comment("Rule AND after LSHR Heuristics applied.");
+            this->result.push_back(s);
+
+            s = Statement::Assert(Predicate::True(),
+                                      Predicate::Eq(dst,
+                                                    Arg::Var(this->defaultType, width,"tmp_to_be_used")));
+            this->result.push_back(s);
+
+            s = Statement::Assume(Predicate::Eq(dst,
+                                                    Arg::Var(this->defaultType, width, "tmp_to_be_used")),
+                                      Predicate::True());
+            this->result.push_back(s);
+            }
+
+        
         if (h_low64) {
-            s = Statement::Comment("Heuristics applied.");
+            s = Statement::Comment("Heuristics get low 64 bit applied.");
             this->result.push_back(s);
             s = Statement::Assert(Predicate::True(),
                                   Predicate::Eq(dst, src1));
