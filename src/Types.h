@@ -80,6 +80,7 @@ public:
 
     Argument();
     Argument(CryptoLineOps opcode, CryptoLineType t, unsigned w, std::string value);
+    
 
     bool operator==(const Argument& a) const {
         return val == a.val;
@@ -96,6 +97,7 @@ public:
     static Argument SVar(unsigned w, std::string val);
     static Argument Flag(std::string val);
     static Argument Num(unsigned val);
+
 
     static std::map<CryptoLineType, std::string> typeName;
 
@@ -124,9 +126,12 @@ public:
     bool hasIndex;
     std::string name;
     int index;  // denoting index when this is an array/vector variable, or offset when this is a variable from SymAddr
+    
+
     Variable();
     Variable(CryptoLineType t, unsigned w, std::string name);
     Variable(CryptoLineType t, unsigned w, std::string name, int index);
+    
 
     bool operator==(const Variable& v) const {
         return val == v.val;
@@ -143,6 +148,7 @@ public:
     static Variable SVar(unsigned w, std::string name);
     static Variable UVar(unsigned w, std::string name, int index);
     static Variable SVar(unsigned w, std::string name, int index);
+
     std::string toDecl() const;
 };
 
@@ -152,8 +158,28 @@ struct Variable_hash {
     }
 };
 
+
 typedef std::unordered_set<Variable, Variable_hash> VariableSet;
 typedef std::set<Variable> VariableOrderedSet;
+
+
+class Derived_Variable : public Variable {
+public:
+    Variable source_var;
+    unsigned high;
+    unsigned low;
+    unsigned leftShiftOffset;
+
+    Derived_Variable();
+    Derived_Variable(Variable s, unsigned h, unsigned l);
+    Derived_Variable(Variable s, unsigned h, unsigned l, unsigned o);
+
+    bool operator==(const Derived_Variable& dv) const {
+        return source_var == dv.source_var && high == dv.high && low == dv.low ;
+    }
+};
+
+
 
 class Predicate {
 public:
@@ -231,7 +257,20 @@ public:
     //std::string toStr();
 };
 
-class PointerTable {
+class PointerPointerTable{
+private:
+    std::map<llvm::Value*, llvm::Value*> pptable;
+    //int symNum = 0;
+
+public:
+    llvm::Value* getPt(llvm::Value* v);
+    void addPointerPointer(llvm::Value* r,llvm::Value* t);
+    
+
+
+};
+
+class PointerTable{
 private:
     std::map<llvm::Value*, SymbolicAddress> table;
     int symNum = 0;

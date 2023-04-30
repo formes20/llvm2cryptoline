@@ -2,25 +2,16 @@
   true 
   &&
   and [
-    out_0 < const 128 (2**125), 
-    out_16 < const 128 (2**125), 
-    out_32 < const 128 (2**125), 
-    out_48 < const 128 (2**125), 
-    out_64 < const 128 (2**125), 
-    out_80 < const 128 (2**125),  
-    out_96 < const 128 (2**125),
-    out_112 < const 128 (2**125), 
-    out_128 < const 128 (2**125),
-    v_scalar < const 64 9
+    out[0..8] < const 128 (2**125),
+    scalar < const 64 9
   ]
 }
 
 {
-  eqmod  (limbs 58 [out_0_prime,out_16_prime, out_32_prime, out_48_prime, out_64_prime,out_80_prime, out_96_prime, out_112_prime, out_128_prime])
-           ( (limbs 58 [out_0_init,out_16_init, out_32_init, out_48_init, out_64_init, out_80_init, out_96_init, out_112_init, out_128_init])
-             * v_scalar
-            )
-           (( 2**521) - (1))
+  eqmod  
+  (limbs 58 out'[0..8])
+  ( limbs 58 out[0..8] * v_scalar )
+  (( 2**521) - 1)
   &&
   true
 }

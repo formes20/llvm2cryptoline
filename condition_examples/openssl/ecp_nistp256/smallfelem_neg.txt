@@ -7,18 +7,10 @@
 {
   eqmod
   (
-     (  limbs 64 [ out_0_prime, out_16_prime , out_32_prime, out_48_prime] )
-     +
-      limbs 64 [ small_0_init, small_8_init, small_16_init, small_24_init]
+      limbs 64 out'[0..3] +  limbs 64 small[0..3]
   )
   (0)
   (2**256-2**224+2**192+2**96-1)
   &&
-  
-  and [
-     out_0_prime <= out_0 + (2**105)@128,
-     out_16_prime <= out_16 + (2**105)@128,
-     out_32_prime <= out_32 + (2**105)@128,
-     out_48_prime <= out_48 + (2**105)@128
-  ]
+  out'[0..3] <= (2**105)@128
 }

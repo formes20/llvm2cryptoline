@@ -10,8 +10,8 @@ Cryptoline domain-specific language.
 
 1. cmake (>= 3.4.3, lower version may be viable, you are welcomed to
 have a try)
-2. LLVM (>= 3.7.0, checked until version 7.0.0)
-3. ANTLR runtime library (https://github.com/antlr/antlr4/blob/master/doc/cpp-target.md#where-can-i-get-the-runtime)
+2. LLVM (>= 3.7.0, checked until version 14.0.0)
+3. ANTLR4 tool (4.12.0)
 
 NOTE: the LLVM version used for compiling llvm2cryptoline SHOULD be 
 the same as the one corresponding to the IR code.
@@ -21,7 +21,7 @@ the same as the one corresponding to the IR code.
 
 NOTE: If you have already installed LLVM, you can skip this part.
 
-1. Download LLVM (3.7.0 <= version <= 7.0.0) source code from
+1. Download LLVM (3.7.0 <= version <= 14.0.0) source code from
    http://releases.llvm.org/download.html
 
 2. Extract the source code from the downloaded package. Assume that
@@ -33,8 +33,7 @@ NOTE: If you have already installed LLVM, you can skip this part.
     cd SRC_ROOT
     mkdir build && cd build
 
-4. Assume that you want to install LLVM into the directory
-   INSTALL_DIR, then:
+4. Assume that you want to install LLVM into the directory INSTALL_DIR, then:
 
     cmake -DCMAKE_INSTALL_PREFIX=INSTALL_DIR SRC_ROOT
     
@@ -61,7 +60,8 @@ NOTE: If you have already installed LLVM, you can skip this part.
 
 Assume that SRC_ROOT is the top-level directory of the llvm2cryptoline
 source code, LLVM_INSTALL_DIR is the directory where you installed
-your LLVM (i.e. INSTALL_DIR in the previous part).
+your LLVM (i.e. INSTALL_DIR in the previous part), and your ANTLR4 
+tool in the directory ANTLR_DIR.
 
 1. cd SRC_ROOT
 
@@ -69,11 +69,11 @@ your LLVM (i.e. INSTALL_DIR in the previous part).
 
 3. if the installed LLVM version < 3.9.0, run:
 
-    cmake -DLLVM_DIR=LLVM_INSTALL_DIR/share/llvm/cmake/ ..
+    cmake -DLLVM_DIR=LLVM_INSTALL_DIR/share/llvm/cmake/ -DANTLR_EXECUTABLE=ANTLR_DIR/antlr-4.12.0-complete.jar ..
     
    if the installed LLVM version >= 3.9.0, then run:
    
-    cmake -DLLVM_DIR=LLVM_INSTALL_DIR/lib/cmake/llvm/ ..
+    cmake -DLLVM_DIR=LLVM_INSTALL_DIR/lib/cmake/llvm/ -DANTLR_EXECUTABLE=ANTLR_DIR/antlr-4.12.0-complete.jar ..
 
 4. make
 
@@ -88,7 +88,7 @@ Use the following command line:
 
     - FUNCTION_NAME    the translated function name
     
-    - CONDITION	the pre- and post-condition file
+    - CONDITION	       the pre- and post-condition file
 
     - BLOCK_NAME       the translated basic block name
 

@@ -1,37 +1,17 @@
 {
   true
   &&
-    and [
-  	  small1_0  <= const 64 (2**64),
-  	  small1_8  <= const 64 (2**64),
-  	  small1_16 <= const 64 (2**64),
-  	  small1_24 <= const 64 (2**64),
-  	  small2_0  <= const 64 (2**64),
-  	  small2_8  <= const 64 (2**64),
-  	  small2_16 <= const 64 (2**64),
-  	  small2_24 <= const 64 (2**64)
-  ]
+  true
 }
 
 {
   eqmod
-    (  limbs 64 [ out_0_prime, out_16_prime , out_32_prime, out_48_prime, out_64_prime, out_80_prime, out_96_prime, out_112_prime] )
+    (  limbs 64 out'[0..7] )
     (
-      limbs 64 [ small1_0, small1_8, small1_16, small1_24]
-      *
-      limbs 64 [ small2_0, small2_8, small2_16, small2_24]
+      limbs 64 small1[0..3] * limbs 64 small2[0..3]
     )
     (2**256-2**224+2**192+2**96-1)
   &&
-  and [
-     out_0_prime <= (7 * 2**64)@128,
-     out_16_prime <= (7 * 2**64)@128,
-     out_32_prime <= (7 * 2**64)@128,
-     out_48_prime <= (7 * 2**64)@128,
-     out_64_prime <= (7 * 2**64)@128,
-     out_80_prime <= (7 * 2**64)@128,
-     out_96_prime <= (7 * 2**64)@128,
-     out_112_prime <= (7 * 2**64)@128
-  ]
+  out'[0..7] <= (7 * 2**64)@128
 }
 

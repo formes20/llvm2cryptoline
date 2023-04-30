@@ -2,31 +2,17 @@
   true
   &&
   and [
-    in1_0 <= const 64 (2**60),
-    in1_8 <= const 64 (2**60),
-    in1_16 <= const 64 (2**60),
-    in1_24 <= const 64 (2**60),
-    in2_0 <= const 64 (2**59),
-    in2_8 <= const 64 (2**59),
-    in2_16 <= const 64 (2**59),
-    in2_24 <= const 64 (2**59)
+    in1[0..3] <= const 64 (2**60),
+    in2[0..3] <= const 64 (2**59)
   ]
 }
 
 {
   eq
-    (limbs 56 [out_0_prime, out_16_prime, out_32_prime, out_48_prime, out_64_prime, out_80_prime, out_96_prime])
-    (limbs 56 [in1_0_init, in1_8_init, in1_16_init, in1_24_init]) *  (limbs 56 [in2_0_init, in2_8_init, in2_16_init, in2_24_init])
+    (limbs 56 out'[0..6])
+    (limbs 56 in1[0..3] *  limbs 56 in2[0..3] )
     
   &&
-  
-   and [
-    out_0_prime <= const 128 (2**121),
-    out_16_prime <= const 128 (2**121),
-    out_32_prime <= const 128 (2**121),
-    out_48_prime <= const 128 (2**121),
-    out_64_prime <= const 128 (2**121),
-    out_80_prime <= const 128 (2**121),
-    out_96_prime <= const 128 (2**121)
-  ]
+    out'[0..6] <= const 128 (2**121)
+ 
 }

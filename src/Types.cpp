@@ -9,6 +9,7 @@
 
 #include "Types.h"
 #include "Utils.h"
+#include <iostream>
 
 using namespace cryptoline;
 
@@ -85,6 +86,17 @@ SymbolicAddress PointerTable::getSymAddr(llvm::Value* v) {
 void PointerTable::add(llvm::Value* v, SymbolicAddress s) {
     this->table[v] = s;
 }
+
+
+llvm::Value* PointerPointerTable::getPt(llvm::Value* v){
+        return this->pptable[v];
+        
+}
+
+void PointerPointerTable::addPointerPointer(llvm::Value* r,llvm::Value*t){
+    this->pptable.insert(std::pair<llvm::Value* ,llvm::Value*>(r,t));
+}
+
 
 Argument::Argument() {
 }
@@ -169,8 +181,8 @@ std::string Argument::toAlgArg() {
     std::string s;
     switch (this->op) {
     case CryptoLineOps::Const: // TODO: check the const format 
-        s =  this->val + "@" + std::to_string(this->width) ;
-        break;
+        //s =  this->val + "@" + std::to_string(this->width) ;
+        //break;
     case CryptoLineOps::Var:
     case CryptoLineOps::Flag:
     case CryptoLineOps::Num:
@@ -335,6 +347,24 @@ std::string Variable::toDecl() const {
     return this->getType() + " " + this->val;
 }
 
+Derived_Variable::Derived_Variable(){
+}
+
+Derived_Variable::Derived_Variable(Variable s, unsigned h, unsigned l){
+    this->source_var = s;
+    this->high = h;
+    this->low = l;
+    this->leftShiftOffset = 0;
+}
+
+Derived_Variable::Derived_Variable(Variable s, unsigned h, unsigned l, unsigned o){
+    this->source_var = s;
+    this->high = h;
+    this->low = l;
+    this->leftShiftOffset = o;
+}
+
+
 Predicate Predicate::True() {
     Predicate p;
     p.op = CryptoLineOps::True;
@@ -439,6 +469,7 @@ std::map<CryptoLineOps, std::string> Statement::name = {
         {CryptoLineOps::Call, "call"},
         {CryptoLineOps::Assume, "assume"},
         {CryptoLineOps::Assert, "assert"}
+
 };
 
 /*

@@ -1,18 +1,13 @@
 {
   true
   &&
-    and [
-  	  in_0  <= const 128 (2**109),
-  	  in_16 <= const 128 (2**109),
-  	  in_32 <= const 128 (2**109),
-  	  in_48 <= const 128 (2**109)
-  ]
+  in[0..3] <= const 128 (2**109)
 }
 
 {
   eqmod
-   (  limbs 64 [ in_0_init, in_16_init, in_32_init, in_48_init]   )
-   (  limbs 64 [ out_0_prime, out_8_prime , out_16_prime, out_24_prime] )
+   (  limbs 64 in[0..3]   )
+   (  limbs 64 out'[0..3] )
    (2**256-2**224+2**192+2**96-1)
   &&
   true

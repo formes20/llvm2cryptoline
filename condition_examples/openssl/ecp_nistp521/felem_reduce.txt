@@ -5,19 +5,10 @@
 }
 
 {
-  eqmod   (limbs 58 [out_0_prime,out_8_prime, out_16_prime, out_24_prime, out_32_prime, out_40_prime, out_48_prime, out_56_prime, out_64_prime])
-           (limbs 58 [in_0_init,in_16_init, in_32_init, in_48_init, in_64_init, in_80_init, in_96_init, in_112_init, in_128_init]) 
-           (( 2**521) - (1))
+  eqmod   
+  (limbs 58 out'[0..8])
+  (limbs 58 in[0..8]) 
+  (( 2**521) - 1)
   &&
-  and [
-    out_0_prime <  const 64 (2**59 + 2**14) ,
-    out_8_prime <  const 64 (2**59 + 2**14) ,
-    out_16_prime < const 64 (2**59 + 2**14) ,
-    out_24_prime < const 64 (2**59 + 2**14) ,
-    out_32_prime < const 64 (2**59 + 2**14) ,
-    out_40_prime < const 64 (2**59 + 2**14) ,
-    out_48_prime < const 64 (2**59 + 2**14) ,
-    out_56_prime < const 64 (2**59 + 2**14) ,
-    out_64_prime < const 64 (2**59 + 2**14) 
-  ]
+  out'[0..8] <  const 64 (2**59 + 2**14)
 }

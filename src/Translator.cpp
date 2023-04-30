@@ -9,19 +9,24 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include "llvm/IR/Constants.h"
+
 // #include "llvm/IR/ConstantsContext.h"
 #include "llvm/Support/FileSystem.h"
 #include "Translator.h"
-#include "parsecondition.h"
 #include "Utils.h"
+#include "EvalVisitor.h"
+#include "conditionLexer.h"
+
 
 using namespace llvm;
 using namespace std;
 using namespace cryptoline;
 using namespace llvm2cryptoline;
+using namespace antlr4;
 
 typedef cryptoline::Argument Arg;
 typedef cryptoline::Variable Var;
+typedef cryptoline::Derived_Variable DV;
 
 ProgramCounter Translator::evaluate(ProgramCounter pc) {
     BasicBlock::iterator inst = pc.i;
@@ -67,7 +72,10 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
     } else if (CallInst* ci = dyn_cast<CallInst>(inst)) {
         // call
         evalCall(ci);
-    } else if (ReturnInst* ri = dyn_cast<ReturnInst>(inst)) {
+    }else if (AllocaInst* ali = dyn_cast<AllocaInst>(inst)){
+        evalAlloca(ali);
+    } 
+    else if (ReturnInst* ri = dyn_cast<ReturnInst>(inst)) {
         // return
         // do nothing
     } else {
@@ -77,21 +85,36 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
 
     if(MDNode *N = inst->getMetadata("annotation")){
         std::string ant = cast<MDString>(N->getOperand(0))->getString().str();
-        ParseCondition p;
         Statement s;
         s = Statement::Comment("Translate from annotation");
         this->result.push_back(s);
-        VarSymbol *annotation = p.parse_annotation(ant);
+        ANTLRInputStream input(ant);
+        conditionLexer lexer(&input);
+        CommonTokenStream tokens(&lexer);
+        tokens.fill();
+        conditionParser parser(&tokens);
+        tree::ParseTree* tree = parser.assert_rule();
+        EvalVisitor eval ;
+        eval.visit(tree);
+        
         Arg left,right;
         unsigned width;
         std::string val;
 
-        if(annotation->containsKey("l_var")!=""){
-           left = getvar(annotation->containsKey("l_var"));
-           
-        }else{
-            width = stoi(annotation->containsKey("l_const_width"));
-            val = annotation->containsKey("l_const_val");
+        if(eval.anno->containsKey("l_var")!=""){
+            width = getVarwidth(eval.anno->containsKey("l_var"));
+            Var l = Var(this->defaultType, width, eval.anno->containsKey("l_var"));
+            left = l;
+        }
+
+        if(eval.anno->containsKey("r_var")!=""){
+            width = getVarwidth(eval.anno->containsKey("r_var"));
+            Var r = Var(this->defaultType, width, eval.anno->containsKey("r_var"));
+            right = r;
+        }
+
+        if(eval.anno->containsKey("l_const")!=""){
+            val = eval.anno->containsKey("l_const");
             if (this->defaultType == CryptoLineType::sint) {
                 left = Arg::SConst(width, val);
             }else{
@@ -99,11 +122,8 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
             }
         }
 
-        if(annotation->containsKey("r_var")!=""){
-            right = getvar(annotation->containsKey("r_var"));
-        }else{
-            width = stoi(annotation->containsKey("r_const_width"));
-            val = annotation->containsKey("r_const_val");
+        if(eval.anno->containsKey("r_const")!=""){
+            val = eval.anno->containsKey("r_const");
             if (this->defaultType == CryptoLineType::sint) {
                 right = Arg::SConst(width, val);
             }else{
@@ -120,10 +140,31 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
     return {pc.b, inst};
 }
 
-bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string outputName, bool inBlock) {
+bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string outputName, bool inBlock, Function *function) {
     std::error_code ec;
     raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::OF_None);
 
+    std::map<std::string, unsigned int> Inputvariable;
+    
+    for (Function::arg_iterator a = function->arg_begin(), ae = function->arg_end(); a != ae;a++) {
+        Type *ty = a->getType();
+        if(ty->isPointerTy()){
+            Type *ct = ty->getContainedType(0);
+            if(ct->isStructTy()) {
+                Type *t = ct->getContainedType(0);
+                Type *tt = t->getContainedType(0);
+                unsigned int s = sizeOf(tt);
+                Inputvariable.insert(std::pair<std::string, unsigned int>(Utils::replaceChar(a->getName().str(), '.', '_'),s));
+            }else{
+                Inputvariable.insert(std::pair<std::string, unsigned int>(Utils::replaceChar(a->getName().str(), '.', '_'), sizeOf(ct)));
+            }
+        }else {
+            Inputvariable.insert(std::pair<std::string, unsigned int>(Utils::replaceChar(a->getName().str(), '.', '_'), sizeOf(ty)));
+
+        }
+
+    }
+    
     //if (out.is_open()) {
         BasicBlock *entry = pc.b;
         BasicBlock *block = pc.b;
@@ -205,11 +246,23 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         }
         tail += "}\n";
         */
-       ParseCondition p;
-        head += p.parse_precondition(condition);
         string tail = "\n\n";
-        tail += p.parse_postcondition(condition);
+        ANTLRFileStream input;
+        input.loadFromFile(condition);
+        conditionLexer lexer(&input);
+        CommonTokenStream tokens(&lexer);
+        tokens.fill();
+        conditionParser parser(&tokens);
+        tree::ParseTree* tree = parser.spec();
+        
+        EvalVisitor eval = EvalVisitor(Inputvariable);
+        eval.visit(tree);
+        std::string precondition  = eval.var->containsKey("precondition");
+        head += precondition;
         out << head << "\n\n";
+        std::string postcondition  = eval.var->containsKey("postcondition");
+        tail += postcondition;
+        
 
         if (!inputVars.empty()) {
             string input = "\n\n";
@@ -251,6 +304,7 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         out << tail << "\n";
         out.close();
         return true;
+        
     //} else {
         //return false;
     //}
@@ -313,7 +367,11 @@ unsigned int Translator::sizeOf(Type* ty) {
             s += sizeOf(ty->getStructElementType(i));
         }
         return s;
-    } else {
+    } else if(ty->isPointerTy()){
+        Type *ct = ty->getContainedType(0);
+        return sizeOf(ct);
+    }
+    else {
         return 0;
     }
 }
@@ -342,20 +400,21 @@ void Translator::define(Variable var) {
     this->unusedVars.insert(var);
 }
 
-cryptoline::Argument Translator::getvar(std::string s)
+unsigned int  Translator::getVarwidth(std::string s)
 {
     for (auto i = this->defVars.begin(); i != this->defVars.end(); i++) {
         if(i->val == s){
-                return *i;
+                return i->width;
                 }
         }
+    
     for (auto i = this->undefVars.begin(); i != this->undefVars.end(); i++) {
         if(i->val == s){
-                return *i;
+                return i->width;
                 }
         }
     errs() << "No variable named " << s << "\n";
-    return Var();
+    return 0;
 
 }
 
@@ -430,6 +489,19 @@ void Translator::evalLoad(LoadInst* li) {
             this->use(src);
             this->define(dst);
         }
+    }else if (type->isPointerTy()){
+        Value* t = this->pptable.getPt(ad);
+        Value* v = li;
+        SymbolicAddress sym;
+        if(t){
+            //load after store
+            sym = this->pointerTable.getSymAddr(t);
+        }else{
+            //load without store ,losing info of other block
+            sym = this->pointerTable.getSymAddr(v);
+        }
+        this->pointerTable.add(v,sym);
+
     }
 
 }
@@ -477,8 +549,14 @@ void Translator::evalStore(StoreInst* si) {
             this->use(src);
             this->define(dst);
         }
+    }else if(type->isPointerTy()){
+        this->pptable.addPointerPointer(ad,v);
+        SymbolicAddress sym = this->pointerTable.getSymAddr(v);
+        this->pointerTable.add(v,sym);
+        //width = type->getIntegerBitWidth();
+        
     }
-
+    
 }
 
 void Translator::evalBinaryOpArithmetic(BinaryOperator* bo) {
@@ -700,6 +778,7 @@ void Translator::evalBinaryOpShl(BinaryOperator* bo) {
     Value* t2 = bo->getOperand(1);
     Type *type = bo->getType();
     unsigned width;
+    //std::cout << toString(&(*bo)) << std::endl;
 
     // TODO: now assume t1 is not constant, t2 is constant
     if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
@@ -711,10 +790,32 @@ void Translator::evalBinaryOpShl(BinaryOperator* bo) {
             Var dst = Var(this->defaultType, width, getName(bo));
             // Var src = Var::UVar(width, getName(t1));
             Var src = Var(this->defaultType, width, getName(t1));
+            Var dstTmp = Var(this->defaultType, width, getName(bo) + "_star");
 
             if (safety) {
-                s = Statement::Shl(dst, src, Arg::Num(n));
-                this->result.push_back(s);
+                if(immediateShl){
+                    s = Statement::Shl(dst, src, Arg::Num(n));
+                    this->result.push_back(s);
+                }else{
+                    Var tmpH = Var(this->defaultType, width, "tmp_" + getName(t1) + "_high" + to_string(n));
+                    s = Statement::Split(tmpH, dstTmp, src, Arg::Num(width-n));
+                    this->result.push_back(s);
+                    s = Statement::Shl(dst, dstTmp, Arg::Num(n));
+                    this->result.push_back(s);
+                    recordSplit(tmpH, dst, src, width, width-n, n);
+                    if(heuristcs_sound){
+                        s = Statement::Comment("Heuristics applied.");
+                        this->result.push_back(s);
+                        s = Statement::Assert(Predicate::True(),
+                                      Predicate::Eq(tmpH, Arg::UConst(width, "0")));
+                        this->result.push_back(s);
+                        s = Statement::Assume(Predicate::Eq(tmpH, Arg::UConst(width, "0")),
+                                      Predicate::True());
+                        this->result.push_back(s);
+                }
+
+                }
+                
             } else {
                 Arg dis = Arg::Flag("discard_" + to_string(discardCount));
                 discardCount++;
@@ -924,7 +1025,7 @@ void Translator::evalBinaryOpLShr(BinaryOperator* bo) {
     Value* t2 = bo->getOperand(1);
     Type *type = bo->getType();
     unsigned width;
-
+    //std::cout << toString(&(*bo)) << std::endl;
     if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
         width = type->getIntegerBitWidth();
         unsigned n = c2->getZExtValue();
@@ -948,33 +1049,39 @@ void Translator::evalBinaryOpLShr(BinaryOperator* bo) {
                 src1 = Arg::UConst(width, "0x" + S.str().str());
                 //src1 = Arg::UConst(width, "0x" + c1->getValue().toString(16, false));
             }
+            s = Statement::Split(dst,
+                                Var::UVar(width, "tmp_to_be_used"),
+                                src1,
+                                Arg::Num(n));
+            this->result.push_back(s);
         } else {
             Var v = Var(this->defaultType, width, getName(t1));
             src1 = v;
             this->use(v);
+            Var tmp = Var(this->defaultType, width, "tmp_" + getName(t1) + "_low" + to_string(n));
+            s = Statement::Split(dst, tmp, src1, Arg::Num(n));
+            this->result.push_back(s);
+            recordSplit(dst, tmp, v, width, n, 0);
+            
         }
-
-        s = Statement::Split(dst,
-                             Var(this->defaultType, width, "tmp_to_be_used"),
-                             src1,
-                             Arg::Num(n));
-        this->result.push_back(s);
+        
+        
         this->define(dst);
 
         // heurisitc
-        if (n == 32 && this->lowerPart.count(src1) != 0) {
-            s = Statement::Comment("Heuristics applied.");
-            this->result.push_back(s);
-            s = Statement::Assert(Predicate::True(),
-                                  Predicate::Eq(Var(this->defaultType, width, "tmp_to_be_used"),
-                                                this->lowerPart[src1]));
-            this->result.push_back(s);
-            s = Statement::Assume(Predicate::Eq(Var(this->defaultType, width, "tmp_to_be_used"),
-                                                this->lowerPart[src1]),
-                                  Predicate::True());
-            this->result.push_back(s);
-            this->lowerPart.erase(src1);
-        }
+        // if (n == 32 && this->lowerPart.count(src1) != 0) {
+        //     s = Statement::Comment("Heuristics applied.");
+        //     this->result.push_back(s);
+        //     s = Statement::Assert(Predicate::True(),
+        //                           Predicate::Eq(Var(this->defaultType, width, "tmp_to_be_used"),
+        //                                         this->lowerPart[src1]));
+        //     this->result.push_back(s);
+        //     s = Statement::Assume(Predicate::Eq(Var(this->defaultType, width, "tmp_to_be_used"),
+        //                                         this->lowerPart[src1]),
+        //                           Predicate::True());
+        //     this->result.push_back(s);
+        //     this->lowerPart.erase(src1);
+        // }
 
     } else { // the second argument is a variable!
         // the shifted number cannot be a variable
@@ -1143,7 +1250,6 @@ void Translator::evalBinaryOpAShr(BinaryOperator* bo) {
     Value* t2 = bo->getOperand(1);
     Type *type = bo->getType();
     unsigned width;
-
     if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
         width = type->getIntegerBitWidth();
         unsigned n = c2->getZExtValue();
@@ -1160,18 +1266,21 @@ void Translator::evalBinaryOpAShr(BinaryOperator* bo) {
             c1->getValue().toString(S, 16, false, false);
             src1 = Arg::SConst(width, "0x" + S.str().str());
             //src1 = Arg::SConst(width, "0x" + c1->getValue().toString(16, false));
+            s = Statement::Split(dst,
+                             Var::UVar(width, "tmp_to_be_used"),
+                             src1,
+                             Arg::Num(n));
+            this->result.push_back(s);
         } else {
             Var v = Var::SVar(width, getName(t1));
             src1 = v;
             this->use(v);
+            Var tmp = Var(this->defaultType, width, "tmp_" + getName(t1) + "_low" + to_string(n));
+            s = Statement::Split(dst, tmp, src1, Arg::Num(n));
+            this->result.push_back(s);
+            recordSplit(dst, tmp, v, width, n, 0);
         }
-
-        s = Statement::Split(dst,
-                             Var::UVar(width, "tmp_to_be_used"),
-                             src1,
-                             Arg::Num(n));
-        this->result.push_back(s);
-        this->define(dst);
+        this->define(dst); 
 
     } else { // the second argument is a variable!
         // the shifted number cannot be a variable
@@ -1335,11 +1444,13 @@ void Translator::evalBinaryOpAShr(BinaryOperator* bo) {
 }
 
 void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
+    
     Statement s;
     Value* t1 = bo->getOperand(0);
     Value* t2 = bo->getOperand(1);
     Type *type = bo->getType();
     unsigned width;
+    //std::cout << toString(&(*bo)) << std::endl;
 
     s = Statement::Comment("You may need to modify here");
     this->result.push_back(s);
@@ -1349,6 +1460,7 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
         // Var dst = Var::UVar(width, getName(bo));
         Var dst = Var(this->defaultType, width, getName(bo));
         Arg src1,src2;
+        bool src1IsVar = false, src2IsMask= false;
 
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
             SmallString<40> S;
@@ -1363,6 +1475,7 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
             Var v = Var(this->defaultType, width, getName(t1));
             src1 = v;
             this->use(v);
+            src1IsVar = true;
         }
 
          // heuristics
@@ -1380,22 +1493,31 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
             } else {
                 src2 = Arg::UConst(width, "0x" + S.str().str());
             }
+            unsigned lZero = c2->getValue().countLeadingZeros();
+            unsigned rZero = c2->getValue().countTrailingZeros();
+            src2IsMask = width-lZero-rZero == c2->getValue().countPopulation();
+            // src2IsMask denotes the set bits in constant c2 is continuous
 
-            if (this->heuristcs_sound) {
-                if (c2->getValue().countTrailingOnes()
-                    + c2->getValue().countLeadingZeros() == 64) {
-                    rule_and_after_lshr = true;
-                }
-            }
+            // if (this->heuristcs_sound) {
+            //     if (c2->getValue().countTrailingOnes()
+            //         + c2->getValue().countLeadingZeros() == 64) {
+            //         rule_and_after_lshr = true;
+            //     }
+            // }
 
-            if (width == 128 && c2->getValue().countTrailingOnes() == 64
-                    && c2->getValue().countLeadingZeros() == 64) {
-                h_low64 = true;
-            } else if (width == 64 && c2->getValue().countTrailingOnes() == 32
-                    && c2->getValue().countLeadingZeros() == 32) {
-                h_low32 = true;
-            } else if (width == 64 && c2->getValue().countTrailingZeros() == 32) {
-                h_high = true;
+            // if (width == 128 && c2->getValue().countTrailingOnes() == 64
+            //         && c2->getValue().countLeadingZeros() == 64) {
+            //     h_low64 = true;
+            // } else if (width == 64 && c2->getValue().countTrailingOnes() == 32
+            //         && c2->getValue().countLeadingZeros() == 32) {
+            //     h_low32 = true;
+            // } else if (width == 64 && c2->getValue().countTrailingZeros() == 32) {
+            //     h_high = true;
+            // }
+
+            if(this->heuristcs_sound && width == 128 && c2->getValue().countTrailingOnes() == 64
+                    && c2->getValue().countLeadingZeros() == 64){
+                    h_low64 = true;
             }
         } else {
             // Var v = Var::UVar(width, getName(t2));
@@ -1408,25 +1530,35 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
         this->result.push_back(s);
         this->define(dst);
 
+        if(src1IsVar && src2IsMask){
+            this->derivedVars.insert(dst);
+            Var v = Var(this->defaultType, width, getName(t1));
+            ConstantInt* c = llvm::dyn_cast<llvm::ConstantInt>(t2);
+            unsigned l0s = c->getValue().countLeadingZeros();
+            unsigned r0s = c->getValue().countTrailingZeros();
+            recordAnd(dst, v, width, l0s, r0s);
+        }
+        
+        
         // apply heuristic
-        if (rule_and_after_lshr) {
-            s = Statement::Comment("Rule AND after LSHR Heuristics applied.");
-            this->result.push_back(s);
+        // if (rule_and_after_lshr) {
+        //     s = Statement::Comment("Rule AND after LSHR Heuristics applied.");
+        //     this->result.push_back(s);
 
-            s = Statement::Assert(Predicate::True(),
-                                      Predicate::Eq(dst,
-                                                    Arg::Var(this->defaultType, width,"tmp_to_be_used")));
-            this->result.push_back(s);
+        //     s = Statement::Assert(Predicate::True(),
+        //                               Predicate::Eq(dst,
+        //                                             Arg::Var(this->defaultType, width,"tmp_to_be_used")));
+        //     this->result.push_back(s);
 
-            s = Statement::Assume(Predicate::Eq(dst,
-                                                    Arg::Var(this->defaultType, width, "tmp_to_be_used")),
-                                      Predicate::True());
-            this->result.push_back(s);
-            }
+        //     s = Statement::Assume(Predicate::Eq(dst,
+        //                                             Arg::Var(this->defaultType, width, "tmp_to_be_used")),
+        //                               Predicate::True());
+        //     this->result.push_back(s);
+        //     }
 
         
         if (h_low64) {
-            s = Statement::Comment("Heuristics get low 64 bit applied.");
+            s = Statement::Comment("Heuristics applied.");
             this->result.push_back(s);
             s = Statement::Assert(Predicate::True(),
                                   Predicate::Eq(dst, src1));
@@ -1434,23 +1566,24 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
             s = Statement::Assume(Predicate::Eq(dst, src1),
                                   Predicate::True());
             this->result.push_back(s);
-        } else if (h_low32) {
-            this->lowerPart[src1] = dst;
-        } else if (h_high && this->lowerPart.count(src1) != 0) {
-            s = Statement::Comment("Heuristics applied.");
-            this->result.push_back(s);
-            s = Statement::Assert(Predicate::True(),
-                                  Predicate::Eq(src1,
-                                                Arg::Flag(dst.toRangeArg() +
-                                                          " + " + this->lowerPart[src1].toAlgArg())));
-            this->result.push_back(s);
-            s = Statement::Assume(Predicate::Eq(src1,
-                                                Arg::Flag(dst.toRangeArg() +
-                                                          " + " + this->lowerPart[src1].toAlgArg())),
-                                  Predicate::True());
-            this->result.push_back(s);
-            this->lowerPart.erase(src1);
-        }
+        } 
+        // else if (h_low32) {
+        //     this->lowerPart[src1] = dst;
+        // } else if (h_high && this->lowerPart.count(src1) != 0) {
+        //     s = Statement::Comment("Heuristics applied.");
+        //     this->result.push_back(s);
+        //     s = Statement::Assert(Predicate::True(),
+        //                           Predicate::Eq(src1,
+        //                                         Arg::Flag(dst.toRangeArg() +
+        //                                                   " + " + this->lowerPart[src1].toAlgArg())));
+        //     this->result.push_back(s);
+        //     s = Statement::Assume(Predicate::Eq(src1,
+        //                                         Arg::Flag(dst.toRangeArg() +
+        //                                                   " + " + this->lowerPart[src1].toAlgArg())),
+        //                           Predicate::True());
+        //     this->result.push_back(s);
+        //     this->lowerPart.erase(src1);
+        // }
 
     } else if (type->isVectorTy()) {
         //int eleNum = type->getVectorNumElements();
@@ -1458,6 +1591,7 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
         int eleNum = cast<FixedVectorType>(type)->getNumElements();
         Type *eleType = cast<VectorType>(type)->getElementType();
         width = eleType->getIntegerBitWidth();
+        bool src1IsVar = false, src2IsMask= false;
 
         Var dst;
         Arg src1, src2;
@@ -1490,12 +1624,17 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
                 v1 = Var(this->defaultType, width, getName(t1), i);
                 src1 = v1;
                 this->use(v1);
+                src1IsVar = true;
             }
 
             if (t2isConstant) {
                 SmallString<40> S2;
                 ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().toString(S2 ,16, false, false);
                 src2 = Arg::UConst(width, "0x" + S2.str().str());
+
+                unsigned lZero = ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().countLeadingZeros();
+                unsigned rZero = ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().countTrailingZeros();
+                src2IsMask = width-lZero-rZero == ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().countPopulation();
             } else {
                 v2 = Var::UVar(width, getName(t2), i);
                 src2 = v2;
@@ -1505,6 +1644,16 @@ void Translator::evalBinaryOpAnd(BinaryOperator* bo) {
             s = Statement::And(dst, src1, src2);
             this->result.push_back(s);
             this->define(dst);
+
+            if(src1IsVar && src2IsMask){
+                this->derivedVars.insert(dst);
+                Var v = Var(this->defaultType, width, getName(t1), i);
+                unsigned l0s = ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().countLeadingZeros();
+                unsigned r0s = ((ConstantInt*)(c2->getAggregateElement(i)))->getValue().countTrailingZeros();
+                recordAnd(dst, v, width, l0s, r0s);
+
+            }
+            
         }
 
     } else {
@@ -1860,14 +2009,50 @@ bool Translator::evalGEPOperator(GEPOperator* gepo) {
 }
 
 void Translator::evalGetElementPtr(GetElementPtrInst* gepi) {
+
+    // Type *eTy = gepi->getSourceElementType();
+    // if (eTy->isStructTy()) {
+    //     Value* ad = gepi->getPointerOperand();
+    //     Value* v = gepi;
+    //     // SymbolicAddress baseAddr = this->pointerTable.getSymAddr(ad);
+    //     // SymbolicAddress newAddr = baseAddr.add(index * sizeOf(eTy));
+    //     // this->pointerTable.add(v,newAddr);
+    //     auto i = gepi->idx_begin();
+    //     if (ConstantInt* ci = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
+    //         int index = ci->getSExtValue();
+
+    //         SymbolicAddress baseAddr = this->pointerTable.getSymAddr(gepi->getPointerOperand());
+    //         SymbolicAddress newAddr = baseAddr.add(index * sizeOf(eTy));
+            
+    //         i++;
+    //         while (i != gepi->idx_end()) {
+    //             if (ConstantInt* ci2 = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
+    //                 index = ci2->getSExtValue();
+    //                 newAddr = newAddr.add(offsetAt(eTy, index));
+    //                 eTy = eTy->getStructElementType(index);
+    //             } else { 
+    //                 errs() << "No translation:" << *gepi << "\n";
+    //                 return;
+    //             }
+    //             i++;
+    //         }
+    //         this->pointerTable.add(gepi, newAddr);
+
+    //     }else {
+    //             errs() << "No translation:" << *gepi << "\n";
+    //             return;
+    //         }
+
+    // }
+
     if (GEPOperator* gepo = dyn_cast<GEPOperator>(gepi)) {
         if (!evalGEPOperator(gepo))
             errs() << "No translation:" << *gepi << "\n";
     } else {
         errs() << "No translation:" << *gepi << "\n";
     }
-
-    /*
+    
+    
     Type *eTy = gepi->getSourceElementType();
     auto i = gepi->idx_begin();
     if (ConstantInt* ci = llvm::dyn_cast<llvm::ConstantInt>(*i)) {
@@ -1903,7 +2088,7 @@ void Translator::evalGetElementPtr(GetElementPtrInst* gepi) {
     } else {
         errs() << "No translation:" << *gepi << "\n";
     }
-    */
+    
 }
 
 void Translator::evalInsertElement(InsertElementInst* iei) {
@@ -1942,25 +2127,40 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
                     src = v;
                     this->use(v);
                 }
+                if(heuristcs){
+                    Var s = Var(this->defaultType, width, getName(t2));
+                    this->derivedVars.insert(dst);
+                    if(this->derivedVars.count(s)>0){
+                        DV* dv = findSrc(s);
+                        DV tmp = DV(dv->source_var, dv->high, dv->low);
+                        this->variableRelation[dst] = tmp;
+                    }else{
+                        DV tmp = DV(s, width, 1);
+                        this->variableRelation[dst] = tmp;
+                    }
+                }
                 s = Statement::Mov(dst, src);
+                this->result.push_back(s);
             } else {
                 src = Var(this->defaultType, width, "undef", i);
                 s = Statement::Nondet(src);
                 this->result.push_back(s);
                 s = Statement::Mov(dst, src);
+                this->result.push_back(s);
             }
-            this->result.push_back(s);
             this->define(dst);
         }
     } else {
         Var dst;
         Arg src;
+        bool t2IsVariable = false;
         for (int i = 0; i < eleNum; i++) {
             // dst = Var::UVar(width, getName(iei), i);
             dst = Var(this->defaultType, width, getName(iei), i);
             if (i == index) {
                 if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
                     SmallString<40> S;
+                    t2IsVariable = false;
                     if (this->defaultType == CryptoLineType::sint) {
                         c2->getValue().toString(S, 10, true, false);
                         src = Arg::SConst(width,S.str().str());
@@ -1971,16 +2171,41 @@ void Translator::evalInsertElement(InsertElementInst* iei) {
                         //src = Arg::UConst(width, c2->getValue().toString(10, false));
                     }
                 } else {
+                    t2IsVariable = true;
                     Var v = Var(this->defaultType, width, getName(t2));
                     src = v;
                     this->use(v);
                 }
                 s = Statement::Mov(dst, src);
+                if(heuristcs && t2IsVariable){
+                    Var s = Var(this->defaultType, width, getName(t2));
+                    this->derivedVars.insert(dst);
+                    if(this->derivedVars.count(s)>0){
+                        DV* dv = findSrc(s);
+                        DV tmp = DV(dv->source_var, dv->high, dv->low);
+                        this->variableRelation[dst] = tmp;
+                    }else{
+                        DV tmp = DV(s, width, 1);
+                        this->variableRelation[dst] = tmp;
+                    }
+                }
             } else {
                 Var v = Var(this->defaultType, width, getName(t1), i);
                 src = v;
                 this->use(v);
                 s = Statement::Mov(dst, src);
+                if(heuristcs){
+                    //Var s = Var(this->defaultType, width, getName(t2));
+                    this->derivedVars.insert(dst);
+                    if(this->derivedVars.count(v)>0){
+                        DV* dv = findSrc(v);
+                        DV tmp = DV(dv->source_var, dv->high, dv->low);
+                        this->variableRelation[dst] = tmp;
+                    }else{
+                        DV tmp = DV(v, width, 1);
+                        this->variableRelation[dst] = tmp;
+                    }
+                }
             }
             this->result.push_back(s);
             this->define(dst);
@@ -2204,10 +2429,11 @@ void Translator::evalTrunc(TruncInst* ti) {
     // This implementation converts Trunc in a way like vpc, but keeps the higher part explicit.
     Type *dstType = ti->getDestTy();
     Value* t1 = ti->getOperand(0);
-
+    //std::cout <<  toString(&(*ti)) << std::endl;
     if (dstType->isIntegerTy()) {
         unsigned srcWidth = t1->getType()->getIntegerBitWidth();
         unsigned dstWidth = dstType->getIntegerBitWidth();
+        Statement s;
 
         Arg src;
         if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
@@ -2221,21 +2447,34 @@ void Translator::evalTrunc(TruncInst* ti) {
                 src = Arg::UConst(srcWidth, S.str().str());
                 //src = Arg::UConst(srcWidth, c1->getValue().toString(10, false));
             }
+            Var dstTmp = Var::UVar(srcWidth, getName(ti));
+            Var srcHigh = Var(this->defaultType, srcWidth, "tmp_" + getName(t1)  + 
+                              "_high"+ to_string(srcWidth-dstWidth));
+            s = Statement::Split(srcHigh, dstTmp, src, Arg::Num(dstWidth));
+            this->result.push_back(s);
+
+            Var dst = Var(this->defaultType, dstWidth, getName(ti));
+            s = Statement::Vpc(dst, dstTmp);
+            this->result.push_back(s);
+            this->define(dst);
         } else {
             Var v = Var(this->defaultType, srcWidth, getName(t1));
             src = v;
             this->use(v);
-        }
 
-        Var dstTmp = Var::UVar(srcWidth, getName(ti));
-        Statement s = Statement::Split(Var(this->defaultType, srcWidth, "tmp_" + getName(t1)),
-                                       dstTmp, src, Arg::Num(dstWidth));
-        this->result.push_back(s);
-        Var dst = Var(this->defaultType, dstWidth, getName(ti));
-        s = Statement::Vpc(dst, dstTmp);
-        this->result.push_back(s);
-        this->define(dst);
-    } else if (dstType->isVectorTy()) {
+            Var dstTmp = Var::UVar(srcWidth, getName(ti));
+            Var srcHigh = Var(this->defaultType, srcWidth, "tmp_" + getName(t1) + 
+                            "_high" + to_string(srcWidth-dstWidth));
+            s = Statement::Split(srcHigh, dstTmp, src, Arg::Num(dstWidth));
+            this->result.push_back(s);
+            Var dst = Var(this->defaultType, dstWidth, getName(ti));
+            s = Statement::Vpc(dst, dstTmp);
+            this->result.push_back(s);
+            recordSplit(srcHigh, dst, v, srcWidth, dstWidth, 0);
+            this->define(dst);
+        }
+        
+    }else if (dstType->isVectorTy()) {
         // int eleNum = dstType->getVectorNumElements();
         // unsigned srcWidth = t1->getType()->getVectorElementType()->getIntegerBitWidth();
         // unsigned dstWidth = dstType->getVectorElementType()->getIntegerBitWidth();
@@ -2264,24 +2503,58 @@ void Translator::evalTrunc(TruncInst* ti) {
                     src = Arg::SConst(srcWidth, S.str().str());
                     // src = Arg::SConst(srcWidth,
                     //                   ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, true));
+
                 } else {
                     ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(S, 10, false, false);
                     src = Arg::UConst(srcWidth, S.str().str());
                     // src = Arg::UConst(srcWidth,
                     //                   ((ConstantInt*)(c1->getAggregateElement(i)))->getValue().toString(10, false));
                 }
+                s = Statement::Split(Var(this->defaultType, srcWidth, "tmp_" + getName(t1), i),
+                                 dstTmp, src, Arg::Num(dstWidth));
+                this->result.push_back(s);
+                s = Statement::Vpc(dst, dstTmp);
+                this->result.push_back(s);
+                this->define(dst);
             } else {
                 v = Var(this->defaultType, srcWidth, getName(t1), i);
                 src = v;
                 this->use(v);
-            }
 
-            s = Statement::Split(Var(this->defaultType, srcWidth, "tmp_" + getName(t1), i),
-                                 dstTmp, src, Arg::Num(dstWidth));
-            this->result.push_back(s);
-            s = Statement::Vpc(dst, src);
-            this->result.push_back(s);
-            this->define(dst);
+                Var srcHigh = Var(this->defaultType, srcWidth, "tmp_" + getName(t1) + 
+                              "_high" + to_string(srcWidth-dstWidth), i);
+                Statement s = Statement::Split(srcHigh, dstTmp, src, Arg::Num(dstWidth));
+                this->result.push_back(s);
+                s = Statement::Vpc(dst, dstTmp);
+                this->result.push_back(s);
+                if(heuristcs){
+                    this->derivedVars.insert(dst);
+                    this->derivedVars.insert(srcHigh);
+                    if(this->derivedVars.count(v) > 0){
+                        if(DV* S = findSrc(v)){
+                            DV dst_src, srcHigh_src ;
+                            if( dstWidth > S->high - S->low){
+                                srcHigh_src = DV(S->source_var , S->high , S->low);
+                                this->variableRelation[dst] = dst_src;
+                            }else{
+                                dst_src = DV(S->source_var , S->high - dstWidth , S->low);
+                                srcHigh_src = DV(S->source_var, S->high, S->high - dstWidth + 1);
+                                this->variableRelation[srcHigh] = srcHigh_src;
+                                this->variableRelation[dst] = dst_src;
+                            }
+                        }
+                    }else{
+                        DV dst_src, srcHigh_src ;
+                        dst_src = DV(v , dstWidth , 1);
+                        srcHigh_src = DV(v, srcWidth, dstWidth + 1);
+                        this->variableRelation[dst] = dst_src;
+                        this->variableRelation[srcHigh] = srcHigh_src;
+                    }
+                }
+                this->define(dst);
+            }
+            
+            
         }
     } else { // which will not happen
         errs() << "No translation:" << *ti
@@ -2351,5 +2624,302 @@ void Translator::evalCall(CallInst* ci) {
         }
     } else { // Calls other than tail call are ignored.
         errs() << "No translation:" << *ci << "\n";
+    }
+}
+
+void Translator::evalAlloca(AllocaInst* ali){
+
+}
+
+Derived_Variable* Translator::findSrc(Variable v){
+    std::map<Variable, Derived_Variable>::iterator iter;
+    iter = this->variableRelation.find(v);
+    if ( iter != this->variableRelation.end()){
+        DV* src =  &(iter->second);
+        return src;
+    }else{
+        return nullptr;
+    }
+}
+
+const Variable* Translator::findVar(Derived_Variable dv){
+    std::map<Variable, Derived_Variable>::iterator iter;
+    for( iter = variableRelation.begin();iter!=variableRelation.end();iter++) {
+        if(iter->second == dv){
+            const Var* v = &(iter->first);
+            return v;
+        }
+    }
+    return nullptr;
+}
+
+void Translator::recordSplit(Variable h, Variable l ,Variable src, unsigned width, unsigned position, unsigned SHLoffset){
+    //SHLoffset denoting after split, l was shifted lefet by SHLoffset
+    Statement s ;
+    DV  h_src ,l_src;
+    this->derivedVars.insert(h);
+    this->derivedVars.insert(l);
+    if(this->derivedVars.count(src) > 0){
+    // src has been derived 
+        DV* S = findSrc(src);
+        if( position > S->high - S->low + S->leftShiftOffset){
+            l_src = DV(S->source_var , S->high , S->low, S->leftShiftOffset + SHLoffset);
+            this->variableRelation[l] = l_src;
+            varEQzero(h);
+        }else if(position > S->leftShiftOffset){
+            l_src = DV(S->source_var , S->low + position - S->leftShiftOffset -1, S->low, S->leftShiftOffset+SHLoffset);
+            h_src = DV(S->source_var, S->high, S->low + position - S->leftShiftOffset, 0);
+            if(const Var* e = findVar(l_src)){
+                Var eq = Var(this->defaultType, e->width, e->val);
+                varEQvar(l,eq);
+            }else{
+                this->variableRelation[l] = l_src;
+            }
+            if(const Var* e = findVar(h_src)){
+                Var eq = Var(this->defaultType, e->width, e->val);
+                varEQvar(h,eq);
+            }else{
+                this->variableRelation[h] = h_src;
+            }     
+        }else{
+            h_src = DV(S->source_var , S->high , S->low, S->leftShiftOffset - position);
+            this->variableRelation[h] = h_src;
+            varEQzero(l);
+        }
+    }else{
+        l_src = DV(src , position , 1, SHLoffset);
+        h_src = DV(src, width, position+1);
+        if(const Var* e = findVar(l_src)){
+            Var eq = Var(this->defaultType, e->width, e->val);
+            varEQvar(l,eq);
+        }
+        if(const Var* e = findVar(h_src)){
+            Var eq = Var(this->defaultType, e->width, e->val);
+            varEQvar(h,eq);
+        }
+        this->variableRelation[l] = l_src;
+        this->variableRelation[h] = h_src;
+    }
+}
+
+void Translator::recordAnd(Variable dst, Variable src, unsigned width, unsigned l0s, unsigned r0s){
+    Statement s ;
+    if(this->derivedVars.count(src) > 0){
+        DV* dv = findSrc(src);
+        if(dv->leftShiftOffset == 0){
+            DV t = DV(dv->source_var, dv->low+width-l0s-r0s-1, dv->low);
+            if(const Var* e = findVar(t)){
+                if(r0s == 0){
+                    Var eq = Var(this->defaultType, e->width, e->val);
+                    varEQvar(dst,eq);
+                }else{
+                    if(heuristcs){
+                        Arg c1 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")@"+to_string(width));
+                        Arg c2 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")");
+                        s = Statement::Assert(Predicate::True(), Predicate::Eq(dst,c1));
+                        this->result.push_back(s);
+                        s = Statement::Assume(Predicate::Eq(dst,c2), Predicate::True());
+                        this->result.push_back(s);
+                    }
+                }
+            }else{
+                this->variableRelation[dst] = t;
+            }      
+        }else if(dv->leftShiftOffset == r0s){
+            if(width-l0s-r0s > dv->high - dv->low){
+            // the set bit of mask cover DV_src 
+                varEQvar(dst,src);
+            }else{
+                DV t = DV(dv->source_var, dv->low+width-l0s-r0s-1, dv->low, dv->leftShiftOffset);
+                if(const Var* tmp = findVar(t)){
+                    if(heuristcs){
+                        Var qualifyVar = Var(this->defaultType, width, tmp->name);
+                        s = Statement::Comment("Heuristics applied.");
+                        this->result.push_back(s);
+                        s = Statement::Assert(Predicate::True(), Predicate::Eq(dst,Arg::Flag(qualifyVar.toRangeArg() + " * (2**" + to_string(dv->leftShiftOffset) + ")@" + to_string(width))));
+                        this->result.push_back(s);
+                        s = Statement::Assume(Predicate::Eq(dst,Arg::Flag(qualifyVar.toRangeArg() + " * (2**" + to_string(dv->leftShiftOffset) + ")")), Predicate::True());
+                        this->result.push_back(s);
+                    }
+                }else{
+                    this->variableRelation[dst] = t;
+                }
+                // heuristic for joint
+                if(heuristcs && heuristic_for_joint){
+                    DV tmp = DV(dv->source_var, dv->high, dv->low+width-l0s-r0s);
+                    if(findVar(tmp)){
+                        const Var* v_tmp = findVar(tmp);
+                        Var var_tmp = Var(this->defaultType, width, v_tmp->name);
+                        s = Statement::Comment("Heuristics for joint applied.");
+                        this->result.push_back(s);
+                        s = Statement::Assert(Predicate::True(), Predicate::Eq(src,
+                        Arg::Flag(dst.toRangeArg() + " + " + var_tmp.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")@" + to_string(width))));
+                        this->result.push_back(s);
+                        s = Statement::Assume(Predicate::Eq(src,
+                        Arg::Flag(dst.toRangeArg() + " + " + var_tmp.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")" )), Predicate::True());
+                        this->result.push_back(s);
+                    }
+                }
+            }
+        }else{
+            // leftShiftOffset !=0 and !=r0s 
+        }
+                    
+    }else{
+        // record relations between dst and src
+        DV t = DV(src, width-l0s, r0s+1);
+        if(const Var* e = findVar(t) ){
+            if(r0s == 0){
+                Var eq = Var(this->defaultType, e->width, e->val);
+                varEQvar(dst,eq);
+            }else{
+                if(heuristcs){
+                    s = Statement::Comment("Heuristics applied.");
+                    this->result.push_back(s);
+                    Arg c1 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")@"+to_string(width));
+                    Arg c2 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")");
+                    s = Statement::Assert(Predicate::True(), Predicate::Eq(dst,c1));
+                    this->result.push_back(s);
+                    s = Statement::Assume(Predicate::Eq(dst,c2), Predicate::True());
+                    this->result.push_back(s);
+                }
+            }
+        }
+
+        // for wolfssl
+        if(l0s == 32 && width ==64){
+            DV t = DV(src, width, r0s+1);
+            if(const Var* e = findVar(t) ){
+                Var h32 = Var(CryptoLineType::sint, width, src.toDst() + "_h32");
+                Var tmp = Var(CryptoLineType::uint, width,"tmp");
+                s = Statement::Comment("Heuristics applied.");
+                this->result.push_back(s);
+                s = Statement::Split(h32, tmp, src, Arg::Num(32));
+                this->result.push_back(s);
+                Arg l1 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")@"+to_string(width));
+                Arg l2 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")");
+                Arg r1 = Arg::Flag(src.toRangeArg() + "+" +
+                                    h32.toRangeArg() + "*(2**32)@"+to_string(width));
+                Arg r2 = Arg::Flag(src.toRangeArg() + "+" + h32.toRangeArg() + "*(2**32)");
+                s = Statement::Assert(Predicate::True(), Predicate::Eq(l1,r1));
+                this->result.push_back(s);
+                s = Statement::Assume(Predicate::Eq(l2,r2), Predicate::True());
+                this->result.push_back(s);
+            }
+            
+        }
+
+        /*
+        if(heuristcs && heuristic_for_joint){
+            if(r0s==0 && l0s==0){
+                varEQvar(dst,src);
+            }else if(r0s==0){
+                DV t = DV(src, width, width-l0s+1);
+                if(const Var* e = findVar(t)){
+                    Var eq = Var(this->defaultType, e->width, e->val);
+                    s = Statement::Comment("Heuristics for joint applied.");
+                    this->result.push_back(s);
+                    Arg a1 = Arg::Flag(dst.toRangeArg() + " + " + eq.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")@" + to_string(width));
+                    Arg a2 = Arg::Flag(dst.toRangeArg() + " + " + eq.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")");
+                    s = Statement::Assert(Predicate::True(), Predicate::Eq(src,a1));
+                    this->result.push_back(s);
+                    s = Statement::Assume(Predicate::Eq(src,a2), Predicate::True());
+                    this->result.push_back(s);
+                }
+            }else if(l0s == 0){
+                DV t = DV(src, width-r0s, 1);
+                if(const Var* e = findVar(t)){
+                    Var eq = Var(this->defaultType, e->width, e->val);
+                    s = Statement::Comment("Heuristics for joint applied.");
+                    this->result.push_back(s);
+                    Arg a1 = Arg::Flag(dst.toRangeArg() + " + " + eq.toRangeArg()+ "* (2**" + to_string(r0s) + ")@" + to_string(width));
+                    Arg a2 = Arg::Flag(dst.toRangeArg() + " + " + eq.toRangeArg()+ "* (2**" + to_string(r0s) + ")");
+                    s = Statement::Assert(Predicate::True(), Predicate::Eq(src,a1));
+                    this->result.push_back(s);
+                    s = Statement::Assume(Predicate::Eq(src,a2), Predicate::True());
+                    this->result.push_back(s);
+                }
+            }else{
+                DV l = DV(src, r0s, 1);
+                DV r = DV(src, width, width-l0s+1);
+                const Var* l_v = findVar(l);
+                const Var* r_v = findVar(r);
+                if(l_v && r_v){
+                    Var eqL = Var(this->defaultType, l_v->width, l_v->val);
+                    Var eqR = Var(this->defaultType, r_v->width, r_v->val);
+                    s = Statement::Comment("Heuristics for joint applied.");
+                    this->result.push_back(s);
+                    Arg a1 = Arg::Flag(eqR.toRangeArg() + "+" +
+                                        dst.toRangeArg() + "* (2**" + to_string(r0s) + ")@" + to_string(width) + "+" +
+                                        eqL.toRangeArg() + "* (2**" + to_string(width-l0s) +
+                                        ")@" + to_string(width));
+                    Arg a2 = Arg::Flag(eqR.toRangeArg() + "+" +
+                                        dst.toRangeArg() + "* (2**" + to_string(r0s) + ")" + "+" +
+                                        eqL.toRangeArg() + "* (2**" + to_string(width-l0s) + ")");
+                    s = Statement::Assert(Predicate::True(), Predicate::Eq(src,a1));
+                    this->result.push_back(s);
+                    s = Statement::Assume(Predicate::Eq(src,a2), Predicate::True());
+                    this->result.push_back(s);
+                }
+            }
+        }
+        */
+        else{
+            this->variableRelation[dst] = t;
+        }
+    }   
+}
+
+void Translator::varEQvar(Variable v1,Variable v2){
+   Statement s; 
+    if(heuristcs){
+        if(v1.width == v2.width){
+            s = Statement::Comment("Heuristics applied.");
+            this->result.push_back(s);
+            s = Statement::Assert(Predicate::True(), Predicate::Eq(v1, v2));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(v1, v2),Predicate::True());
+            this->result.push_back(s);
+        }else if(v1.width > v2.width){
+            s = Statement::Comment("Heuristics applied.");
+            this->result.push_back(s);
+            unsigned o = v1.width - v2.width;
+            Arg ext;
+            if(this->defaultType == CryptoLineType::sint){
+                ext = Arg::Flag("sext "+ v2.toDst() + " " +to_string(o));         
+            }else{
+                ext = Arg::Flag("uext "+ v2.toDst() + " " +to_string(o));  
+            }
+            s = Statement::Assert(Predicate::True(), Predicate::Eq(v1, ext));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(v1, v2),Predicate::True());
+            this->result.push_back(s);
+        }else{
+            s = Statement::Comment("Heuristics applied.");
+            this->result.push_back(s);
+            unsigned o = v2.width - v1.width;
+            Arg ext;
+            if(this->defaultType == CryptoLineType::sint){
+                ext = Arg::Flag("sext "+ v1.toDst() + " " +to_string(o));         
+            }else{
+                ext = Arg::Flag("uext "+ v1.toDst() + " " +to_string(o));  
+            }
+            s = Statement::Assert(Predicate::True(), Predicate::Eq(ext, v2));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(v1, v2),Predicate::True());
+            this->result.push_back(s);
+        }
+    }
+}
+
+void Translator::varEQzero(Variable v){
+    Statement s; 
+    if(heuristcs){
+        s = Statement::Comment("Heuristics applied.");
+        this->result.push_back(s);
+        s = Statement::Assert(Predicate::True(), Predicate::Eq(v,Arg::UConst(v.width, "0")));
+        this->result.push_back(s);
+        s = Statement::Assume(Predicate::Eq(v,Arg::UConst(v.width, "0")),Predicate::True());
+        this->result.push_back(s);
     }
 }

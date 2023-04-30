@@ -13,18 +13,21 @@
 
 using namespace llvm;
 using namespace llvm2cryptoline;
+using namespace cryptoline;
+
 
 void print_usage()
 {
     std::cout<<"\nUsage: translate FILE FUNCTION_NAME CONDITION " << " [options]" << std::endl
         << "Options:" << std::endl
-        << "  -block       have block \n"
-        << "  -dh          disable heuristics \n"
-        << "  -dheq        disable heuristics_eq \n"
-        << "  -dhs         disable heuristcs_sound \n"
-        << "  -unsigned    defaultType uint  \n"
-        << "  -signed      defaultType sint \n" 
-        << "  -h, --help   print this help info \n"   
+        << "  -block                       have block \n"
+        << "  -disable_heuristic           disable heuristics \n"
+        << "  -disable_heuristic_eq        disable heuristics_eq \n"
+        << "  -enable_heuristic_sound      enable heuristcs_sound \n"
+        << "  -unsigned                    defaultType uint  \n"
+        << "  -signed                      defaultType sint \n"
+        << "  -immediate_shl               use SHL instead of SPLIT & SHL \n" 
+        << "  -h, --help                   print this help info \n"   
         << "\n"
         << std::endl;
 }
@@ -53,21 +56,25 @@ int main(int argc, char* const* argv) {
             std::cout << "input block name:" <<std::endl;
             std::cin >> entry;
         }
-        else if(t_arg == "-dh"){
+        else if(t_arg == "-disable_heuristic"){
             t.heuristcs = false ;
-        }else if(t_arg == "-dheq"){
+        }else if(t_arg == "-disable_heuristic_eq"){
             t.heuristcs_equiv = false ;
-        }else if(t_arg == "-dhs"){
-            t.heuristcs_sound = false;
+        }else if(t_arg == "-enable_heuristic_sound"){
+            t.heuristcs_sound = true;
         }else if(t_arg == "-unsigned"){
             t.setType("unsigned");
         }else if(t_arg == "-signed"){
-            t.setType("signed");
-            
-        }else if(t_arg == "-h" || t_arg == "--help"){
+            t.setType("signed");   
+        }else if(t_arg == "-immediate_shl"){
+            t.immediateShl = true;   
+        }
+        else if(t_arg == "-h" || t_arg == "--help"){
             print_usage();
+            return 0;
         }else{
             print_usage();
+            return 0;
         }
     }
 
@@ -79,7 +86,6 @@ int main(int argc, char* const* argv) {
         std::cout << "IR file is corrupted or does not exist." << std::endl;
         exit(-1);
     }
-
     llvm::Module* module = up_mod.get();
 
     //module->dump();
@@ -108,15 +114,16 @@ int main(int argc, char* const* argv) {
         }
     } else {
         block = &(*(function->begin()));
+        
     }
-
     BasicBlock::iterator inst = block->begin();
     std::string outputName = fileName.substr(0, fileName.find_last_of('.'))
                              + "_" + functionName;
     if (inBlock) {
         outputName += "_" + entry;
     }
-    t.tranlate({block, inst}, condition, outputName, inBlock);
+    
+    t.tranlate({block, inst}, condition, outputName, inBlock, function);
 
     std::cout << "Done!!!" << std::endl;
 

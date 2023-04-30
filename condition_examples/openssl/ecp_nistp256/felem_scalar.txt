@@ -2,21 +2,15 @@
   true
   &&
   and [
-    out_0 <= const 128 (2**108),
-    out_16 <= const 128 (2**108),
-    out_32 <= const 128 (2**108),
-    out_48 <= const 128 (2**108),
-    v_scalar <= const 64 (2**3)
+    out[0..3] <= const 128 (2**108),
+    scalar <= const 64 (2**3)
   ]
 }
 
 {
   eq
-    ( limbs 64 [ out_0_init, out_16_init, out_32_init, out_48_init]
-      *
-       v_scalar
-    )
-    (  limbs 64 [ out_0_prime, out_16_prime , out_32_prime, out_48_prime] )
+    ( limbs 64 out[0..3] * scalar )
+    (  limbs 64 out'[0..3] )
   &&
   true
 }

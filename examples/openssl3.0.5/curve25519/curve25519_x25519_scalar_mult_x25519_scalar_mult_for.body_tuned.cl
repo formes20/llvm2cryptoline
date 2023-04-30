@@ -1789,6 +1789,9 @@ call fe51_mul(L11_0, L12_0, L13_0, L14_0, L15_0, L6_0, L7_0, L8_0, L9_0, L10_0, 
 (*   br i1 %cmp.not, label %for.end, label %for.body.for.body_crit_edge, !llvm.loop !9 *)
 
 
+(* == the following code is translated from the block == *)
+(* == for.body.for.body_crit_edge == *)
+
 (*   %dec = add nsw i32 %pos.0597, -1 *)
 //add v_dec v_pos_0597 (4294967295)@uint32;
 (*   %and95.i501 = and i64 %add87.i493, 2251799813685247 *)
