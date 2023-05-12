@@ -130,10 +130,35 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
                 right = Arg::UConst(width, val);
             }
         }
-        s = Statement::Assert(Predicate::True(),Predicate::Eq(left,right));
-        this->result.push_back(s);
-        s = Statement::Assume(Predicate::Eq(left,right),Predicate::True());
-        this->result.push_back(s);
+        if(left.width == right.width){
+            s = Statement::Assert(Predicate::True(),Predicate::Eq(left,right));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(left,right),Predicate::True());
+            this->result.push_back(s);
+        }else if(left.width > right.width){
+            Arg ext;
+            if(this->defaultType == CryptoLineType::sint){
+                ext = Arg::Flag("sext "+ right.toDst() + " " +to_string(left.width - right.width));
+            }else{
+                ext = Arg::Flag("uext "+ right.toDst() + " " +to_string(left.width - right.width));
+            }
+            s = Statement::Assert(Predicate::True(),Predicate::Eq(left,ext));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(left,right),Predicate::True());
+            this->result.push_back(s);
+        }else{
+            Arg ext;
+            if(this->defaultType == CryptoLineType::sint){
+                ext = Arg::Flag("sext "+ left.toDst() + " " +to_string(right.width - left.width));
+            }else{
+                ext = Arg::Flag("uext "+ right.toDst() + " " +to_string(right.width - left.width));
+            }
+            s = Statement::Assert(Predicate::True(),Predicate::Eq(ext,right));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(left,right),Predicate::True());
+            this->result.push_back(s);
+        }
+        
     }
 
     inst++;
@@ -142,6 +167,7 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
 
 bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string outputName, bool inBlock, Function *function) {
     std::error_code ec;
+    //raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::OF_None);
     raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::OF_None);
 
     std::map<std::string, unsigned int> Inputvariable;
@@ -2798,9 +2824,9 @@ void Translator::recordAnd(Variable dst, Variable src, unsigned width, unsigned 
                 this->result.push_back(s);
                 Arg l1 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")@"+to_string(width));
                 Arg l2 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")");
-                Arg r1 = Arg::Flag(src.toRangeArg() + "+" +
+                Arg r1 = Arg::Flag(dst.toRangeArg() + "+" +
                                     h32.toRangeArg() + "*(2**32)@"+to_string(width));
-                Arg r2 = Arg::Flag(src.toRangeArg() + "+" + h32.toRangeArg() + "*(2**32)");
+                Arg r2 = Arg::Flag(dst.toRangeArg() + "+" + h32.toRangeArg() + "*(2**32)");
                 s = Statement::Assert(Predicate::True(), Predicate::Eq(l1,r1));
                 this->result.push_back(s);
                 s = Statement::Assume(Predicate::Eq(l2,r2), Predicate::True());

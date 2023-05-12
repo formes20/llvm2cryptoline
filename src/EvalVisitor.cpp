@@ -167,6 +167,7 @@ std::any EvalVisitor::visitPre_a_var(conditionParser::Pre_a_varContext *ctx){
             std::cout << "unknown variable:" << ctx->var()->VAR()->getText() << std::endl;
         }
     }else{
+        result.append("v_");
         result.append(ctx->var()->VAR()->getText());
     }
     
@@ -1418,7 +1419,7 @@ std::any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext *ctx)
         }
         else{
             result1.append("v_");
-            result1.append(tmp1,1);          
+            result1.append(EvalVisitor::replaceChar(tmp1, '.', '_'),1);          
         }
         //result1.append(tmp1,1);
         anno->put("l_var",result1);
@@ -1443,7 +1444,7 @@ std::any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext *ctx)
         }
         else{
             result2.append("v_");
-            result2.append(tmp2,1);
+            result2.append(EvalVisitor::replaceChar(tmp2, '.', '_'),1);
         }
         //result2.append(tmp2,1);
         anno->put("r_var",result2);
@@ -1460,3 +1461,10 @@ std::any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext *ctx)
     return 0;
 }
 
+std::string EvalVisitor::replaceChar(std::string str, char target, char c) {
+  for (int i = 0; i < str.length(); i++) {
+    if (str[i] == target)
+      str[i] = c;
+  }
+  return str;
+}

@@ -69,8 +69,7 @@ assume eq tmp_v_scalar_sroa_2_0_insert_ext_high64 0 && true;
 (*   %scalar.sroa.0.0.insert.ext = zext i64 %scalar.coerce0 to i128, !annotation !4 *)
 cast v_scalar_sroa_0_0_insert_ext@uint128 v_scalar_coerce0@uint64;
 (* Translate from annotation *)
-assert true && eq v_scalar_coerce1 
-0@64;
+assert true && eq v_scalar_coerce1 0@64;
 assume eq v_scalar_coerce1 0 && true;
 (*   %scalar.sroa.0.0.insert.insert = or i128 %scalar.sroa.2.0.insert.shift, %scalar.sroa.0.0.insert.ext *)
 (* You may need to modify here *)

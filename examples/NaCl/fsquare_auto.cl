@@ -34,9 +34,6 @@ cast v_conv7@uint128 v1@uint64;
 (*   %mul8 = shl nuw nsw i128 %conv, 1 *)
 split tmp_v_conv_high1 v_mul8_star v_conv 127;
 shl v_mul8 v_mul8_star 1;
-(* Heuristics applied. *)
-assert true && eq tmp_v_conv_high1 0@128;
-assume eq tmp_v_conv_high1 0 && true;
 (*   %mul9 = mul i128 %mul8, %conv7 *)
 mul v_mul9 v_mul8 v_conv7;
 (*   %arrayidx13 = getelementptr inbounds i64, i64* %in, i64 2 *)
@@ -64,9 +61,6 @@ add v_mul28227 v_mul27 v_mul33;
 (*   %add35 = shl i128 %mul28227, 1 *)
 split tmp_v_mul28227_high1 v_add35_star v_mul28227 127;
 shl v_add35 v_add35_star 1;
-(* Heuristics applied. *)
-assert true && eq tmp_v_mul28227_high1 0@128;
-assume eq tmp_v_mul28227_high1 0 && true;
 (*   %arrayidx39 = getelementptr inbounds i64, i64* %in, i64 4 *)
 (*   %4 = load i64, i64* %arrayidx39, align 8, !tbaa !3 *)
 mov v4 in_32;
@@ -81,9 +75,6 @@ add v_mul42228 v_mul41 v_mul47;
 (*   %add49 = shl i128 %mul42228, 1 *)
 split tmp_v_mul42228_high1 v_add49_star v_mul42228 127;
 shl v_add49 v_add49_star 1;
-(* Heuristics applied. *)
-assert true && eq tmp_v_mul42228_high1 0@128;
-assume eq tmp_v_mul42228_high1 0 && true;
 (*   %mul54 = mul nuw i128 %conv14, %conv14 *)
 mul v_mul54 v_conv14 v_conv14;
 (*   %add55 = add i128 %add49, %mul54 *)
@@ -97,9 +88,6 @@ add v_mul62229 v_mul61 v_mul67;
 (*   %mul75 = shl nuw nsw i128 %conv14, 1 *)
 split tmp_v_conv14_high1 v_mul75_star v_conv14 127;
 shl v_mul75 v_mul75_star 1;
-(* Heuristics applied. *)
-assert true && eq tmp_v_conv14_high1 0@128;
-assume eq tmp_v_conv14_high1 0 && true;
 (*   %mul76 = mul i128 %mul75, %conv40 *)
 mul v_mul76 v_mul75 v_conv40;
 (*   %mul81 = mul nuw i128 %conv26, %conv26 *)
@@ -177,8 +165,7 @@ vpc v5@uint64 v5@uint128;
 (* You may need to modify here *)
 and uint64 v_conv149 v5 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add139_low51@uint64 tmp_v_add139_low51@uint128;
-assert true && eq v_conv149 tmp_v_add139_low51;
+assert true && eq uext v_conv149 64 tmp_v_add139_low51;
 assume eq v_conv149 tmp_v_add139_low51 && true;
 (*   store i64 %conv149, i64* %output, align 8, !tbaa !3 *)
 mov output_0 v_conv149;
@@ -205,13 +192,11 @@ vpc v8_1@uint64 v8_1@uint128;
 (* You may need to modify here *)
 and uint64 v9_0 v8_0 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add120_low51@uint64 tmp_v_add120_low51@uint128;
-assert true && eq v9_0 tmp_v_add120_low51;
+assert true && eq uext v9_0 64 tmp_v_add120_low51;
 assume eq v9_0 tmp_v_add120_low51 && true;
 and uint64 v9_1 v8_1 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add126_low51@uint64 tmp_v_add126_low51@uint128;
-assert true && eq v9_1 tmp_v_add126_low51;
+assert true && eq uext v9_1 64 tmp_v_add126_low51;
 assume eq v9_1 tmp_v_add126_low51 && true;
 (*   %10 = bitcast i64* %arrayidx156 to <2 x i64>* *)
 (*   store <2 x i64> %9, <2 x i64>* %10, align 8, !tbaa !3 *)
@@ -224,8 +209,7 @@ vpc v11@uint64 v11@uint128;
 (* You may need to modify here *)
 and uint64 v_conv161 v11 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add132_low51@uint64 tmp_v_add132_low51@uint128;
-assert true && eq v_conv161 tmp_v_add132_low51;
+assert true && eq uext v_conv161 64 tmp_v_add132_low51;
 assume eq v_conv161 tmp_v_add132_low51 && true;
 (*   %arrayidx162 = getelementptr inbounds i64, i64* %output, i64 4 *)
 (*   store i64 %conv161, i64* %arrayidx162, align 8, !tbaa !3 *)

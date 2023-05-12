@@ -275,4 +275,6 @@ public:
 
   std::any visitAssert_rule(conditionParser::Assert_ruleContext *ctx);
 
+  static std::string replaceChar(std::string str, char target, char c);
+
 };

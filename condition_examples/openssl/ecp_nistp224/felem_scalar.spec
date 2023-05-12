@@ -2,7 +2,7 @@
   true
   &&
   and [
-    	out[0..3]	<=	const  64  (2**58),
+    	out[0..3] <= const  64  (2**58),
     	scalar <= const 64 8
   ]
 }
@@ -16,5 +16,5 @@
       scalar
     )
     &&
-    true
+    out[0..3] <= const  64  (2**61)
 }

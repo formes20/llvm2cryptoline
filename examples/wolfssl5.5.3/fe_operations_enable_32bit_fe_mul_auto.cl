@@ -1,12 +1,3 @@
-/*
-===== Verification =====
-translate Arguments: -signed -immediate_shl -disable_heuristic_sound
-CryptoLine Arguments: -v -isafety -debug 
-
-
-
-*/
-
 proc main (sint32 f_0, sint32 f_4, sint32 f_8, sint32 f_12, sint32 f_16, sint32 f_20, sint32 f_24, sint32 f_28, sint32 f_32, sint32 f_36, sint32 g_0, sint32 g_4, sint32 g_8, sint32 g_12, sint32 g_16, sint32 g_20, sint32 g_24, sint32 g_28, sint32 g_32, sint32 g_36) =
 {
 	true
@@ -563,12 +554,10 @@ add v_add430 v_add357 v_shr429;
 (*   %shl431 = and i64 %add428, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl431 v_add428 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add428_h32 tmp v_add428 32;
 assert true && eq v_shr429*(2**25)@64 v_shl431+v_add428_h32*(2**32)@64;
 assume eq v_shr429*(2**25) v_shl431+v_add428_h32*(2**32) && true;
-
 (*   %sub432 = sub i64 %add422, %shl431 *)
 sub v_sub432 v_add422 v_shl431;
 (*   %add433 = add i64 %add425, 16777216 *)
@@ -599,12 +588,10 @@ add v_add435 v_add393 v_shr434;
 (*   %shl436 = and i64 %add433, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl436 v_add433 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add433_h32 tmp v_add433 32;
 assert true && eq v_shr434*(2**25)@64 v_shl436+v_add433_h32*(2**32)@64;
 assume eq v_shr434*(2**25) v_shl436+v_add433_h32*(2**32) && true;
-
 (*   %sub437 = sub i64 %add425, %shl436 *)
 sub v_sub437 v_add425 v_shl436;
 (*   %add438 = add i64 %add430, 33554432 *)
@@ -635,12 +622,10 @@ add v_add440 v_add366 v_shr439;
 (*   %shl441 = and i64 %add438, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl441 v_add438 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add438_h32 tmp v_add438 32;
 assert true && eq v_shr439*(2**26)@64 v_shl441+v_add438_h32*(2**32)@64;
 assume eq v_shr439*(2**26) v_shl441+v_add438_h32*(2**32) && true;
-
 (*   %sub442 = sub i64 %add430, %shl441 *)
 sub v_sub442 v_add430 v_shl441;
 (*   %add443 = add i64 %add435, 33554432 *)
@@ -671,12 +656,10 @@ add v_add445 v_add402 v_shr444;
 (*   %shl446 = and i64 %add443, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl446 v_add443 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add443_h32 tmp v_add443 32;
 assert true && eq v_shr444*(2**26)@64 v_shl446+v_add443_h32*(2**32)@64;
 assume eq v_shr444*(2**26) v_shl446+v_add443_h32*(2**32) && true;
-
 (*   %sub447 = sub i64 %add435, %shl446 *)
 sub v_sub447 v_add435 v_shl446;
 (*   %add448 = add i64 %add440, 16777216 *)
@@ -689,12 +672,10 @@ add v_add450 v_shr449 v_sub427;
 (*   %shl451 = and i64 %add448, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl451 v_add448 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add448_h32 tmp v_add448 32;
 assert true && eq v_shr449*(2**25)@64 v_shl451+v_add448_h32*(2**32)@64;
 assume eq v_shr449*(2**25) v_shl451+v_add448_h32*(2**32) && true;
-
 (*   %sub452 = sub i64 %add440, %shl451 *)
 sub v_sub452 v_add440 v_shl451;
 (*   %add453 = add i64 %add445, 16777216 *)
@@ -725,12 +706,10 @@ add v_add455 v_add411 v_shr454;
 (*   %shl456 = and i64 %add453, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl456 v_add453 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add453_h32 tmp v_add453 32;
 assert true && eq v_shr454*(2**25)@64 v_shl456+v_add453_h32*(2**32)@64;
 assume eq v_shr454*(2**25) v_shl456+v_add453_h32*(2**32) && true;
-
 (*   %sub457 = sub i64 %add445, %shl456 *)
 sub v_sub457 v_add445 v_shl456;
 (*   %add458 = add i64 %add450, 33554432 *)
@@ -743,12 +722,10 @@ add v_add460 v_sub437 v20;
 (*   %shl461 = and i64 %add458, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl461 v_add458 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add458_h32 tmp v_add458 32;
 assert true && eq v20*(2**26)@64 v_shl461+v_add458_h32*(2**32)@64;
 assume eq v20*(2**26) v_shl461+v_add458_h32*(2**32) && true;
-
 (*   %sub462 = sub i64 %add450, %shl461 *)
 sub v_sub462 v_add450 v_shl461;
 (*   %add463 = add i64 %add455, 33554432 *)
@@ -779,12 +756,10 @@ add v_add465 v_add420 v_shr464;
 (*   %shl466 = and i64 %add463, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl466 v_add463 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add463_h32 tmp v_add463 32;
 assert true && eq v_shr464*(2**26)@64 v_shl466+v_add463_h32*(2**32)@64;
 assume eq v_shr464*(2**26) v_shl466+v_add463_h32*(2**32) && true;
-
 (*   %sub467 = sub i64 %add455, %shl466 *)
 sub v_sub467 v_add455 v_shl466;
 (*   %add468 = add i64 %add465, 16777216 *)
@@ -799,12 +774,10 @@ add v_add471 v_mul470 v_sub;
 (*   %shl472 = and i64 %add468, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl472 v_add468 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add468_h32 tmp v_add468 32;
 assert true && eq v_shr469*(2**25)@64 v_shl472+v_add468_h32*(2**32)@64;
 assume eq v_shr469*(2**25) v_shl472+v_add468_h32*(2**32) && true;
-
 (*   %sub473 = sub i64 %add465, %shl472 *)
 sub v_sub473 v_add465 v_shl472;
 (*   %add474 = add i64 %add471, 33554432 *)
@@ -817,110 +790,68 @@ add v_add476 v_sub432 v21;
 (*   %shl477 = and i64 %add474, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl477 v_add474 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add474_h32 tmp v_add474 32;
 assert true && eq v21*(2**26)@64 v_shl477+v_add474_h32*(2**32)@64;
 assume eq v21*(2**26) v_shl477+v_add474_h32*(2**32) && true;
-
 (*   %sub478 = sub i64 %add471, %shl477 *)
 sub v_sub478 v_add471 v_shl477;
 (*   %conv479 = trunc i64 %sub478 to i32 *)
-//split tmp_v_sub478_high32 v_conv479 v_sub478 32;
-//vpc v_conv479@sint32 v_conv479@uint64;
-(*modify*)
-cast [tmp1] v_conv479@sint32  v_sub478@sint64;
-assert true && eq (sext tmp1 31) v_add474_h32;
-assume eq tmp1 v_add474_h32 && true;
+split tmp_v_sub478_high32 v_conv479 v_sub478 32;
+vpc v_conv479@sint32 v_conv479@uint64;
 (*   store i32 %conv479, i32* %h, align 4, !tbaa !3 *)
 mov h_0 v_conv479;
 (*   %conv481 = trunc i64 %add476 to i32 *)
-//split tmp_v_add476_high32 v_conv481 v_add476 32;
-//vpc v_conv481@sint32 v_conv481@uint64;
-(*modify*)
-cast [tmp2] v_conv481@sint32  v_add476@sint64;
-assert true && eq (sext tmp2 31) v_add428_h32;
-assume eq tmp2 v_add428_h32 && true;
+split tmp_v_add476_high32 v_conv481 v_add476 32;
+vpc v_conv481@sint32 v_conv481@uint64;
 (*   %arrayidx482 = getelementptr i32, i32* %h, i64 1 *)
 (*   store i32 %conv481, i32* %arrayidx482, align 4, !tbaa !3 *)
 mov h_4 v_conv481;
 (*   %conv483 = trunc i64 %sub442 to i32 *)
-//split tmp_v_sub442_high32 v_conv483 v_sub442 32;
-//vpc v_conv483@sint32 v_conv483@uint64;
-(*modify*)
-cast [tmp3] v_conv483@sint32  v_sub442@sint64;
-assert true && eq (sext tmp3 31) v_add438_h32;
-assume eq tmp3 v_add438_h32 && true;
+split tmp_v_sub442_high32 v_conv483 v_sub442 32;
+vpc v_conv483@sint32 v_conv483@uint64;
 (*   %arrayidx484 = getelementptr i32, i32* %h, i64 2 *)
 (*   store i32 %conv483, i32* %arrayidx484, align 4, !tbaa !3 *)
 mov h_8 v_conv483;
 (*   %conv485 = trunc i64 %sub452 to i32 *)
-//split tmp_v_sub452_high32 v_conv485 v_sub452 32;
-//vpc v_conv485@sint32 v_conv485@uint64;
-(*modify*)
-cast [tmp4] v_conv485@sint32  v_sub452@sint64;
-assert true && eq (sext tmp4 31) v_add448_h32;
-assume eq tmp4 v_add448_h32 && true;
+split tmp_v_sub452_high32 v_conv485 v_sub452 32;
+vpc v_conv485@sint32 v_conv485@uint64;
 (*   %arrayidx486 = getelementptr i32, i32* %h, i64 3 *)
 (*   store i32 %conv485, i32* %arrayidx486, align 4, !tbaa !3 *)
 mov h_12 v_conv485;
 (*   %conv487 = trunc i64 %sub462 to i32 *)
-//split tmp_v_sub462_high32 v_conv487 v_sub462 32;
-//vpc v_conv487@sint32 v_conv487@uint64;
-(*modify*)
-cast [tmp5] v_conv487@sint32  v_sub462@sint64;
-assert true && eq (sext tmp5 31) v_add458_h32;
-assume eq tmp5 v_add458_h32 && true;
+split tmp_v_sub462_high32 v_conv487 v_sub462 32;
+vpc v_conv487@sint32 v_conv487@uint64;
 (*   %arrayidx488 = getelementptr i32, i32* %h, i64 4 *)
 (*   store i32 %conv487, i32* %arrayidx488, align 4, !tbaa !3 *)
 mov h_16 v_conv487;
 (*   %conv489 = trunc i64 %add460 to i32 *)
-//split tmp_v_add460_high32 v_conv489 v_add460 32;
-//vpc v_conv489@sint32 v_conv489@uint64;
-(*modify*)
-cast [tmp6] v_conv489@sint32  v_add460@sint64;
-assert true && eq (sext tmp6 31) v_add433_h32;
-assume eq tmp6 v_add433_h32 && true;
+split tmp_v_add460_high32 v_conv489 v_add460 32;
+vpc v_conv489@sint32 v_conv489@uint64;
 (*   %arrayidx490 = getelementptr i32, i32* %h, i64 5 *)
 (*   store i32 %conv489, i32* %arrayidx490, align 4, !tbaa !3 *)
 mov h_20 v_conv489;
 (*   %conv491 = trunc i64 %sub447 to i32 *)
-//split tmp_v_sub447_high32 v_conv491 v_sub447 32;
-//vpc v_conv491@sint32 v_conv491@uint64;
-(*modify*)
-cast [tmp7] v_conv491@sint32  v_sub447@sint64;
-assert true && eq (sext tmp7 31) v_add443_h32;
-assume eq tmp7 v_add443_h32 && true;
+split tmp_v_sub447_high32 v_conv491 v_sub447 32;
+vpc v_conv491@sint32 v_conv491@uint64;
 (*   %arrayidx492 = getelementptr i32, i32* %h, i64 6 *)
 (*   store i32 %conv491, i32* %arrayidx492, align 4, !tbaa !3 *)
 mov h_24 v_conv491;
 (*   %conv493 = trunc i64 %sub457 to i32 *)
-//split tmp_v_sub457_high32 v_conv493 v_sub457 32;
-//vpc v_conv493@sint32 v_conv493@uint64;
-(*modify*)
-cast [tmp8] v_conv493@sint32  v_sub457@sint64;
-assert true && eq (sext tmp8 31) v_add453_h32;
-assume eq tmp8 v_add453_h32 && true;
+split tmp_v_sub457_high32 v_conv493 v_sub457 32;
+vpc v_conv493@sint32 v_conv493@uint64;
 (*   %arrayidx494 = getelementptr i32, i32* %h, i64 7 *)
 (*   store i32 %conv493, i32* %arrayidx494, align 4, !tbaa !3 *)
 mov h_28 v_conv493;
 (*   %conv495 = trunc i64 %sub467 to i32 *)
-//split tmp_v_sub467_high32 v_conv495 v_sub467 32;
-//vpc v_conv495@sint32 v_conv495@uint64;
-(*modify*)
-cast [tmp9] v_conv495@sint32  v_sub467@sint64;
-assert true && eq (sext tmp9 31) v_add463_h32;
-assume eq tmp9 v_add463_h32 && true;
+split tmp_v_sub467_high32 v_conv495 v_sub467 32;
+vpc v_conv495@sint32 v_conv495@uint64;
 (*   %arrayidx496 = getelementptr i32, i32* %h, i64 8 *)
 (*   store i32 %conv495, i32* %arrayidx496, align 4, !tbaa !3 *)
 mov h_32 v_conv495;
 (*   %conv497 = trunc i64 %sub473 to i32 *)
-//split tmp_v_sub473_high32 v_conv497 v_sub473 32;
-//vpc v_conv497@sint32 v_conv497@uint64;
-(*modify*)
-cast [tmp10] v_conv497@sint32  v_sub473@sint64;
-assert true && eq (sext tmp10 31) v_add468_h32;
-assume eq tmp10 v_add468_h32 && true;
+split tmp_v_sub473_high32 v_conv497 v_sub473 32;
+vpc v_conv497@sint32 v_conv497@uint64;
 (*   %arrayidx498 = getelementptr i32, i32* %h, i64 9 *)
 (*   store i32 %conv497, i32* %arrayidx498, align 4, !tbaa !3 *)
 mov h_36 v_conv497;

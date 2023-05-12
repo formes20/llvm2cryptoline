@@ -249,13 +249,11 @@ vpc v12_1@uint64 v12_1@uint128;
 (* You may need to modify here *)
 and uint64 v13_0 v12_0 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add189_low51@uint64 tmp_v_add189_low51@uint128;
-assert true && eq v13_0 tmp_v_add189_low51;
+assert true && eq uext v13_0 64 tmp_v_add189_low51;
 assume eq v13_0 tmp_v_add189_low51 && true;
 and uint64 v13_1 v12_1 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add195_low51@uint64 tmp_v_add195_low51@uint128;
-assert true && eq v13_1 tmp_v_add195_low51;
+assert true && eq uext v13_1 64 tmp_v_add195_low51;
 assume eq v13_1 tmp_v_add195_low51 && true;
 (*   %14 = bitcast i64* %output to <2 x i64>* *)
 (*   store <2 x i64> %13, <2 x i64>* %14, align 8, !tbaa !3 *)
@@ -264,8 +262,6 @@ mov output_8 v13_1;
 (*   %conv211 = trunc i128 %add201 to i64 *)
 split tmp_v_add201_high64 v_conv211 v_add201 64;
 vpc v_conv211@uint64 v_conv211@uint128;
-assert true && eq tmp_v_add201_high64 0@128;
-assume eq tmp_v_add201_high64 0 && true;
 (*   %arrayidx212 = getelementptr inbounds i64, i64* %output, i64 2 *)
 (*   store i64 %conv211, i64* %arrayidx212, align 8, !tbaa !3 *)
 mov output_16 v_conv211;
@@ -286,13 +282,11 @@ vpc v17_1@uint64 v17_1@uint128;
 (* You may need to modify here *)
 and uint64 v18_0 v17_0 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add176_low51@uint64 tmp_v_add176_low51@uint128;
-assert true && eq v18_0 tmp_v_add176_low51;
+assert true && eq uext v18_0 64 tmp_v_add176_low51;
 assume eq v18_0 tmp_v_add176_low51 && true;
 and uint64 v18_1 v17_1 (0x7FFFFFFFFFFFF)@uint64;
 (* Heuristics applied. *)
-vpc tmp_v_add182_low51@uint64 tmp_v_add182_low51@uint128;
-assert true && eq v18_1 tmp_v_add182_low51;
+assert true && eq uext v18_1 64 tmp_v_add182_low51;
 assume eq v18_1 tmp_v_add182_low51 && true;
 (*   %19 = bitcast i64* %arrayidx215 to <2 x i64>* *)
 (*   store <2 x i64> %18, <2 x i64>* %19, align 8, !tbaa !3 *)

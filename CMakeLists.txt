@@ -62,13 +62,13 @@ include_directories( ${ANTLR4CPP_INCLUDE_DIRS} )
 find_package(ANTLR REQUIRED)
 
 # add generated grammar to demo binary target
-add_executable(translate ${SRC_FILES} ${PARSER_FILES})
+add_executable(verify ${SRC_FILES} ${PARSER_FILES})
 link_directories(${PROJECT_PARSER})
-target_link_libraries(translate antlr4_static)
+target_link_libraries(verify antlr4_static)
 
 
 # Link against LLVM libraries
-target_link_libraries(translate ${llvm_libs})
+target_link_libraries(verify ${llvm_libs})
 
 
 

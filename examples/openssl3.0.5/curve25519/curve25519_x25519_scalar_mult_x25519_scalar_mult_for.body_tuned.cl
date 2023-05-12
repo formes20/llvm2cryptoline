@@ -160,7 +160,7 @@ split v_shr tmp_to_be_used v_add97 51;
 (*   %conv107 = and i128 %shr, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv107 v_shr (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(*modify*)
 assert true && eq v_conv107 v_shr;
 assume eq v_conv107 v_shr && true;
 (*   %add108 = add i128 %add101, %conv107 *)
@@ -173,7 +173,7 @@ vpc v_conv109@uint64 v_conv109@uint128;
 and uint64 v_and v_conv109 (0x7FFFFFFFFFFFF)@uint64;
 (*modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(* Rule AND after LSHR Heuristics applied. *)
+(*modify*)
 assert true && eq v_and tmp_to_be_used;
 assume eq v_and tmp_to_be_used && true;
 (*   %shr110 = lshr i128 %add89, 51 *)
@@ -182,7 +182,7 @@ split v_shr110 tmp_to_be_used v_add89 51;
 (*   %conv112 = and i128 %shr110, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv112 v_shr110 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(*modify*)
 assert true && eq v_conv112 v_shr110;
 assume eq v_conv112 v_shr110 && true;
 (*   %add113 = add i128 %add93, %conv112 *)
@@ -195,7 +195,7 @@ vpc v_conv114@uint64 v_conv114@uint128;
 and uint64 v_and115 v_conv114 (0x7FFFFFFFFFFFF)@uint64;
 (*modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(* Rule AND after LSHR Heuristics applied. *)
+(*modify*)
 assert true && eq v_and115 tmp_to_be_used;
 assume eq v_and115 tmp_to_be_used && true;
 (*   %shr116 = lshr i128 %add108, 51 *)
@@ -204,7 +204,7 @@ split v_shr116 tmp_to_be_used v_add108 51;
 (*   %conv118 = and i128 %shr116, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv118 v_shr116 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(*modify*)
 assert true && eq v_conv118 v_shr116;
 assume eq v_conv118 v_shr116 && true;
 (*   %add119 = add i128 %add105, %conv118 *)
@@ -217,7 +217,7 @@ vpc v_conv120@uint64 v_conv120@uint128;
 and uint64 v_and121 v_conv120 (0x7FFFFFFFFFFFF)@uint64;
 (*modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(* Rule AND after LSHR Heuristics applied. *)
+(*modify*)
 assert true && eq v_and121 tmp_to_be_used;
 assume eq v_and121 tmp_to_be_used && true;
 (*   %shr122 = lshr i128 %add113, 51 *)
@@ -239,7 +239,7 @@ vpc v_conv125@uint64 v_conv125@uint128;
 and uint64 v_and126 v_conv125 (0x7FFFFFFFFFFFF)@uint64;
 (*modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(* Rule AND after LSHR Heuristics applied. *)
+(*modify*)
 assert true && eq v_and126 tmp_to_be_used;
 assume eq v_and126 tmp_to_be_used && true;
 (*   %shr127 = lshr i128 %add119, 51 *)
@@ -263,7 +263,7 @@ vpc v_conv131@uint64 v_conv131@uint128;
 and uint64 v_and132 v_conv131 (0x7FFFFFFFFFFFF)@uint64;
 (*modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(* Rule AND after LSHR Heuristics applied. *)
+(*modify*)
 assert true && eq v_and132 tmp_to_be_used;
 assume eq v_and132 tmp_to_be_used && true;
 (*   %shr133 = lshr i64 %add124, 51 *)
@@ -274,7 +274,7 @@ add v_add134 v_shr133 v_and121;
 (*   %and135 = and i64 %add124, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and135 v_add124 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(*modify*)
 assert true && eq v_and135 tmp_to_be_used;
 assume eq v_and135 tmp_to_be_used && true;
 (*   %shr136 = lshr i64 %add130, 51 *)
@@ -285,7 +285,7 @@ add v_add137 v_shr136 v_and126;
 (*   %and138 = and i64 %add130, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and138 v_add130 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(*modify*)
 assert true && eq v_and138 tmp_to_be_used;
 assume eq v_and138 tmp_to_be_used && true;
 (*   store i64 %and138, i64* %h, align 8, !tbaa !4 *)
@@ -742,7 +742,7 @@ split v_shr_i181 tmp_to_be_used v_add49_i 51;
 (*   %conv64.i = and i128 %shr.i181, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i v_shr_i181 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv64_i v_shr_i181;
 assume eq v_conv64_i v_shr_i181 && true;
 (*   %add.i182 = add i128 %mul15.i, %mul30.i *)
@@ -757,8 +757,7 @@ vpc v_conv66_i@uint64 v_conv66_i@uint128;
 (*   %and.i183 = and i64 %conv66.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i183 v_conv66_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and_i183 tmp_to_be_used;
 assume eq v_and_i183 tmp_to_be_used && true;
@@ -768,7 +767,7 @@ split v_shr67_i tmp_to_be_used v_add58_i 51;
 (*   %conv69.i = and i128 %shr67.i, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i v_shr67_i (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv69_i v_shr67_i;
 assume eq v_conv69_i v_shr67_i && true;
 (*   %add70.i = add i128 %add62.i, %conv69.i *)
@@ -779,8 +778,7 @@ vpc v_conv71_i@uint64 v_conv71_i@uint128;
 (*   %and72.i = and i64 %conv71.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i v_conv71_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and72_i tmp_to_be_used;
 assume eq v_and72_i tmp_to_be_used && true;
@@ -790,7 +788,7 @@ split v_shr73_i tmp_to_be_used v_add65_i 51;
 (*   %conv75.i = and i128 %shr73.i, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i v_shr73_i (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv75_i v_shr73_i;
 assume eq v_conv75_i v_shr73_i && true;
 (*   %add35.i = add i128 %mul34.i, %mul52.i *)
@@ -805,8 +803,7 @@ vpc v_conv77_i@uint64 v_conv77_i@uint128;
 (*   %and78.i = and i64 %conv77.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i v_conv77_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and78_i tmp_to_be_used;
 assume eq v_and78_i tmp_to_be_used && true;
@@ -816,7 +813,7 @@ split v_shr79_i tmp_to_be_used v_add70_i 51;
 (*   %conv80.i = trunc i128 %shr79.i to i64 *)
 split tmp_v_shr79_i v_conv80_i v_shr79_i 64;
 vpc v_conv80_i@uint64 v_conv80_i@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr79_i 0@128;
 assume eq tmp_v_shr79_i 0 && true;
 (*   %add81.i = add i64 %and.i183, %conv80.i *)
@@ -827,8 +824,7 @@ vpc v_conv82_i@uint64 v_conv82_i@uint128;
 (*   %and83.i = and i64 %conv82.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i v_conv82_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and83_i tmp_to_be_used;
 assume eq v_and83_i tmp_to_be_used && true;
@@ -838,7 +834,7 @@ split v_shr84_i tmp_to_be_used v_add76_i 51;
 (*   %conv85.i = trunc i128 %shr84.i to i64 *)
 split tmp_v_shr84_i v_conv85_i v_shr84_i 64;
 vpc v_conv85_i@uint64 v_conv85_i@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr84_i 0@128;
 assume eq tmp_v_shr84_i 0 && true;
 (*   %mul86.i = mul i64 %conv85.i, 19 *)
@@ -851,8 +847,7 @@ vpc v_conv88_i@uint64 v_conv88_i@uint128;
 (*   %and89.i = and i64 %conv88.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i v_conv88_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and89_i tmp_to_be_used;
 assume eq v_and89_i tmp_to_be_used && true;
@@ -864,7 +859,7 @@ add v_add91_i v_shr90_i v_and78_i;
 (*   %and92.i = and i64 %add81.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and92_i v_add81_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and92_i tmp_to_be_used;
 assume eq v_and92_i tmp_to_be_used && true;
 (*   %shr93.i = lshr i64 %add87.i, 51 *)
@@ -875,7 +870,7 @@ add v_add94_i v_shr93_i v_and83_i;
 (*   %and95.i = and i64 %add87.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and95_i v_add87_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and95_i tmp_to_be_used;
 assume eq v_and95_i tmp_to_be_used && true;
 (*   store i64 %and95.i, i64* %arraydecay24, align 16, !tbaa !7 *)
@@ -975,7 +970,7 @@ split v_shr_i226 tmp_to_be_used v_add49_i217 51;
 (*   %conv64.i227 = and i128 %shr.i226, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i227 v_shr_i226 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv64_i227 v_shr_i226;
 assume eq v_conv64_i227 v_shr_i226 && true;
 (*   %add.i228 = add i128 %mul15.i197, %mul30.i207 *)
@@ -990,8 +985,7 @@ vpc v_conv66_i231@uint64 v_conv66_i231@uint128;
 (*   %and.i232 = and i64 %conv66.i231, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i232 v_conv66_i231 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and_i232 tmp_to_be_used;
 assume eq v_and_i232 tmp_to_be_used && true;
@@ -1001,7 +995,7 @@ split v_shr67_i233 tmp_to_be_used v_add58_i223 51;
 (*   %conv69.i234 = and i128 %shr67.i233, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i234 v_shr67_i233 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv69_i234 v_shr67_i233;
 assume eq v_conv69_i234 v_shr67_i233 && true;
 (*   %add70.i235 = add i128 %add62.i225, %conv69.i234 *)
@@ -1013,8 +1007,7 @@ vpc v_conv71_i236@uint64 v_conv71_i236@uint128;
 (*   %and72.i237 = and i64 %conv71.i236, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i237 v_conv71_i236 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and72_i237 tmp_to_be_used;
 assume eq v_and72_i237 tmp_to_be_used && true;
@@ -1024,7 +1017,7 @@ split v_shr73_i238 tmp_to_be_used v_add65_i230 51;
 (*   %conv75.i239 = and i128 %shr73.i238, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i239 v_shr73_i238 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv75_i239 v_shr73_i238;
 assume eq v_conv75_i239 v_shr73_i238 && true;
 (*   %add35.i240 = add i128 %mul34.i208, %mul52.i218 *)
@@ -1039,8 +1032,7 @@ vpc v_conv77_i243@uint64 v_conv77_i243@uint128;
 (*   %and78.i244 = and i64 %conv77.i243, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i244 v_conv77_i243 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and78_i244 tmp_to_be_used;
 assume eq v_and78_i244 tmp_to_be_used && true;
@@ -1050,7 +1042,7 @@ split v_shr79_i245 tmp_to_be_used v_add70_i235 51;
 (*   %conv80.i246 = trunc i128 %shr79.i245 to i64 *)
 split tmp_v_shr79_i245 v_conv80_i246 v_shr79_i245 64;
 vpc v_conv80_i246@uint64 v_conv80_i246@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr79_i245 0@128;
 assume eq tmp_v_shr79_i245 0 && true;
 (*   %add81.i247 = add i64 %and.i232, %conv80.i246 *)
@@ -1061,8 +1053,7 @@ vpc v_conv82_i248@uint64 v_conv82_i248@uint128;
 (*   %and83.i249 = and i64 %conv82.i248, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i249 v_conv82_i248 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and83_i249 tmp_to_be_used;
 assume eq v_and83_i249 tmp_to_be_used && true;
@@ -1072,7 +1063,7 @@ split v_shr84_i250 tmp_to_be_used v_add76_i242 51;
 (*   %conv85.i251 = trunc i128 %shr84.i250 to i64 *)
 split tmp_v_shr84_i250 v_conv85_i251 v_shr84_i250 64;
 vpc v_conv85_i251@uint64 v_conv85_i251@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr84_i250 0@128;
 assume eq tmp_v_shr84_i250 0 && true;
 (*   %mul86.i252 = mul i64 %conv85.i251, 19 *)
@@ -1085,8 +1076,7 @@ vpc v_conv88_i254@uint64 v_conv88_i254@uint128;
 (*   %and89.i255 = and i64 %conv88.i254, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i255 v_conv88_i254 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and89_i255 tmp_to_be_used;
 assume eq v_and89_i255 tmp_to_be_used && true;
@@ -1098,7 +1088,7 @@ add v_add91_i257 v_shr90_i256 v_and78_i244;
 (*   %and92.i258 = and i64 %add81.i247, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and92_i258 v_add81_i247 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and92_i258 tmp_to_be_used;
 assume eq v_and92_i258 tmp_to_be_used && true;
 (*   %shr93.i259 = lshr i64 %add87.i253, 51 *)
@@ -1109,7 +1099,7 @@ add v_add94_i260 v_shr93_i259 v_and83_i249;
 (*   %and95.i261 = and i64 %add87.i253, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and95_i261 v_add87_i253 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and95_i261 tmp_to_be_used;
 assume eq v_and95_i261 tmp_to_be_used && true;
 (*   store i64 %and95.i261, i64* %arraydecay27, align 16, !tbaa !7 *)
@@ -1183,6 +1173,7 @@ sub v_sub21_i303 v_add19_i301 v113;
 (*moddify*)
 mov L25_0 v_sub21_i303;
 (*   call fastcc void @fe51_mul(i64* noundef nonnull %arraydecay10, i64* noundef nonnull %arraydecay27, i64* noundef nonnull %arraydecay24) *)
+(* modify *)
 call fe51_mul(L11_0, L12_0, L13_0, L14_0, L15_0, L6_0, L7_0, L8_0, L9_0, L10_0, L16_0, L17_0, L18_0, L19_0, L20_0);
 (*   %add.i305 = add nuw nsw i64 %and95.i261, 4503599627370458 *)
 add v_add_i305 v_and95_i261 (4503599627370458)@uint64;
@@ -1306,7 +1297,7 @@ split v_shr_i369 tmp_to_be_used v_add49_i360 51;
 (*   %conv64.i370 = and i128 %shr.i369, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i370 v_shr_i369 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv64_i370 v_shr_i369;
 assume eq v_conv64_i370 v_shr_i369 && true;
 (*   %add.i371 = add i128 %mul15.i340, %mul30.i350 *)
@@ -1321,8 +1312,7 @@ vpc v_conv66_i374@uint64 v_conv66_i374@uint128;
 (*   %and.i375 = and i64 %conv66.i374, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i375 v_conv66_i374 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and_i375 tmp_to_be_used;
 assume eq v_and_i375 tmp_to_be_used && true;
@@ -1332,7 +1322,7 @@ split v_shr67_i376 tmp_to_be_used v_add58_i366 51;
 (*   %conv69.i377 = and i128 %shr67.i376, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i377 v_shr67_i376 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv69_i377 v_shr67_i376;
 assume eq v_conv69_i377 v_shr67_i376 && true;
 (*   %add70.i378 = add i128 %add62.i368, %conv69.i377 *)
@@ -1343,8 +1333,7 @@ vpc v_conv71_i379@uint64 v_conv71_i379@uint128;
 (*   %and72.i380 = and i64 %conv71.i379, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i380 v_conv71_i379 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and72_i380 tmp_to_be_used;
 assume eq v_and72_i380 tmp_to_be_used && true;
@@ -1354,7 +1343,7 @@ split v_shr73_i381 tmp_to_be_used v_add65_i373 51;
 (*   %conv75.i382 = and i128 %shr73.i381, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i382 v_shr73_i381 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv75_i382 v_shr73_i381;
 assume eq v_conv75_i382 v_shr73_i381 && true;
 (*   %add35.i383 = add i128 %mul34.i351, %mul52.i361 *)
@@ -1369,8 +1358,7 @@ vpc v_conv77_i386@uint64 v_conv77_i386@uint128;
 (*   %and78.i387 = and i64 %conv77.i386, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i387 v_conv77_i386 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and78_i387 tmp_to_be_used;
 assume eq v_and78_i387 tmp_to_be_used && true;
@@ -1380,7 +1368,7 @@ split v_shr79_i388 tmp_to_be_used v_add70_i378 51;
 (*   %conv80.i389 = trunc i128 %shr79.i388 to i64 *)
 split tmp_v_shr79_i388 v_conv80_i389 v_shr79_i388 64;
 vpc v_conv80_i389@uint64 v_conv80_i389@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr79_i388 0@128;
 assume eq tmp_v_shr79_i388 0 && true;
 (*   %add81.i390 = add i64 %and.i375, %conv80.i389 *)
@@ -1391,8 +1379,7 @@ vpc v_conv82_i391@uint64 v_conv82_i391@uint128;
 (*   %and83.i392 = and i64 %conv82.i391, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i392 v_conv82_i391 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and83_i392 tmp_to_be_used;
 assume eq v_and83_i392 tmp_to_be_used && true;
@@ -1402,7 +1389,7 @@ split v_shr84_i393 tmp_to_be_used v_add76_i385 51;
 (*   %conv85.i394 = trunc i128 %shr84.i393 to i64 *)
 split tmp_v_shr84_i393 v_conv85_i394 v_shr84_i393 64;
 vpc v_conv85_i394@uint64 v_conv85_i394@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr84_i393 0@128;
 assume eq tmp_v_shr84_i393 0 && true;
 (*   %mul86.i395 = mul i64 %conv85.i394, 19 *)
@@ -1415,8 +1402,7 @@ vpc v_conv88_i397@uint64 v_conv88_i397@uint128;
 (*   %and89.i398 = and i64 %conv88.i397, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i398 v_conv88_i397 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and89_i398 tmp_to_be_used;
 assume eq v_and89_i398 tmp_to_be_used && true;
@@ -1428,7 +1414,7 @@ add v_add91_i400 v_shr90_i399 v_and78_i387;
 (*   %and92.i401 = and i64 %add81.i390, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and92_i401 v_add81_i390 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and92_i401 tmp_to_be_used;
 assume eq v_and92_i401 tmp_to_be_used && true;
 (*   %shr93.i402 = lshr i64 %add87.i396, 51 *)
@@ -1439,7 +1425,7 @@ add v_add94_i403 v_shr93_i402 v_and83_i392;
 (*   %and95.i404 = and i64 %add87.i396, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and95_i404 v_add87_i396 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and95_i404 tmp_to_be_used;
 assume eq v_and95_i404 tmp_to_be_used && true;
 (*   store i64 %and95.i404, i64* %arraydecay11, align 16, !tbaa !7 *)
@@ -1483,7 +1469,7 @@ vpc v_conv15_i@uint64 v_conv15_i@uint128;
 (*   %and.i422 = and i64 %conv15.i, 2251799813685246 *)
 (* You may need to modify here *)
 and uint64 v_and_i422 v_conv15_i (0x7FFFFFFFFFFFE)@uint64;
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and_i422 tmp_to_be_used;
 assume eq v_and_i422 tmp_to_be_used && true;
@@ -1498,7 +1484,7 @@ vpc v_conv20_i@uint64 v_conv20_i@uint128;
 (*   %and21.i = and i64 %conv20.i, 2251799813685246 *)
 (* You may need to modify here *)
 and uint64 v_and21_i v_conv20_i (0x7FFFFFFFFFFFE)@uint64;
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and21_i tmp_to_be_used;
 assume eq v_and21_i tmp_to_be_used && true;
@@ -1513,8 +1499,7 @@ vpc v_conv26_i@uint64 v_conv26_i@uint128;
 (*   %and27.i = and i64 %conv26.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and27_i v_conv26_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and27_i tmp_to_be_used;
 assume eq v_and27_i tmp_to_be_used && true;
@@ -1524,7 +1509,7 @@ split v_shr28_i tmp_to_be_used v_add19_i423 51;
 (*   %conv29.i = trunc i128 %shr28.i to i64 *)
 split tmp_v_shr28_i v_conv29_i v_shr28_i 64;
 vpc v_conv29_i@uint64 v_conv29_i@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr28_i 0@128;
 assume eq tmp_v_shr28_i 0 && true;
 (*   %add30.i = add nuw nsw i64 %and.i422, %conv29.i *)
@@ -1535,8 +1520,7 @@ vpc v_conv31_i@uint64 v_conv31_i@uint128;
 (*   %and32.i = and i64 %conv31.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and32_i v_conv31_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and32_i tmp_to_be_used;
 assume eq v_and32_i tmp_to_be_used && true;
@@ -1546,7 +1530,7 @@ split v_shr33_i tmp_to_be_used v_add25_i 51;
 (*   %conv34.i = trunc i128 %shr33.i to i64 *)
 split tmp_v_shr33_i v_conv34_i v_shr33_i 64;
 vpc v_conv34_i@uint64 v_conv34_i@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr33_i 0@128;
 assume eq tmp_v_shr33_i 0 && true;
 (*   %mul35.i = mul nuw nsw i64 %conv34.i, 19 *)
@@ -1559,8 +1543,7 @@ vpc v_conv37_i@uint64 v_conv37_i@uint128;
 (*   %and38.i = and i64 %conv37.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and38_i v_conv37_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and38_i tmp_to_be_used;
 assume eq v_and38_i tmp_to_be_used && true;
@@ -1572,7 +1555,7 @@ add v_add40_i v_and27_i v_shr39_i;
 (*   %and41.i = and i64 %add30.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and41_i v_add30_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and41_i tmp_to_be_used;
 assume eq v_and41_i tmp_to_be_used && true;
 (*   %shr42.i = lshr i64 %add36.i, 51 *)
@@ -1583,7 +1566,7 @@ add v_add43_i v_shr42_i v_and32_i;
 (*   %and44.i = and i64 %add36.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and44_i v_add36_i (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
+(* modify*)
 assert true && eq v_and44_i tmp_to_be_used;
 assume eq v_and44_i tmp_to_be_used && true;
 (*   store i64 %and44.i, i64* %arraydecay14, align 16, !tbaa !7 *)
@@ -1678,7 +1661,7 @@ split v_shr_i466 tmp_to_be_used v_add49_i457 51;
 (*   %conv64.i467 = and i128 %shr.i466, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i467 v_shr_i466 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv64_i467 v_shr_i466;
 assume eq v_conv64_i467 v_shr_i466 && true;
 (*   %add.i468 = add i128 %mul15.i437, %mul30.i447 *)
@@ -1693,8 +1676,7 @@ vpc v_conv66_i471@uint64 v_conv66_i471@uint128;
 (*   %and.i472 = and i64 %conv66.i471, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i472 v_conv66_i471 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and_i472 tmp_to_be_used;
 assume eq v_and_i472 tmp_to_be_used && true;
@@ -1704,7 +1686,7 @@ split v_shr67_i473 tmp_to_be_used v_add58_i463 51;
 (*   %conv69.i474 = and i128 %shr67.i473, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i474 v_shr67_i473 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv69_i474 v_shr67_i473;
 assume eq v_conv69_i474 v_shr67_i473 && true;
 (*   %add70.i475 = add i128 %add62.i465, %conv69.i474 *)
@@ -1715,8 +1697,7 @@ vpc v_conv71_i476@uint64 v_conv71_i476@uint128;
 (*   %and72.i477 = and i64 %conv71.i476, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i477 v_conv71_i476 (0x7FFFFFFFFFFFF)@uint64;
-(* Rule AND after LSHR Heuristics applied. *)
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
 assert true && eq v_and72_i477 tmp_to_be_used;
 assume eq v_and72_i477 tmp_to_be_used && true;
@@ -1726,7 +1707,7 @@ split v_shr73_i478 tmp_to_be_used_2 v_add65_i470 51;
 (*   %conv75.i479 = and i128 %shr73.i478, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i479 v_shr73_i478 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* Heuristics get low 64 bit applied. *)
+(* modify*)
 assert true && eq v_conv75_i479 v_shr73_i478;
 assume eq v_conv75_i479 v_shr73_i478 && true;
 (*   %add35.i480 = add i128 %mul34.i448, %mul52.i458 *)
@@ -1740,10 +1721,11 @@ add v_add76_i482 v_add53_i481 v_conv75_i479;
 split v_shr79_i485 tmp_to_be_used_1 v_add70_i475 51;
 (*   %conv80.i486 = trunc i128 %shr79.i485 to i64 *)
 split tmp_v_shr79_i485 v_conv80_i486 v_shr79_i485 64;
+(* modify*)
 assert true && eq v_conv80_i486 v_shr79_i485;
 assume eq v_conv80_i486 v_shr79_i485 && true;
 vpc v_conv80_i486@uint64 v_conv80_i486@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr79_i485 0@128;
 assume eq tmp_v_shr79_i485 0 && true;
 (*   %add81.i487 = add i64 %and.i472, %conv80.i486 *)
@@ -1754,7 +1736,7 @@ split v_shr84_i490 tmp_to_be_used_3 v_add76_i482 51;
 (*   %conv85.i491 = trunc i128 %shr84.i490 to i64 *)
 split tmp_v_shr84_i490 v_conv85_i491 v_shr84_i490 64;
 vpc v_conv85_i491@uint64 v_conv85_i491@uint128;
-(*modify*)
+(* modify*)
 assert true && eq tmp_v_shr84_i490 0@128;
 assume eq tmp_v_shr84_i490 0 && true;
 (*   %mul86.i492 = mul i64 %conv85.i491, 19 *)
@@ -1782,8 +1764,10 @@ add v_add17_i521 v_and38_i v118;
 (*   store i64 %add17.i521, i64* %arrayidx22.i125, align 16, !tbaa !7 *)
 mov L10_0 v_add17_i521;
 (*   call fastcc void @fe51_mul(i64* noundef nonnull %arraydecay14, i64* noundef nonnull %arraydecay9, i64* noundef nonnull %arraydecay11) *)
+(* modify *)
 call fe51_mul(arraydecay_0, arraydecay_8, arraydecay_16, arraydecay_24, arraydecay_32, L21_0, L22_0, L23_0, L24_0, L25_0, L1_0, L2_0, L3_0, L4_0, L5_0);
 (*   call fastcc void @fe51_mul(i64* noundef nonnull %arraydecay11, i64* noundef nonnull %arraydecay27, i64* noundef nonnull %arraydecay24) *)
+(* modify *)
 call fe51_mul(L11_0, L12_0, L13_0, L14_0, L15_0, L6_0, L7_0, L8_0, L9_0, L10_0, L21_0, L22_0, L23_0, L24_0, L25_0);
 (*   %cmp.not = icmp eq i32 %pos.0597, 0 *)
 (*   br i1 %cmp.not, label %for.end, label %for.body.for.body_crit_edge, !llvm.loop !9 *)
@@ -1800,7 +1784,7 @@ and uint64 v_and95_i501 v_add87_i493 (0x7FFFFFFFFFFFF)@uint64;
 (*   %shr93.i499 = lshr i64 %add87.i493, 51 *)
 (* You may need to modify here *)
 split v_shr93_i499 tmp_to_be_used v_add87_i493 51;
-(*modify*)
+(* modify*)
 assert true && eq v_and95_i501 tmp_to_be_used;
 assume eq v_and95_i501 tmp_to_be_used && true;
 (*   %conv82.i488 = trunc i128 %add70.i475 to i64 *)
@@ -1809,7 +1793,7 @@ vpc v_conv82_i488@uint64 v_conv82_i488@uint128;
 (*   %and83.i489 = and i64 %conv82.i488, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i489 v_conv82_i488 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used_1@uint64 tmp_to_be_used_1@uint128; 
 assert true && eq v_and83_i489 tmp_to_be_used_1;
 assume eq v_and83_i489 tmp_to_be_used_1 && true;
@@ -1821,7 +1805,7 @@ and uint64 v_and92_i498 v_add81_i487 (0x7FFFFFFFFFFFF)@uint64;
 (*   %shr90.i496 = lshr i64 %add81.i487, 51 *)
 (* You may need to modify here *)
 split v_shr90_i496 tmp_to_be_used v_add81_i487 51;
-(*modify*)
+(* modify*)
 assert true && eq v_and92_i498 tmp_to_be_used;
 assume eq v_and92_i498 tmp_to_be_used && true;
 (*   %conv77.i483 = trunc i128 %add65.i470 to i64 *)
@@ -1830,7 +1814,7 @@ vpc v_conv77_i483@uint64 v_conv77_i483@uint128;
 (*   %and78.i484 = and i64 %conv77.i483, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i484 v_conv77_i483 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used_2@uint64 tmp_to_be_used_2@uint128; 
 assert true && eq v_and78_i484 tmp_to_be_used_2;
 assume eq v_and78_i484 tmp_to_be_used_2 && true;
@@ -1842,7 +1826,7 @@ vpc v_conv88_i494@uint64 v_conv88_i494@uint128;
 (*   %and89.i495 = and i64 %conv88.i494, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i495 v_conv88_i494 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
+(* modify*)
 vpc tmp_to_be_used_3@uint64 tmp_to_be_used_3@uint128; 
 assert true && eq v_and89_i495 tmp_to_be_used_3;
 assume eq v_and89_i495 tmp_to_be_used_3 && true;

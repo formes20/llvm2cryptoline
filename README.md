@@ -8,7 +8,7 @@ Cryptoline domain-specific language.
 
 ===== Requirements =====
 
-1. cmake (>= 3.4.3, lower version may be viable, you are welcomed to
+1. cmake (>= 3.7, lower version may be viable, you are welcomed to
 have a try)
 2. LLVM (>= 3.7.0, checked until version 14.0.0)
 3. ANTLR4 tool (4.12.0)
@@ -82,14 +82,27 @@ tool in the directory ANTLR_DIR.
 
 Use the following command line:
 
-    translate FILE FUNCTION_NAME CONDITION [BLOCK_NAME]
+    verify FILE FUNCTION_NAME SPECIFICATIONS [OPTIONS]
 
-    - FILE    	       the LLVM IR code (.ll) file
+    - FILE		the LLVM IR code (.ll) file
 
     - FUNCTION_NAME    the translated function name
     
-    - CONDITION	       the pre- and post-condition file
+    - SPECIFICATIONS	the properties of the program
 
-    - BLOCK_NAME       the translated basic block name
+    - OPTIONS       	optional parameters
+    
+    
+Options:
+  -block <blockname>           	Translate the block of the IR program
+  -disable_heuristic           	Disable heuristics 
+  -enable_aggr_heuristic     		Enable the aggressive heuristcs 
+  -enable_aggr_shl               	Shift left directly instead of shifting left after split
+  -v              	        	Display verbose messages while using CryptoLine verification
+  -type <type>                      	Choose the default type of translation
+  -save_cryptoline          		Save the translated CryptoLine program 
+  -disable_cryptoline                  Disable call for CryptoLine verification 
+  -h, --help                   	Print this help info 
+
 
    

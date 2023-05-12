@@ -1,4 +1,8 @@
 #include <iostream> 
+#include <chrono>
+#include <cstdlib>
+#include <unistd.h>
+#include <sys/stat.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/LLVMContext.h>
@@ -18,21 +22,24 @@ using namespace cryptoline;
 
 void print_usage()
 {
-    std::cout<<"\nUsage: translate FILE FUNCTION_NAME CONDITION " << " [options]" << std::endl
+    std::cout<<"\nUsage: verify FILE FUNCTION_NAME CONDITION " << " [options]" << std::endl
         << "Options:" << std::endl
-        << "  -block                       have block \n"
-        << "  -disable_heuristic           disable heuristics \n"
-        << "  -disable_heuristic_eq        disable heuristics_eq \n"
-        << "  -enable_heuristic_sound      enable heuristcs_sound \n"
-        << "  -unsigned                    defaultType uint  \n"
-        << "  -signed                      defaultType sint \n"
-        << "  -immediate_shl               use SHL instead of SPLIT & SHL \n" 
-        << "  -h, --help                   print this help info \n"   
+        << "  -block <blockName>           Translate the block of the IR program \n"
+        << "  -disable_heuristic           Disable heuristics \n"
+        << "  -enable_aggr_heuristic       Enable heuristcs_sound \n"
+        << "  -enable_aggr_shl             Shift left directly instead of shifting left after split\n" 
+        << "  -v,--verbose                 Display verbose messages while using CryptoLine verification\n"
+        << "  -type <type>                 Choose the default type (signed or unsigned) of translation \n"
+        << "  -save_cryptoline             Save the translated CryptoLine program \n"
+        << "  -disable_cryptoline          Disable call for CryptoLine verification \n"
+        << "  -h, --help                   Print this help info \n"   
         << "\n"
         << std::endl;
 }
 
 int main(int argc, char* const* argv) {
+
+    auto start = std::chrono::system_clock::now();
 
     if (argc < 4) {
         // std::cout << "Usage: translate FILE FUNCTION_NAME CONDITION [BLOCK_NAME]" << std::endl;
@@ -47,27 +54,57 @@ int main(int argc, char* const* argv) {
 
     Translator t;
     bool inBlock = false;
-    std::string entry = "";
+    bool cv = true;
+    std::string entry;
+    const char* outputDir;
+    std::string outPath;
+    bool verbose = false;
+    bool saveCryptoLineProg = false;
+
     for (int i=4; i<argc; i++) 
     {
         std::string t_arg = std::string(argv[i]);
         if ( t_arg == "-block" ) {
             inBlock = true;
-            std::cout << "input block name:" <<std::endl;
-            std::cin >> entry;
+            // std::cout << "input block name:" <<std::endl;
+            // std::cin >> entry;
+            entry = std::string(argv[i+1]);
+            i++;
         }
         else if(t_arg == "-disable_heuristic"){
             t.heuristcs = false ;
         }else if(t_arg == "-disable_heuristic_eq"){
             t.heuristcs_equiv = false ;
-        }else if(t_arg == "-enable_heuristic_sound"){
+        }else if(t_arg == "-enable_aggr_heuristic"){
             t.heuristcs_sound = true;
-        }else if(t_arg == "-unsigned"){
-            t.setType("unsigned");
-        }else if(t_arg == "-signed"){
-            t.setType("signed");   
-        }else if(t_arg == "-immediate_shl"){
+        }else if(t_arg == "-type"){
+            if(std::string(argv[i+1])=="signed"){
+                t.setType("signed");
+            }else if(std::string(argv[i+1])=="unsigned"){
+                t.setType("unsigned"); 
+            }else{
+                std::cout << "Error in specify type:" << std::endl;
+                print_usage();
+                return 0;
+            }
+            i++;
+        }else if(t_arg == "-enable_aggr_shl"){
             t.immediateShl = true;   
+        }else if(t_arg == "-disable_cryptoline"){
+            cv = false;
+        }else if(t_arg == "-o"){
+            outPath = std::string(argv[i+1]);
+            outputDir = outPath.c_str();
+            if (access(outputDir, F_OK) != 0){
+                std::cout << "Error in Output Path" << std::endl;
+                return 0;
+            }
+            i++;
+            if(outPath.back()!='/'){outPath.append("/");}
+        }else if(t_arg == "-v"){
+            verbose = true;
+        }else if(t_arg == "-save_cryptoline"){
+            saveCryptoLineProg = true;
         }
         else if(t_arg == "-h" || t_arg == "--help"){
             print_usage();
@@ -97,7 +134,7 @@ int main(int argc, char* const* argv) {
     //     entry = argv[3];
     // }
 
-    std::cout << "Translating "
+    std::cout << "* Translating "
               << (inBlock ? "block [" + entry + "] of " : "")
               << "function [" << functionName << "] "
               << "in file [" << fileName << "] ..." << std::endl;
@@ -117,17 +154,42 @@ int main(int argc, char* const* argv) {
         
     }
     BasicBlock::iterator inst = block->begin();
-    std::string outputName = fileName.substr(0, fileName.find_last_of('.'))
-                             + "_" + functionName;
+    // std::string outputName = fileName.substr(0, fileName.find_last_of('.'))
+    //                          + "_" + functionName;
+    std::string outputName = outPath + fileName.substr(0, fileName.find_last_of('.'))
+                              + "_" + functionName;
     if (inBlock) {
         outputName += "_" + entry;
     }
     
     t.tranlate({block, inst}, condition, outputName, inBlock, function);
 
-    std::cout << "Done!!!" << std::endl;
+    auto end = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    double cost = double(duration.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den;
+    std::cout << "Translation done within " << cost << "s" << "!!!" << std::endl;
 
-    return 0;
+    std::string sys;
+    if(verbose){
+        sys = "cv -v -isafety -debug "+ outputName + ".cl";
+    }else{
+        sys = "cv -isafety -debug "+ outputName + ".cl";
+    }
+    const char* csys = sys.c_str();
+    if(cv){
+        std::cout << "* Verifing with CryptoLine:" << std::endl;
+        system(csys);
+        std::cout << std::endl;
+    }
+    //delete
+    if(saveCryptoLineProg){
+        return 0;
+    }else{
+        std::string rmfile = "rm "+ outputName + ".cl";
+        const char* rm = rmfile.c_str() ;
+        system(rm);
+        return 0;
+    } 
 }
 
 

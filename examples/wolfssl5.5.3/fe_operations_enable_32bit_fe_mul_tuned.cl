@@ -1,6 +1,6 @@
 /*
 ===== Verification =====
-translate Arguments: -signed -immediate_shl -disable_heuristic_sound
+translate Arguments: -saveCryptoLineProg -signed -immediate_shl 
 CryptoLine Arguments: -v -isafety -debug 
 
 
@@ -563,12 +563,10 @@ add v_add430 v_add357 v_shr429;
 (*   %shl431 = and i64 %add428, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl431 v_add428 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add428_h32 tmp v_add428 32;
 assert true && eq v_shr429*(2**25)@64 v_shl431+v_add428_h32*(2**32)@64;
 assume eq v_shr429*(2**25) v_shl431+v_add428_h32*(2**32) && true;
-
 (*   %sub432 = sub i64 %add422, %shl431 *)
 sub v_sub432 v_add422 v_shl431;
 (*   %add433 = add i64 %add425, 16777216 *)
@@ -599,12 +597,10 @@ add v_add435 v_add393 v_shr434;
 (*   %shl436 = and i64 %add433, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl436 v_add433 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add433_h32 tmp v_add433 32;
 assert true && eq v_shr434*(2**25)@64 v_shl436+v_add433_h32*(2**32)@64;
 assume eq v_shr434*(2**25) v_shl436+v_add433_h32*(2**32) && true;
-
 (*   %sub437 = sub i64 %add425, %shl436 *)
 sub v_sub437 v_add425 v_shl436;
 (*   %add438 = add i64 %add430, 33554432 *)
@@ -635,12 +631,10 @@ add v_add440 v_add366 v_shr439;
 (*   %shl441 = and i64 %add438, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl441 v_add438 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add438_h32 tmp v_add438 32;
 assert true && eq v_shr439*(2**26)@64 v_shl441+v_add438_h32*(2**32)@64;
 assume eq v_shr439*(2**26) v_shl441+v_add438_h32*(2**32) && true;
-
 (*   %sub442 = sub i64 %add430, %shl441 *)
 sub v_sub442 v_add430 v_shl441;
 (*   %add443 = add i64 %add435, 33554432 *)
@@ -671,12 +665,10 @@ add v_add445 v_add402 v_shr444;
 (*   %shl446 = and i64 %add443, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl446 v_add443 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add443_h32 tmp v_add443 32;
 assert true && eq v_shr444*(2**26)@64 v_shl446+v_add443_h32*(2**32)@64;
 assume eq v_shr444*(2**26) v_shl446+v_add443_h32*(2**32) && true;
-
 (*   %sub447 = sub i64 %add435, %shl446 *)
 sub v_sub447 v_add435 v_shl446;
 (*   %add448 = add i64 %add440, 16777216 *)
@@ -689,12 +681,10 @@ add v_add450 v_shr449 v_sub427;
 (*   %shl451 = and i64 %add448, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl451 v_add448 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add448_h32 tmp v_add448 32;
 assert true && eq v_shr449*(2**25)@64 v_shl451+v_add448_h32*(2**32)@64;
 assume eq v_shr449*(2**25) v_shl451+v_add448_h32*(2**32) && true;
-
 (*   %sub452 = sub i64 %add440, %shl451 *)
 sub v_sub452 v_add440 v_shl451;
 (*   %add453 = add i64 %add445, 16777216 *)
@@ -725,12 +715,10 @@ add v_add455 v_add411 v_shr454;
 (*   %shl456 = and i64 %add453, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl456 v_add453 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add453_h32 tmp v_add453 32;
 assert true && eq v_shr454*(2**25)@64 v_shl456+v_add453_h32*(2**32)@64;
 assume eq v_shr454*(2**25) v_shl456+v_add453_h32*(2**32) && true;
-
 (*   %sub457 = sub i64 %add445, %shl456 *)
 sub v_sub457 v_add445 v_shl456;
 (*   %add458 = add i64 %add450, 33554432 *)
@@ -743,12 +731,10 @@ add v_add460 v_sub437 v20;
 (*   %shl461 = and i64 %add458, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl461 v_add458 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add458_h32 tmp v_add458 32;
 assert true && eq v20*(2**26)@64 v_shl461+v_add458_h32*(2**32)@64;
 assume eq v20*(2**26) v_shl461+v_add458_h32*(2**32) && true;
-
 (*   %sub462 = sub i64 %add450, %shl461 *)
 sub v_sub462 v_add450 v_shl461;
 (*   %add463 = add i64 %add455, 33554432 *)
@@ -779,12 +765,10 @@ add v_add465 v_add420 v_shr464;
 (*   %shl466 = and i64 %add463, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl466 v_add463 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add463_h32 tmp v_add463 32;
 assert true && eq v_shr464*(2**26)@64 v_shl466+v_add463_h32*(2**32)@64;
 assume eq v_shr464*(2**26) v_shl466+v_add463_h32*(2**32) && true;
-
 (*   %sub467 = sub i64 %add455, %shl466 *)
 sub v_sub467 v_add455 v_shl466;
 (*   %add468 = add i64 %add465, 16777216 *)
@@ -799,12 +783,10 @@ add v_add471 v_mul470 v_sub;
 (*   %shl472 = and i64 %add468, 4261412864 *)
 (* You may need to modify here *)
 and sint64 v_shl472 v_add468 (0xFE000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add468_h32 tmp v_add468 32;
 assert true && eq v_shr469*(2**25)@64 v_shl472+v_add468_h32*(2**32)@64;
 assume eq v_shr469*(2**25) v_shl472+v_add468_h32*(2**32) && true;
-
 (*   %sub473 = sub i64 %add465, %shl472 *)
 sub v_sub473 v_add465 v_shl472;
 (*   %add474 = add i64 %add471, 33554432 *)
@@ -817,12 +799,10 @@ add v_add476 v_sub432 v21;
 (*   %shl477 = and i64 %add474, 4227858432 *)
 (* You may need to modify here *)
 and sint64 v_shl477 v_add474 (0xFC000000)@sint64;
-
-(*modify*)
+(* Heuristics applied. *)
 split v_add474_h32 tmp v_add474 32;
 assert true && eq v21*(2**26)@64 v_shl477+v_add474_h32*(2**32)@64;
 assume eq v21*(2**26) v_shl477+v_add474_h32*(2**32) && true;
-
 (*   %sub478 = sub i64 %add471, %shl477 *)
 sub v_sub478 v_add471 v_shl477;
 (*   %conv479 = trunc i64 %sub478 to i32 *)

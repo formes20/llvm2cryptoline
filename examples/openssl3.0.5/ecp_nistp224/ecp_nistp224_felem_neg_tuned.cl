@@ -1,6 +1,6 @@
 /*
 ===== Verification =====
- llvm2cryptoline Arguments: -disable_heuristic_sound
+ llvm2cryptoline Arguments: 
  cryptoline Arguments: -v -isafety -debug
  
 Parsing CryptoLine file:		[OK]		0.001633 seconds

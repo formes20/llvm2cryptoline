@@ -79,8 +79,7 @@ mul v_mul7 v_conv5 v_conv1;
 (* You may need to modify here *)
 split v_shr tmp_v_mul_low51 v_mul 51;
 (* Heuristics applied. *)
-vpc tmp_v_mul_low51@uint64 tmp_v_mul_low51@uint128;
-assert true && eq tmp_v_mul_low51 v_conv2;
+assert true && eq tmp_v_mul_low51 uext v_conv2 64;
 assume eq tmp_v_mul_low51 v_conv2 && true;
 (*   %add = add i128 %mul7, %shr *)
 add v_add v_mul7 v_shr;
@@ -104,8 +103,7 @@ mul v_mul14 v_conv12 v_conv1;
 (* You may need to modify here *)
 split v_shr15 tmp_v_add_low51 v_add 51;
 (* Heuristics applied. *)
-vpc tmp_v_add_low51@uint64 tmp_v_add_low51@uint128;
-assert true && eq tmp_v_add_low51 v_conv9;
+assert true && eq tmp_v_add_low51 uext v_conv9 64;
 assume eq tmp_v_add_low51 v_conv9 && true;
 (*   %add16 = add i128 %mul14, %shr15 *)
 add v_add16 v_mul14 v_shr15;
@@ -129,8 +127,7 @@ mul v_mul23 v_conv21 v_conv1;
 (* You may need to modify here *)
 split v_shr24 tmp_v_add16_low51 v_add16 51;
 (* Heuristics applied. *)
-vpc tmp_v_add16_low51@uint64 tmp_v_add16_low51@uint128;
-assert true && eq tmp_v_add16_low51 v_conv18;
+assert true && eq tmp_v_add16_low51 uext v_conv18 64;
 assume eq tmp_v_add16_low51 v_conv18 && true;
 (*   %add25 = add i128 %mul23, %shr24 *)
 add v_add25 v_mul23 v_shr24;
@@ -154,8 +151,7 @@ mul v_mul32 v_conv30 v_conv1;
 (* You may need to modify here *)
 split v_shr33 tmp_v_add25_low51 v_add25 51;
 (* Heuristics applied. *)
-vpc tmp_v_add25_low51@uint64 tmp_v_add25_low51@uint128;
-assert true && eq tmp_v_add25_low51 v_conv27;
+assert true && eq tmp_v_add25_low51 uext v_conv27 64;
 assume eq tmp_v_add25_low51 v_conv27 && true;
 (*   %add34 = add i128 %mul32, %shr33 *)
 add v_add34 v_mul32 v_shr33;
@@ -172,8 +168,7 @@ mov output_32 v_conv36;
 (* You may need to modify here *)
 split v_shr38 tmp_v_add34_low51 v_add34 51;
 (* Heuristics applied. *)
-vpc tmp_v_add34_low51@uint64 tmp_v_add34_low51@uint128;
-assert true && eq tmp_v_add34_low51 v_conv36;
+assert true && eq tmp_v_add34_low51 uext v_conv36 64;
 assume eq tmp_v_add34_low51 v_conv36 && true;
 (*   %10 = trunc i128 %shr38 to i64 *)
 split tmp_v_shr38_high64 v10 v_shr38 64;

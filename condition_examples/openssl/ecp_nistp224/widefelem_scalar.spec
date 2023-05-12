@@ -1,9 +1,9 @@
 {
-  true
+  scalar_coerce1 = 0
   &&
   and [  
-    out[0..6] <= const 128 (2**116),
-    limbs 64 [scalar_coerce0, scalar_coerce1] <= const 128 8
+    out[0..6] <= (2**116)@128,
+    limbs 64 [scalar_coerce0, scalar_coerce1] <= 8@128
   ]
 }
 
@@ -15,5 +15,5 @@
     
   &&
   
-  out'[0..6] <= const 128 (2**119)
+  out'[0..6] <= (2**119)@128
 }

@@ -1,38 +1,28 @@
-/*
-Verifying program safety:  		[OK]		13183.548932 seconds
-Verifying range assertions:		[OK]		1.504951 seconds
-Verifying range specification:	[OK]		78.907121 seconds
-Rewriting value-preserved casting:	[OK]		0.000110 seconds
-Verifying algebraic assertions:	[OK]		0.000358 seconds
-Verifying algebraic specification:	[OK]		0.068187 seconds
-Verification result:			[OK]		13264.033934 seconds
-*/
-
 proc main (sint32 f_0, sint32 f_4, sint32 f_8, sint32 f_12, sint32 f_16, sint32 f_20, sint32 f_24, sint32 f_28, sint32 f_32, sint32 f_36) =
 {
 	true
 	&&
 	and[
 		f_0	<=s	(110729625)@32,
-	f_0	>=s	(-110729625)@32,
-	f_4	<=s	(55364812)@32,
-	f_4	>=s	(-55364812)@32,
-	f_8	<=s	(110729625)@32,
-	f_8	>=s	(-110729625)@32,
-	f_12	<=s	(55364812)@32,
-	f_12	>=s	(-55364812)@32,
-	f_16	<=s	(110729625)@32,
-	f_16	>=s	(-110729625)@32,
-	f_20	<=s	(55364812)@32,
-	f_20	>=s	(-55364812)@32,
-	f_24	<=s	(110729625)@32,
-	f_24	>=s	(-110729625)@32,
-	f_28	<=s	(55364812)@32,
-	f_28	>=s	(-55364812)@32,
-	f_32	<=s	(110729625)@32,
-	f_32	>=s	(-110729625)@32,
-	f_36	<=s	(55364812)@32,
-	f_36	>=s	(-55364812)@32]
+		f_0	>=s	(-110729625)@32,
+		f_4	<=s	(55364812)@32,
+		f_4	>=s	(-55364812)@32,
+		f_8	<=s	(110729625)@32,
+		f_8	>=s	(-110729625)@32,
+		f_12	<=s	(55364812)@32,
+		f_12	>=s	(-55364812)@32,
+		f_16	<=s	(110729625)@32,
+		f_16	>=s	(-110729625)@32,
+		f_20	<=s	(55364812)@32,
+		f_20	>=s	(-55364812)@32,
+		f_24	<=s	(110729625)@32,
+		f_24	>=s	(-110729625)@32,
+		f_28	<=s	(55364812)@32,
+		f_28	>=s	(-55364812)@32,
+		f_32	<=s	(110729625)@32,
+		f_32	>=s	(-110729625)@32,
+		f_36	<=s	(55364812)@32,
+		f_36	>=s	(-55364812)@32  ]	
 }
 
 
@@ -289,7 +279,7 @@ add v_add207 v_add206 v_mul155;
 add v_add230 v_add189 (33554432)@sint64;
 (*   %shr = ashr i64 %add230, 26 *)
 (* You may need to modify here *)
-split v_shr tmp_to_be_used v_add230 26;
+split v_shr tmp_v_add230_low26 v_add230 26;
 (*   %add190 = add i64 %mul146, %mul26 *)
 add v_add190 v_mul146 v_mul26;
 (*   %add191 = add i64 %add190, %mul134 *)
@@ -302,18 +292,17 @@ add v_add193 v_add192 v_mul101;
 add v_add231 v_add193 v_shr;
 (*   %shl = and i64 %add230, -67108864 *)
 (* You may need to modify here *)
-//and sint64 v_shl v_add230 (0xFFFFFFFFFC000000)@sint64;
-and sint64 v_shl v_add230 (-67108864)@sint64;
-(*modify*)
-assert true && eq v_shl v_shr * (2**26)@64;
-assume eq v_shl v_shr * (2**26) && true;
+and sint64 v_shl v_add230 (0xFFFFFFFFFC000000)@sint64;
+(* Heuristics applied. *)
+assert true && eq v_shl v_shr*(2**26)@64;
+assume eq v_shl v_shr*(2**26) && true;
 (*   %sub = sub i64 %add189, %shl *)
 sub v_sub v_add189 v_shl;
 (*   %add232 = add i64 %add207, 33554432 *)
 add v_add232 v_add207 (33554432)@sint64;
 (*   %shr233 = ashr i64 %add232, 26 *)
 (* You may need to modify here *)
-split v_shr233 tmp_to_be_used v_add232 26;
+split v_shr233 tmp_v_add232_low26 v_add232 26;
 (*   %add208 = add i64 %mul62, %mul83 *)
 add v_add208 v_mul62 v_mul83;
 (*   %add209 = add i64 %add208, %mul38 *)
@@ -326,18 +315,17 @@ add v_add211 v_add210 v_mul167;
 add v_add234 v_add211 v_shr233;
 (*   %shl235 = and i64 %add232, -67108864 *)
 (* You may need to modify here *)
-//and sint64 v_shl235 v_add232 (0xFFFFFFFFFC000000)@sint64;
-and sint64 v_shl235 v_add232 (-67108864)@sint64;
-(*modify*)
-assert true && eq v_shl235 v_shr233 * (2**26)@64;
-assume eq v_shl235 v_shr233 * (2**26) && true;
+and sint64 v_shl235 v_add232 (0xFFFFFFFFFC000000)@sint64;
+(* Heuristics applied. *)
+assert true && eq v_shl235 v_shr233*(2**26)@64;
+assume eq v_shl235 v_shr233*(2**26) && true;
 (*   %sub236 = sub i64 %add207, %shl235 *)
 sub v_sub236 v_add207 v_shl235;
 (*   %add237 = add i64 %add231, 16777216 *)
 add v_add237 v_add231 (16777216)@sint64;
 (*   %shr238 = ashr i64 %add237, 25 *)
 (* You may need to modify here *)
-split v_shr238 tmp_to_be_used v_add237 25;
+split v_shr238 tmp_v_add237_low25 v_add237 25;
 (*   %add195 = add i64 %add194, %mul158 *)
 add v_add195 v_add194 v_mul158;
 (*   %add196 = add i64 %add195, %mul149 *)
@@ -350,18 +338,18 @@ add v_add198 v_add197 v_mul122;
 add v_add239 v_add198 v_shr238;
 (*   %shl240 = and i64 %add237, 4261412864 *)
 (* You may need to modify here *)
-//and sint64 v_shl240 v_add237 (0xFE000000)@sint64;
-and sint64 v_shl240 v_add237 (-33554432)@sint64;
-(*modify*)
-assert true && eq v_shl240 v_shr238 * (2**25)@64;
-assume eq v_shl240 v_shr238 * (2**25) && true;
+and sint64 v_shl240 v_add237 (0xFE000000)@sint64;
+(* Heuristics applied. *)
+split v_add237_h32 tmp v_add237 32;
+assert true && eq v_shr238*(2**25)@64 v_shl240+v_add237_h32*(2**32)@64;
+assume eq v_shr238*(2**25) v_shl240+v_add237_h32*(2**32) && true;
 (*   %sub241 = sub i64 %add231, %shl240 *)
 sub v_sub241 v_add231 v_shl240;
 (*   %add242 = add i64 %add234, 16777216 *)
 add v_add242 v_add234 (16777216)@sint64;
 (*   %shr243 = ashr i64 %add242, 25 *)
 (* You may need to modify here *)
-split v_shr243 tmp_to_be_used v_add242 25;
+split v_shr243 tmp_v_add242_low25 v_add242 25;
 (*   %add212 = add i64 %mul104, %mul86 *)
 add v_add212 v_mul104 v_mul86;
 (*   %add213 = add i64 %add212, %mul65 *)
@@ -376,18 +364,18 @@ add v_add216 v_add215 v_mul176;
 add v_add244 v_add216 v_shr243;
 (*   %shl245 = and i64 %add242, 4261412864 *)
 (* You may need to modify here *)
-//and sint64 v_shl245 v_add242 (0xFE000000)@sint64;
-and sint64 v_shl245 v_add242 (-33554432)@sint64;
-(*modify*)
-assert true && eq v_shl245 v_shr243 * (2**25)@64;
-assume eq v_shl245 v_shr243 * (2**25) && true;
+and sint64 v_shl245 v_add242 (0xFE000000)@sint64;
+(* Heuristics applied. *)
+split v_add242_h32 tmp v_add242 32;
+assert true && eq v_shr243*(2**25)@64 v_shl245+v_add242_h32*(2**32)@64;
+assume eq v_shr243*(2**25) v_shl245+v_add242_h32*(2**32) && true;
 (*   %sub246 = sub i64 %add234, %shl245 *)
 sub v_sub246 v_add234 v_shl245;
 (*   %add247 = add i64 %add239, 33554432 *)
 add v_add247 v_add239 (33554432)@sint64;
 (*   %shr248 = ashr i64 %add247, 26 *)
 (* You may need to modify here *)
-split v_shr248 tmp_to_be_used v_add247 26;
+split v_shr248 tmp_v_add247_low26 v_add247 26;
 (*   %add200 = add i64 %add199, %mul161 *)
 add v_add200 v_add199 v_mul161;
 (*   %add201 = add i64 %add200, %mul152 *)
@@ -398,18 +386,18 @@ add v_add202 v_add201 v_mul140;
 add v_add249 v_add202 v_shr248;
 (*   %shl250 = and i64 %add247, 4227858432 *)
 (* You may need to modify here *)
-//and sint64 v_shl250 v_add247 (0xFC000000)@sint64;
-and sint64 v_shl250 v_add247 (-67108864)@sint64;
-(*modify*)
-assert true && eq v_shl250 v_shr248 * (2**26)@64;
-assume eq v_shl250 v_shr248 * (2**26) && true;
+and sint64 v_shl250 v_add247 (0xFC000000)@sint64;
+(* Heuristics applied. *)
+split v_add247_h32 tmp v_add247 32;
+assert true && eq v_shr248*(2**26)@64 v_shl250+v_add247_h32*(2**32)@64;
+assume eq v_shr248*(2**26) v_shl250+v_add247_h32*(2**32) && true;
 (*   %sub251 = sub i64 %add239, %shl250 *)
 sub v_sub251 v_add239 v_shl250;
 (*   %add252 = add i64 %add244, 33554432 *)
 add v_add252 v_add244 (33554432)@sint64;
 (*   %shr253 = ashr i64 %add252, 26 *)
 (* You may need to modify here *)
-split v_shr253 tmp_to_be_used v_add252 26;
+split v_shr253 tmp_v_add252_low26 v_add252 26;
 (*   %add217 = add i64 %mul89, %mul107 *)
 add v_add217 v_mul89 v_mul107;
 (*   %add218 = add i64 %add217, %mul68 *)
@@ -422,34 +410,34 @@ add v_add220 v_add219 v_mul182;
 add v_add254 v_add220 v_shr253;
 (*   %shl255 = and i64 %add252, 4227858432 *)
 (* You may need to modify here *)
-//and sint64 v_shl255 v_add252 (0xFC000000)@sint64;
-and sint64 v_shl255 v_add252 (-67108864)@sint64;
-(*modify*)
-assert true && eq v_shl255 v_shr253 * (2**26)@64;
-assume eq v_shl255 v_shr253 * (2**26) && true;
+and sint64 v_shl255 v_add252 (0xFC000000)@sint64;
+(* Heuristics applied. *)
+split v_add252_h32 tmp v_add252 32;
+assert true && eq v_shr253*(2**26)@64 v_shl255+v_add252_h32*(2**32)@64;
+assume eq v_shr253*(2**26) v_shl255+v_add252_h32*(2**32) && true;
 (*   %sub256 = sub i64 %add244, %shl255 *)
 sub v_sub256 v_add244 v_shl255;
 (*   %add257 = add i64 %add249, 16777216 *)
 add v_add257 v_add249 (16777216)@sint64;
 (*   %shr258 = ashr i64 %add257, 25 *)
 (* You may need to modify here *)
-split v_shr258 tmp_to_be_used v_add257 25;
+split v_shr258 tmp_v_add257_low25 v_add257 25;
 (*   %add259 = add i64 %shr258, %sub236 *)
 add v_add259 v_shr258 v_sub236;
 (*   %shl260 = and i64 %add257, 4261412864 *)
 (* You may need to modify here *)
-//and sint64 v_shl260 v_add257 (0xFE000000)@sint64;
-and sint64 v_shl260 v_add257 (-33554432)@sint64;
-(*modify*)
-assert true && eq v_shl260 v_shr258 * (2**25)@64;
-assume eq v_shl260 v_shr258 * (2**25) && true;
+and sint64 v_shl260 v_add257 (0xFE000000)@sint64;
+(* Heuristics applied. *)
+split v_add257_h32 tmp v_add257 32;
+assert true && eq v_shr258*(2**25)@64 v_shl260+v_add257_h32*(2**32)@64;
+assume eq v_shr258*(2**25) v_shl260+v_add257_h32*(2**32) && true;
 (*   %sub261 = sub i64 %add249, %shl260 *)
 sub v_sub261 v_add249 v_shl260;
 (*   %add262 = add i64 %add254, 16777216 *)
 add v_add262 v_add254 (16777216)@sint64;
 (*   %shr263 = ashr i64 %add262, 25 *)
 (* You may need to modify here *)
-split v_shr263 tmp_to_be_used v_add262 25;
+split v_shr263 tmp_v_add262_low25 v_add262 25;
 (*   %add221 = add i64 %mul92, %mul125 *)
 add v_add221 v_mul92 v_mul125;
 (*   %add222 = add i64 %add221, %mul110 *)
@@ -464,34 +452,34 @@ add v_add225 v_add224 v_mul185;
 add v_add264 v_add225 v_shr263;
 (*   %shl265 = and i64 %add262, 4261412864 *)
 (* You may need to modify here *)
-//and sint64 v_shl265 v_add262 (0xFE000000)@sint64;
-and sint64 v_shl265 v_add262 (-33554432)@sint64;
-(*modify*)
-assert true && eq v_shl265 v_shr263 * (2**25)@64;
-assume eq v_shl265 v_shr263 * (2**25) && true;
+and sint64 v_shl265 v_add262 (0xFE000000)@sint64;
+(* Heuristics applied. *)
+split v_add262_h32 tmp v_add262 32;
+assert true && eq v_shr263*(2**25)@64 v_shl265+v_add262_h32*(2**32)@64;
+assume eq v_shr263*(2**25) v_shl265+v_add262_h32*(2**32) && true;
 (*   %sub266 = sub i64 %add254, %shl265 *)
 sub v_sub266 v_add254 v_shl265;
 (*   %add267 = add i64 %add259, 33554432 *)
 add v_add267 v_add259 (33554432)@sint64;
 (*   %10 = lshr i64 %add267, 26 *)
 (* You may need to modify here *)
-split v10 tmp_to_be_used v_add267 26;
+split v10 tmp_v_add267_low26 v_add267 26;
 (*   %add269 = add i64 %sub246, %10 *)
 add v_add269 v_sub246 v10;
 (*   %shl270 = and i64 %add267, 4227858432 *)
 (* You may need to modify here *)
-//and sint64 v_shl270 v_add267 (0xFC000000)@sint64;
-and sint64 v_shl270 v_add267 (-67108864)@sint64;
-(*modify*)
-assert true && eq v_shl270 v10 * (2**26)@64;
-assume eq v_shl270 v10 * (2**26) && true;
+and sint64 v_shl270 v_add267 (0xFC000000)@sint64;
+(* Heuristics applied. *)
+split v_add267_h32 tmp v_add267 32;
+assert true && eq v10*(2**26)@64 v_shl270+v_add267_h32*(2**32)@64;
+assume eq v10*(2**26) v_shl270+v_add267_h32*(2**32) && true;
 (*   %sub271 = sub i64 %add259, %shl270 *)
 sub v_sub271 v_add259 v_shl270;
 (*   %add272 = add i64 %add264, 33554432 *)
 add v_add272 v_add264 (33554432)@sint64;
 (*   %shr273 = ashr i64 %add272, 26 *)
 (* You may need to modify here *)
-split v_shr273 tmp_to_be_used v_add272 26;
+split v_shr273 tmp_v_add272_low26 v_add272 26;
 (*   %add226 = add i64 %mul113, %mul128 *)
 add v_add226 v_mul113 v_mul128;
 (*   %add227 = add i64 %add226, %mul95 *)
@@ -504,113 +492,143 @@ add v_add229 v_add228 v_mul50;
 add v_add274 v_add229 v_shr273;
 (*   %shl275 = and i64 %add272, 4227858432 *)
 (* You may need to modify here *)
-//and sint64 v_shl275 v_add272 (0xFC000000)@sint64;
-and sint64 v_shl275 v_add272 (-67108864)@sint64;
-(*modify*)
-assert true && eq v_shl275 v_shr273 * (2**26)@64;
-assume eq v_shl275 v_shr273 * (2**26) && true;
+and sint64 v_shl275 v_add272 (0xFC000000)@sint64;
+(* Heuristics applied. *)
+split v_add272_h32 tmp v_add272 32;
+assert true && eq v_shr273*(2**26)@64 v_shl275+v_add272_h32*(2**32)@64;
+assume eq v_shr273*(2**26) v_shl275+v_add272_h32*(2**32) && true;
 (*   %sub276 = sub i64 %add264, %shl275 *)
 sub v_sub276 v_add264 v_shl275;
 (*   %add277 = add i64 %add274, 16777216 *)
 add v_add277 v_add274 (16777216)@sint64;
 (*   %shr278 = ashr i64 %add277, 25 *)
 (* You may need to modify here *)
-split v_shr278 tmp_to_be_used v_add277 25;
+split v_shr278 tmp_v_add277_low25 v_add277 25;
 (*   %mul279 = mul nsw i64 %shr278, 19 *)
 mul v_mul279 v_shr278 (19)@sint64;
 (*   %add280 = add i64 %mul279, %sub *)
 add v_add280 v_mul279 v_sub;
 (*   %shl281 = and i64 %add277, 4261412864 *)
 (* You may need to modify here *)
-//and sint64 v_shl281 v_add277 (0xFE000000)@sint64;
-and sint64 v_shl281 v_add277 (-33554432)@sint64;
-(*modify*)
-assert true && eq v_shl281 v_shr278 * (2**25)@64;
-assume eq v_shl281 v_shr278 * (2**25) && true;
+and sint64 v_shl281 v_add277 (0xFE000000)@sint64;
+(* Heuristics applied. *)
+split v_add277_h32 tmp v_add277 32;
+assert true && eq v_shr278*(2**25)@64 v_shl281+v_add277_h32*(2**32)@64;
+assume eq v_shr278*(2**25) v_shl281+v_add277_h32*(2**32) && true;
 (*   %sub282 = sub i64 %add274, %shl281 *)
 sub v_sub282 v_add274 v_shl281;
 (*   %add283 = add i64 %add280, 33554432 *)
 add v_add283 v_add280 (33554432)@sint64;
 (*   %11 = lshr i64 %add283, 26 *)
 (* You may need to modify here *)
-split v11 tmp_to_be_used v_add283 26;
+split v11 tmp_v_add283_low26 v_add283 26;
 (*   %add285 = add i64 %sub241, %11 *)
 add v_add285 v_sub241 v11;
 (*   %shl286 = and i64 %add283, 4227858432 *)
 (* You may need to modify here *)
-//and sint64 v_shl286 v_add283 (0xFC000000)@sint64;
-and sint64 v_shl286 v_add283 (-67108864)@sint64;
-(*modify*)
-assert true && eq v_shl286 v11 * (2**26)@64;
-assume eq v_shl286 v11 * (2**26) && true;
+and sint64 v_shl286 v_add283 (0xFC000000)@sint64;
+(* Heuristics applied. *)
+split v_add283_h32 tmp v_add283 32;
+assert true && eq v11*(2**26)@64 v_shl286+v_add283_h32*(2**32)@64;
+assume eq v11*(2**26) v_shl286+v_add283_h32*(2**32) && true;
 (*   %sub287 = sub i64 %add280, %shl286 *)
 sub v_sub287 v_add280 v_shl286;
 (*   %conv288 = trunc i64 %sub287 to i32 *)
-//split tmp_v_sub287 v_conv288 v_sub287 32;
+//split tmp_v_sub287_high32 v_conv288 v_sub287 32;
 //vpc v_conv288@sint32 v_conv288@uint64;
-vpc v_conv288@sint32 v_sub287@sint64;
+(*modify*)
+cast [tmp1] v_conv288@sint32  v_sub287@sint64;
+assert true && eq (sext tmp1 31) v_add283_h32;
+assume eq tmp1 v_add283_h32 && true;
 (*   store i32 %conv288, i32* %h, align 4, !tbaa !3 *)
 mov h_0 v_conv288;
 (*   %conv290 = trunc i64 %add285 to i32 *)
-//split tmp_v_add285 v_conv290 v_add285 32;
+//split tmp_v_add285_high32 v_conv290 v_add285 32;
 //vpc v_conv290@sint32 v_conv290@uint64;
-vpc v_conv290@sint32 v_add285@sint64;
+(*modify*)
+cast [tmp2] v_conv290@sint32  v_add285@sint64;
+assert true && eq (sext tmp2 31) v_add237_h32;
+assume eq tmp2 v_add237_h32 && true;
 (*   %arrayidx291 = getelementptr i32, i32* %h, i64 1 *)
 (*   store i32 %conv290, i32* %arrayidx291, align 4, !tbaa !3 *)
 mov h_4 v_conv290;
 (*   %conv292 = trunc i64 %sub251 to i32 *)
-//split tmp_v_sub251 v_conv292 v_sub251 32;
+//split tmp_v_sub251_high32 v_conv292 v_sub251 32;
 //vpc v_conv292@sint32 v_conv292@uint64;
-vpc v_conv292@sint32 v_sub251@sint64;
+(*modify*)
+cast [tmp3] v_conv292@sint32  v_sub251@sint64;
+assert true && eq (sext tmp3 31) v_add247_h32;
+assume eq tmp3 v_add247_h32 && true;
 (*   %arrayidx293 = getelementptr i32, i32* %h, i64 2 *)
 (*   store i32 %conv292, i32* %arrayidx293, align 4, !tbaa !3 *)
 mov h_8 v_conv292;
 (*   %conv294 = trunc i64 %sub261 to i32 *)
-//split tmp_v_sub261 v_conv294 v_sub261 32;
+//split tmp_v_sub261_high32 v_conv294 v_sub261 32;
 //vpc v_conv294@sint32 v_conv294@uint64;
-vpc v_conv294@sint32 v_sub261@sint64;
+(*modify*)
+cast [tmp4] v_conv294@sint32  v_sub261@sint64;
+assert true && eq (sext tmp4 31) v_add257_h32;
+assume eq tmp4 v_add257_h32 && true;
 (*   %arrayidx295 = getelementptr i32, i32* %h, i64 3 *)
 (*   store i32 %conv294, i32* %arrayidx295, align 4, !tbaa !3 *)
 mov h_12 v_conv294;
 (*   %conv296 = trunc i64 %sub271 to i32 *)
-//split tmp_v_sub271 v_conv296 v_sub271 32;
+//split tmp_v_sub271_high32 v_conv296 v_sub271 32;
 //vpc v_conv296@sint32 v_conv296@uint64;
-vpc v_conv296@sint32 v_sub271@sint64;
+(*modify*)
+cast [tmp5] v_conv296@sint32  v_sub271@sint64;
+assert true && eq (sext tmp5 31) v_add267_h32;
+assume eq tmp5 v_add267_h32 && true;
 (*   %arrayidx297 = getelementptr i32, i32* %h, i64 4 *)
 (*   store i32 %conv296, i32* %arrayidx297, align 4, !tbaa !3 *)
 mov h_16 v_conv296;
 (*   %conv298 = trunc i64 %add269 to i32 *)
-//split tmp_v_add269 v_conv298 v_add269 32;
+//split tmp_v_add269_high32 v_conv298 v_add269 32;
 //vpc v_conv298@sint32 v_conv298@uint64;
-vpc v_conv298@sint32 v_add269@sint64;
+(*modify*)
+cast [tmp6] v_conv298@sint32  v_add269@sint64;
+assert true && eq (sext tmp6 31) v_add242_h32;
+assume eq tmp6 v_add242_h32 && true;
 (*   %arrayidx299 = getelementptr i32, i32* %h, i64 5 *)
 (*   store i32 %conv298, i32* %arrayidx299, align 4, !tbaa !3 *)
 mov h_20 v_conv298;
 (*   %conv300 = trunc i64 %sub256 to i32 *)
-//split tmp_v_sub256 v_conv300 v_sub256 32;
+//split tmp_v_sub256_high32 v_conv300 v_sub256 32;
 //vpc v_conv300@sint32 v_conv300@uint64;
-vpc v_conv300@sint32 v_sub256@sint64;
+(*modify*)
+cast [tmp7] v_conv300@sint32  v_sub256@sint64;
+assert true && eq (sext tmp7 31) v_add252_h32;
+assume eq tmp7 v_add252_h32 && true;
 (*   %arrayidx301 = getelementptr i32, i32* %h, i64 6 *)
 (*   store i32 %conv300, i32* %arrayidx301, align 4, !tbaa !3 *)
 mov h_24 v_conv300;
 (*   %conv302 = trunc i64 %sub266 to i32 *)
-//split tmp_v_sub266 v_conv302 v_sub266 32;
+//split tmp_v_sub266_high32 v_conv302 v_sub266 32;
 //vpc v_conv302@sint32 v_conv302@uint64;
-vpc v_conv302@sint32 v_sub266@sint64;
+(*modify*)
+cast [tmp8] v_conv302@sint32  v_sub266@sint64;
+assert true && eq (sext tmp8 31) v_add262_h32;
+assume eq tmp8 v_add262_h32 && true;
 (*   %arrayidx303 = getelementptr i32, i32* %h, i64 7 *)
 (*   store i32 %conv302, i32* %arrayidx303, align 4, !tbaa !3 *)
 mov h_28 v_conv302;
 (*   %conv304 = trunc i64 %sub276 to i32 *)
-//split tmp_v_sub276 v_conv304 v_sub276 32;
+//split tmp_v_sub276_high32 v_conv304 v_sub276 32;
 //vpc v_conv304@sint32 v_conv304@uint64;
-vpc v_conv304@sint32 v_sub276@sint64;
+(*modify*)
+cast [tmp9] v_conv304@sint32  v_sub276@sint64;
+assert true && eq (sext tmp9 31) v_add272_h32;
+assume eq tmp9 v_add272_h32 && true;
 (*   %arrayidx305 = getelementptr i32, i32* %h, i64 8 *)
 (*   store i32 %conv304, i32* %arrayidx305, align 4, !tbaa !3 *)
 mov h_32 v_conv304;
 (*   %conv306 = trunc i64 %sub282 to i32 *)
-//split tmp_v_sub282 v_conv306 v_sub282 32;
+//split tmp_v_sub282_high32 v_conv306 v_sub282 32;
 //vpc v_conv306@sint32 v_conv306@uint64;
-vpc v_conv306@sint32 v_sub282@sint64;
+(*modify*)
+cast [tmp10] v_conv306@sint32  v_sub282@sint64;
+assert true && eq (sext tmp10 31) v_add277_h32;
+assume eq tmp10 v_add277_h32 && true;
 (*   %arrayidx307 = getelementptr i32, i32* %h, i64 9 *)
 (*   store i32 %conv306, i32* %arrayidx307, align 4, !tbaa !3 *)
 mov h_36 v_conv306;
@@ -633,29 +651,29 @@ mov h_36_prime h_36@sint32;
 
 {
 	eqmod
-	(h_0+h_4*(2	**	26)+h_8*(2	**	51)+h_12*(2	**	77)+h_16*(2	**	102)+h_20*(2	**	128)+h_24*(2	**	153)+h_28*(2	**	179)+h_32*(2	**	204)+h_36*(2	**	230))
-	((f_0+f_4*(2	**	26)+f_8*(2	**	51)+f_12*(2	**	77)+f_16*(2	**	102)+f_20*(2	**	128)+f_24*(2	**	153)+f_28*(2	**	179)+f_32*(2	**	204)+f_36*(2	**	230))	**	2)
-	(2	**	255-19)
+	(h_0_prime  +  h_4_prime  *  (2  **  26)  +  h_8_prime  *  (2  **  51)  +  h_12_prime  *  (2  **  77)  +  h_16_prime  *  (2  **  102)  +  h_20_prime  *  (2  **  128)  +  h_24_prime  *  (2  **  153)  +  h_28_prime  *  (2  **  179)  +  h_32_prime  *  (2  **  204)  +  h_36_prime  *  (2  **  230))
+	((f_0_init  +  f_4_init  *  (2  **  26)  +  f_8_init  *  (2  **  51)  +  f_12_init  *  (2  **  77)  +  f_16_init  *  (2  **  102)  +  f_20_init  *  (2  **  128)  +  f_24_init  *  (2  **  153)  +  f_28_init  *  (2  **  179)  +  f_32_init  *  (2  **  204)  +  f_36_init  *  (2  **  230))  **  2)
+	(2  **  255  -  19)
 	&&
 	and[
-		h_0	<=s	(33889976)@32,
-	h_0	>=s	(-33889976)@32,
-	h_4	<=s	(16944988)@32,
-	h_4	>=s	(-16944988)@32,
-	h_8	<=s	(33889976)@32,
-	h_8	>=s	(-33889976)@32,
-	h_12	<=s	(16944988)@32,
-	h_12	>=s	(-16944988)@32,
-	h_16	<=s	(33889976)@32,
-	h_16	>=s	(-33889976)@32,
-	h_20	<=s	(16944988)@32,
-	h_20	>=s	(-16944988)@32,
-	h_24	<=s	(33889976)@32,
-	h_24	>=s	(-33889976)@32,
-	h_28	<=s	(16944988)@32,
-	h_28	>=s	(-16944988)@32,
-	h_32	<=s	(33889976)@32,
-	h_32	>=s	(-33889976)@32,
-	h_36	<=s	(16944988)@32,
-	h_36	>=s	(-16944988)@32]
+		h_0_prime	<=s	(33889976)@32,
+		h_0_prime	>=s	(-33889976)@32,
+		h_4_prime	<=s	(16944988)@32,
+		h_4_prime	>=s	(-16944988)@32,
+		h_8_prime	<=s	(33889976)@32,
+		h_8_prime	>=s	(-33889976)@32,
+		h_12_prime	<=s	(16944988)@32,
+		h_12_prime	>=s	(-16944988)@32,
+		h_16_prime	<=s	(33889976)@32,
+		h_16_prime	>=s	(-33889976)@32,
+		h_20_prime	<=s	(16944988)@32,
+		h_20_prime	>=s	(-16944988)@32,
+		h_24_prime	<=s	(33889976)@32,
+		h_24_prime	>=s	(-33889976)@32,
+		h_28_prime	<=s	(16944988)@32,
+		h_28_prime	>=s	(-16944988)@32,
+		h_32_prime	<=s	(33889976)@32,
+		h_32_prime	>=s	(-33889976)@32,
+		h_36_prime	<=s	(16944988)@32,
+		h_36_prime	>=s	(-16944988)@32  ]	
 }

@@ -37,6 +37,7 @@ RSQUARE: ']';
 VBAR: '&&';
 DOTDOT: '..';
 PRIME:'\'';
+DOT:'.';
 
 //predicate
 TRUE: 'true';
@@ -72,7 +73,7 @@ HEX: '0x'[0-9a-fA-F]+;
 
 
 VAR: LETTER (LETTER | '0'..'9')* ;
-LL_VAR: PERCENT (LETTER | '0'..'9')* ;
+LL_VAR: PERCENT (LETTER | '0'..'9' | DOT)* ;
 fragment LETTER : [a-zA-Z_];
 
 UINT: 'uint';
