@@ -103,15 +103,15 @@ Use the following command line:
     
 Options:
 
-* ` -block <b>: translate the block <b> in the target IR function;
-* ` -disable_heuristic: disable heuristics 
-* ` -disable_cryptoline: disable the invocation of the Cryptoline tool
-* ` -enable_aggr_heuristic: enable the aggressive heuristcs 
-* ` -enable_aggr_shl: enable the aggressive translation of the IR instruction {shl}
-* ` -save_cryptoline: save the generated Cryptoline problem (.cl)
-* ` -type <type>: specify the default type for translation, which can be signed or unsigned (the default)
-* ` -v: display verbose messages output by Cryptoline
-* ` -h: Print this help info 
+* ` -block <b>`: translate the block <b> in the target IR function;
+* ` -disable_heuristic`: disable heuristics 
+* ` -disable_cryptoline`: disable the invocation of the Cryptoline tool
+* ` -enable_aggr_heuristic`: enable the aggressive heuristcs 
+* ` enable_aggr_shl`: enable the aggressive translation of the IR instruction {shl}
+* ` -save_cryptoline`: save the generated Cryptoline problem (.cl)
+* ` -type <type>`: specify the default type for translation, which can be signed or unsigned (the default)
+* ` -v`: display verbose messages output by Cryptoline
+* ` -h`: Print this help info 
 
 
    
