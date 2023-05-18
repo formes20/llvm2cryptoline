@@ -103,7 +103,7 @@ Use the following command line:
     
 Options:
 
-* ` -block <b>`: translate the block <b> in the target IR function;
+* ` -block <b>`: translate the block in the target IR function;
 * ` -disable_heuristic`: disable heuristics 
 * ` -disable_cryptoline`: disable the invocation of the Cryptoline tool
 * ` -enable_aggr_heuristic`: enable the aggressive heuristcs 
