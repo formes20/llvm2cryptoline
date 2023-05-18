@@ -258,7 +258,9 @@ public:
 
     virtual std::any visitArray(conditionParser::ArrayContext *context) = 0;
 
-    virtual std::any visitAssert_rule(conditionParser::Assert_ruleContext *context) = 0;
+    virtual std::any visitAnno_llvar(conditionParser::Anno_llvarContext *context) = 0;
+
+    virtual std::any visitAnno_var(conditionParser::Anno_varContext *context) = 0;
 
     virtual std::any visitLl_var(conditionParser::Ll_varContext *context) = 0;
 

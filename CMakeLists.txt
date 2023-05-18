@@ -22,9 +22,9 @@ message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(PROJECT_SRC_DIR ${PROJECT_DIR}/src)
 set(PROJECT_INCLUDE_DIR ${PROJECT_DIR}/include)
-set(PROJECT_PARSER ${PROJECT_DIR}/grammar/generated/)
+set(PROJECT_PARSER ${PROJECT_DIR}/src/grammar/generated/)
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SRC_DIR}/*.cpp")
-file(GLOB PARSER_FILES ${PROJECT_DIR}/grammar/generated/*.cpp)
+file(GLOB PARSER_FILES ${PROJECT_DIR}/src/grammar/generated/*.cpp)
 
 
 include_directories(${LLVM_INCLUDE_DIRS})

@@ -493,7 +493,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitAssert_rule(conditionParser::Assert_ruleContext *ctx) override {
+  virtual std::any visitAnno_llvar(conditionParser::Anno_llvarContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitAnno_var(conditionParser::Anno_varContext *ctx) override {
     return visitChildren(ctx);
   }
 

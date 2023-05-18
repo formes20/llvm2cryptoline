@@ -1,9 +1,9 @@
 #!/bin/bash
 CURRENT_DIR=$(cd `dirname $0`; pwd)
-PARENT_DIR=$(cd $(dirname $0);cd ..; pwd)
-TRANSLATE_DIR="$PARENT_DIR/build"
-EXAMPLES_DIR="$PARENT_DIR/examples"
-CONDITION_DIR="$PARENT_DIR/condition_examples"
+SRC_DIR=$(cd $(dirname $0);cd ..; cd ..; pwd)
+TRANSLATE_DIR="$SRC_DIR/build"
+EXAMPLES_DIR="$SRC_DIR/examples"
+CONDITION_DIR="$SRC_DIR/Spec_examples"
 
 export PATH=$PATH:$TRANSLATE_DIR
 TRANSLATE="$TRANSLATE_DIR/verify"
@@ -85,6 +85,7 @@ if [ "$OpenSSL_curve25519" = "true" ]; then
   print_stars 75
   OpenSSL_CURVE25519_LLDIR="$EXAMPLES_DIR/openssl3.0.5/curve25519/"
   OpenSSL_CURVE25519_SPECDIR="$CONDITION_DIR/openssl/curve25519/"
+  echo
   # mkdir OpenSSL_curve25519
   if [ ! -d "OpenSSL_curve25519" ]; then
     mkdir OpenSSL_curve25519
@@ -118,9 +119,11 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 275 "$mod4"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 275 "$mod3"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 275 "(*modify*)"
+  echo
   echo "* Retry the verification: "
   cv -isafety -debug "$outPath${file}_${functionName}.cl"
-
+  echo
+  echo
 
   print_centered "fe51_mul121666"
   fileName="curve25519_fe51_mul121666.ll"
@@ -170,8 +173,11 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 125 "$mod7"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 125 "(*modify*)"
 
+  echo
   echo "* Retry the verification: "
    cv -isafety -debug "$outPath${file}_${functionName}.cl"
+  echo
+  echo
 
 
   print_centered "fe51_sq"
@@ -202,8 +208,10 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 207 "$mod3"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 207 "(*modify*)"
 
+  echo
   echo "* Retry the verification: "
    cv -isafety -debug "$outPath${file}_${functionName}.cl"
+  echo
 fi
 
 if [ "$OpenSSL_ecp_nistp224" = "true" ]; then
@@ -212,6 +220,7 @@ if [ "$OpenSSL_ecp_nistp224" = "true" ]; then
   print_stars 75
   OpenSSL_ECP_NISTP256_LLDIR="$EXAMPLES_DIR/openssl3.0.5/ecp_nistp224/"
   OpenSSL_ECP_NISTP256_SPECDIR="$CONDITION_DIR/openssl/ecp_nistp224/"
+  echo
   if [ ! -d "OpenSSL_ecp_nistp224" ]; then
     mkdir OpenSSL_ecp_nistp224
   fi
@@ -235,9 +244,11 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 204 "$mod1"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 204 "(*modify*)"
 
+  echo
   echo "* Retry the verification: "
   cv -isafety -debug "$outPath${file}_${functionName}.cl"
-  echo ""
+  echo
+  echo
   
   print_centered "felem_mul_reduce"
   fileName="ecp_nistp224_felem_mul_reduce.ll"
@@ -257,9 +268,12 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 276 "$mod1"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 276 "(*modify*)"
 
+  echo
   echo "* Retry the verification: "
   cv -isafety -debug "$outPath${file}_${functionName}.cl"
-  echo ""
+  echo
+  echo
+  
 
   print_centered "felem_neg"
   fileName="ecp_nistp224_felem_neg.ll"
@@ -289,9 +303,11 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 140 "$mod3"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 140 "(*modify*)"
 
+  echo
   echo "* Retry the verification: "
   cv -isafety -debug "$outPath${file}_${functionName}.cl"
-  echo ""
+  echo
+  echo
 
 fi
 
@@ -301,6 +317,7 @@ if [ "$OpenSSL_ecp_nistp256" = "true" ]; then
   print_stars 75
   OpenSSL_ECP_NISTP256_LLDIR="$EXAMPLES_DIR/openssl3.0.5/ecp_nistp256/"
   OpenSSL_ECP_NISTP256_SPECDIR="$CONDITION_DIR/openssl/ecp_nistp256/"
+  echo
   if [ ! -d "OpenSSL_ecp_nistp256" ]; then
     mkdir OpenSSL_ecp_nistp256
   fi
@@ -333,8 +350,11 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 211 "$mod1"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 211 "(*modify*)"
 
+  echo
   echo "* Retry the verification: "
   cv -isafety -debug "$outPath${file}_${functionName}.cl"
+  echo
+  echo
 
 fi
 
@@ -345,6 +365,7 @@ if [ "$Nacl_curve25519" = "true" ]; then
   print_stars 75
   Nacl_CURVE25519_LLDIR="$EXAMPLES_DIR/NaCl/"
   Nacl_CURVE25519_SPECDIR="$CONDITION_DIR/NaCl/"
+  echo
   if [ ! -d "Nacl_curve25519" ]; then
     mkdir Nacl_curve25519
   fi
@@ -368,8 +389,11 @@ EOF
   insert_text_at_line "$outPath${file}_${functionName}.cl" 265 "$mod1"
   insert_text_at_line "$outPath${file}_${functionName}.cl" 265 "(*modify*)"
 
+  echo
   echo "* Retry the verification: "
   cv -isafety -debug "$outPath${file}_${functionName}.cl"
+  echo
+  echo
 
 fi
 

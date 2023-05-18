@@ -133,15 +133,15 @@ std::any EvalVisitor::visitPre_aexp_listlimbs(conditionParser::Pre_aexp_listlimb
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-    iter = InVars.find(ctx->VAR()->getText());
+    iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         for(int i = a; i < b; i++){
-            result.append(ctx->VAR()->getText());
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append(", ");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("]");
@@ -380,11 +380,11 @@ std::any EvalVisitor::visitPre_r_list(conditionParser::Pre_r_listContext *ctx){
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-        iter = InVars.find(ctx->VAR()->getText());
+        iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         result.append("and [\n\t\t\t");
         for(int i=a;i<b;i++){
-            result.append(ctx->VAR()->getText()); 
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_')); 
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append("\t");
@@ -394,7 +394,7 @@ std::any EvalVisitor::visitPre_r_list(conditionParser::Pre_r_listContext *ctx){
             result.append(",");
             result.append("\n\t\t\t");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("\t");
@@ -491,15 +491,15 @@ std::any EvalVisitor::visitPre_r_listlimbs(conditionParser::Pre_r_listlimbsConte
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-    iter = InVars.find(ctx->VAR()->getText());
+    iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         for(int i = a; i < b; i++){
-            result.append(ctx->VAR()->getText());
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append(", ");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("]");
@@ -735,16 +735,16 @@ std::any EvalVisitor::visitPost_aexp_plistlimbs(conditionParser::Post_aexp_plist
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-    iter = InVars.find(ctx->VAR()->getText());
+    iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         for(int i = a; i < b; i++){
-            result.append(ctx->VAR()->getText());
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append("_prime");
             result.append(", ");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("_prime");
@@ -765,16 +765,16 @@ std::any EvalVisitor::visitPost_aexp_listlimbs(conditionParser::Post_aexp_listli
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-    iter = InVars.find(ctx->VAR()->getText());
+    iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         for(int i = a; i < b; i++){
-            result.append(ctx->VAR()->getText());
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append("_init");
             result.append(", ");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("_init");
@@ -1015,11 +1015,11 @@ std::any EvalVisitor::visitPost_r_list(conditionParser::Post_r_listContext *ctx)
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-        iter = InVars.find(ctx->VAR()->getText());
+        iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         result.append("and [\n\t\t\t");
         for(int i=a;i<b;i++){
-            result.append(ctx->VAR()->getText()); 
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_')); 
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append("\t");
@@ -1029,7 +1029,7 @@ std::any EvalVisitor::visitPost_r_list(conditionParser::Post_r_listContext *ctx)
             result.append(",");
             result.append("\n\t\t\t");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("\t");
@@ -1051,11 +1051,11 @@ std::any EvalVisitor::visitPost_r_plist(conditionParser::Post_r_plistContext *ct
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-        iter = InVars.find(ctx->VAR()->getText());
+        iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         result.append("and [\n\t\t\t");
         for(int i=a;i<b;i++){
-            result.append(ctx->VAR()->getText()); 
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_')); 
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append("_prime");
@@ -1066,7 +1066,7 @@ std::any EvalVisitor::visitPost_r_plist(conditionParser::Post_r_plistContext *ct
             result.append(",");
             result.append("\n\t\t\t");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("_prime");
@@ -1091,16 +1091,16 @@ std::any EvalVisitor::visitPost_r_listlimbs(conditionParser::Post_r_listlimbsCon
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-    iter = InVars.find(ctx->VAR()->getText());
+    iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         for(int i = a; i < b; i++){
-            result.append(ctx->VAR()->getText());
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append("_init");
             result.append(", ");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("_init");
@@ -1160,16 +1160,16 @@ std::any EvalVisitor::visitPost_r_plistlimbs(conditionParser::Post_r_plistlimbsC
     unsigned int a = stoi(s1);
     unsigned int b = stoi(s2);
     std::map<std::string, unsigned int>::iterator iter;
-    iter = InVars.find(ctx->VAR()->getText());
+    iter = InVars.find(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
     if ( iter != InVars.end()){
         for(int i = a; i < b; i++){
-            result.append(ctx->VAR()->getText());
+            result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
             result.append("_");
             result += std::to_string(iter->second * i);
             result.append("_prime");
             result.append(", ");
         }
-        result.append(ctx->VAR()->getText());
+        result.append(EvalVisitor::replaceChar(ctx->VAR()->getText(), '.', '_'));
         result.append("_");
         result += std::to_string(iter->second * (b));
         result.append("_prime");
@@ -1408,7 +1408,7 @@ std::any EvalVisitor::visitCc_op(conditionParser::Cc_opContext *ctx)
     return result;
 }
 
-std::any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext *ctx)
+std::any EvalVisitor::visitAnno_llvar(conditionParser::Anno_llvarContext *ctx)
 {
     std::string result1;
     if(ctx->ll_var(0)->LL_VAR()!=nullptr){ //variable
@@ -1458,6 +1458,24 @@ std::any EvalVisitor::visitAssert_rule(conditionParser::Assert_ruleContext *ctx)
         }
     }
 
+    return 0;
+}
+
+std::any EvalVisitor::visitAnno_var(conditionParser::Anno_varContext *ctx){
+    std::string result1;
+    std::string tmp1 = EvalVisitor::replaceChar(ctx->VAR(0)->getText(), '.', '_');
+    result1.append("v_");
+    result1.append(tmp1);
+    anno->put("l_var",result1);
+    if(ctx->op->getType() == conditionParser::VAR){
+        std::string result2;
+        std::string tmp2 = EvalVisitor::replaceChar(ctx->VAR(1)->getText(), '.', '_');
+        result2.append("v_");
+        result2.append(tmp2);
+        anno->put("r_var",result2);
+    }else{
+       anno->put("r_const",ctx->INT()->getText());
+    }
     return 0;
 }
 

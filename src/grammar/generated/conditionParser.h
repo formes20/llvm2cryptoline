@@ -1814,15 +1814,40 @@ public:
   class  Assert_ruleContext : public antlr4::ParserRuleContext {
   public:
     Assert_ruleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    Assert_ruleContext() = default;
+    void copyFrom(Assert_ruleContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  Anno_llvarContext : public Assert_ruleContext {
+  public:
+    Anno_llvarContext(Assert_ruleContext *ctx);
+
     antlr4::tree::TerminalNode *ASSERT();
     std::vector<Ll_varContext *> ll_var();
     Ll_varContext* ll_var(size_t i);
     antlr4::tree::TerminalNode *EQOP();
 
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Anno_varContext : public Assert_ruleContext {
+  public:
+    Anno_varContext(Assert_ruleContext *ctx);
+
+    antlr4::Token *op = nullptr;
+    antlr4::tree::TerminalNode *ASSERT();
+    std::vector<antlr4::tree::TerminalNode *> VAR();
+    antlr4::tree::TerminalNode* VAR(size_t i);
+    antlr4::tree::TerminalNode *EQOP();
+    antlr4::tree::TerminalNode *INT();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
   };
 
   Assert_ruleContext* assert_rule();

@@ -1,27 +1,41 @@
-# llvm2cryptoline
+# llvm2cryptoline  
 
-===== Introduction =====
+## Introduction 
 
-llvm2cryptoline is a tool aiming to translate LLVM IR code into the
-Cryptoline domain-specific language.
+Cryptographic primitives are the basic blocks of cryptosystems and Contains a large number of arithmetic operations over large finite fields that are difficult to verify. llvm2cryptoline  is a formal verification tool verify the functional correctness of cryptographic programs implemented in C.
 
+A video demonstration is available at https://youtu.be/QXuSmja45VA
 
-===== Requirements =====
+## Installation
+
+### Requirements
 
 1. cmake (>= 3.7, lower version may be viable, you are welcomed to
 have a try)
-2. LLVM (>= 3.7.0, checked until version 14.0.0)
+2. LLVM (14.0.0)
 3. ANTLR4 tool (4.12.0)
 
 NOTE: the LLVM version used for compiling llvm2cryptoline SHOULD be 
 the same as the one corresponding to the IR code.
 
 
-===== LLVM Installation =====
+### LLVM Installation 
 
 NOTE: If you have already installed LLVM, you can skip this part.
 
-1. Download LLVM (3.7.0 <= version <= 14.0.0) source code from
+#### WAY1: Install precompiled binaries:
+
+1. Download the binaries of the release at 
+   https://github.com/llvm/llvm-project/releases
+
+2. Unzip and put it somewhere the system can find.
+
+3. Add the installation directory to the PATH environment variable.
+
+
+#### WAY2: Compile and install:
+
+1. Download LLVM source code from
    http://releases.llvm.org/download.html
 
 2. Extract the source code from the downloaded package. Assume that
@@ -56,7 +70,7 @@ NOTE: If you have already installed LLVM, you can skip this part.
 7. Now you can delete all files in SRC_ROOT and BUILD_DIR.
 
 
-===== llvm2cryptoline Compilation =====
+### llvm2cryptoline Compilation
 
 Assume that SRC_ROOT is the top-level directory of the llvm2cryptoline
 source code, LLVM_INSTALL_DIR is the directory where you installed
@@ -67,42 +81,37 @@ tool in the directory ANTLR_DIR.
 
 2. mkdir build && cd build
 
-3. if the installed LLVM version < 3.9.0, run:
-
-    cmake -DLLVM_DIR=LLVM_INSTALL_DIR/share/llvm/cmake/ -DANTLR_EXECUTABLE=ANTLR_DIR/antlr-4.12.0-complete.jar ..
-    
-   if the installed LLVM version >= 3.9.0, then run:
-   
-    cmake -DLLVM_DIR=LLVM_INSTALL_DIR/lib/cmake/llvm/ -DANTLR_EXECUTABLE=ANTLR_DIR/antlr-4.12.0-complete.jar ..
+3. cmake -DLLVM_DIR=LLVM_INSTALL_DIR/lib/cmake/llvm/ -DANTLR_EXECUTABLE=ANTLR_DIR/antlr-4.12.0-complete.jar ..
 
 4. make
 
 
-===== llvm2cryptoline Usage =====
+## llvm2cryptoline Usage
 
 Use the following command line:
 
-    verify FILE FUNCTION_NAME SPECIFICATIONS [OPTIONS]
+    $ verify <FILE>  <FUNCTION_NAME> <SPECIFICATION> [OPTIONS]
 
-    - FILE		the LLVM IR code (.ll) file
+    - FILE		            the LLVM IR code (.ll) file
 
-    - FUNCTION_NAME    the translated function name
+    - FUNCTION_NAME         the verified function name
     
-    - SPECIFICATIONS	the properties of the program
+    - SPECIFICATION	        the properties of the program (.spec)
 
-    - OPTIONS       	optional parameters
+    - OPTIONS       	    optional parameters
     
     
 Options:
-  -block <blockname>           	Translate the block of the IR program
-  -disable_heuristic           	Disable heuristics 
-  -enable_aggr_heuristic     		Enable the aggressive heuristcs 
-  -enable_aggr_shl               	Shift left directly instead of shifting left after split
-  -v              	        	Display verbose messages while using CryptoLine verification
-  -type <type>                      	Choose the default type of translation
-  -save_cryptoline          		Save the translated CryptoLine program 
-  -disable_cryptoline                  Disable call for CryptoLine verification 
-  -h, --help                   	Print this help info 
+
+* ` -block <b>: translate the block <b> in the target IR function;
+* ` -disable_heuristic: disable heuristics 
+* ` -disable_cryptoline: disable the invocation of the Cryptoline tool
+* ` -enable_aggr_heuristic: enable the aggressive heuristcs 
+* ` -enable_aggr_shl: enable the aggressive translation of the IR instruction {shl}
+* ` -save_cryptoline: save the generated Cryptoline problem (.cl)
+* ` -type <type>: specify the default type for translation, which can be signed or unsigned (the default)
+* ` -v: display verbose messages output by Cryptoline
+* ` -h: Print this help info 
 
 
    

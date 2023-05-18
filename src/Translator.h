@@ -94,8 +94,18 @@ private:
     void recordAnd(Variable dst, Variable src, unsigned width, unsigned l0s, unsigned r0s);
     void varEQvar(Variable v1,Variable v2);
     void varEQzero(Variable V);
+    void varEQvarp(Variable v1,Variable v2, int off);
 
-    };
+
+};
+
+template<typename K, typename V>
+typename std::map<K, V>::const_iterator find_value(const std::map<K, V>& my_map, const V& value_to_find) {
+        return std::find_if(my_map.begin(), my_map.end(),
+                        [&value_to_find](const auto& pair) { return pair.second == value_to_find; });
+}
+
+
 }
 
 #endif /* SRC_TRANSLATOR_H_ */

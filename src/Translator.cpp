@@ -2695,18 +2695,30 @@ void Translator::recordSplit(Variable h, Variable l ,Variable src, unsigned widt
         }else if(position > S->leftShiftOffset){
             l_src = DV(S->source_var , S->low + position - S->leftShiftOffset -1, S->low, S->leftShiftOffset+SHLoffset);
             h_src = DV(S->source_var, S->high, S->low + position - S->leftShiftOffset, 0);
-            if(const Var* e = findVar(l_src)){
-                Var eq = Var(this->defaultType, e->width, e->val);
-                varEQvar(l,eq);
+            auto it = find_value(variableRelation, l_src);
+            if (it != variableRelation.end()){
+                if(it->second.leftShiftOffset == 0 && S->leftShiftOffset+SHLoffset == 0){
+                    varEQvar(l,it->first);
+                }else if( it->second.leftShiftOffset > S->leftShiftOffset+SHLoffset){
+                    varEQvarp(it->first,l, it->second.leftShiftOffset-(S->leftShiftOffset+SHLoffset));
+                }else{
+                    varEQvarp(l,it->first, S->leftShiftOffset+SHLoffset-it->second.leftShiftOffset);
+                }
             }else{
                 this->variableRelation[l] = l_src;
             }
-            if(const Var* e = findVar(h_src)){
-                Var eq = Var(this->defaultType, e->width, e->val);
-                varEQvar(h,eq);
+
+            auto it2 = find_value(variableRelation, h_src);
+            if (it2 != variableRelation.end()){
+                if(it2->second.leftShiftOffset == 0){
+                    varEQvar(h,it2->first);
+                }else{
+                    varEQvarp(it2->first,h, it2->second.leftShiftOffset);
+                }
             }else{
                 this->variableRelation[h] = h_src;
-            }     
+            }
+   
         }else{
             h_src = DV(S->source_var , S->high , S->low, S->leftShiftOffset - position);
             this->variableRelation[h] = h_src;
@@ -2715,13 +2727,25 @@ void Translator::recordSplit(Variable h, Variable l ,Variable src, unsigned widt
     }else{
         l_src = DV(src , position , 1, SHLoffset);
         h_src = DV(src, width, position+1);
-        if(const Var* e = findVar(l_src)){
-            Var eq = Var(this->defaultType, e->width, e->val);
-            varEQvar(l,eq);
+        
+        auto it1 = find_value(variableRelation, l_src);
+        if (it1 != variableRelation.end()){
+            if(it1->second.leftShiftOffset == 0 && SHLoffset == 0){
+                varEQvar(l,it1->first);
+            }else if( it1->second.leftShiftOffset > SHLoffset){
+                varEQvarp(it1->first,l, it1->second.leftShiftOffset-SHLoffset);
+            }else{
+                varEQvarp(l,it1->first, SHLoffset-it1->second.leftShiftOffset);
+            }
         }
-        if(const Var* e = findVar(h_src)){
-            Var eq = Var(this->defaultType, e->width, e->val);
-            varEQvar(h,eq);
+        
+        auto it2 = find_value(variableRelation, h_src);
+        if (it2 != variableRelation.end()){
+            if(it2->second.leftShiftOffset == 0){
+                varEQvar(h,it2->first);
+            }else{
+                varEQvarp(it2->first,h, it2->second.leftShiftOffset);
+            }
         }
         this->variableRelation[l] = l_src;
         this->variableRelation[h] = h_src;
@@ -2730,85 +2754,102 @@ void Translator::recordSplit(Variable h, Variable l ,Variable src, unsigned widt
 
 void Translator::recordAnd(Variable dst, Variable src, unsigned width, unsigned l0s, unsigned r0s){
     Statement s ;
+    unsigned len = width-l0s-r0s-1;
     if(this->derivedVars.count(src) > 0){
-        DV* dv = findSrc(src);
-        if(dv->leftShiftOffset == 0){
-            DV t = DV(dv->source_var, dv->low+width-l0s-r0s-1, dv->low);
-            if(const Var* e = findVar(t)){
-                if(r0s == 0){
-                    Var eq = Var(this->defaultType, e->width, e->val);
-                    varEQvar(dst,eq);
+        DV* src_dv = findSrc(src);  
+        if(src_dv->leftShiftOffset == 0 && r0s == 0){
+            if(src_dv->high - src_dv->low +1 <= len){
+                varEQvar(dst,src);
+            }else{
+                DV cur = DV(src_dv->source_var, src_dv->low+len, src_dv->low);
+                auto it = find_value(variableRelation, cur);
+                if (it != variableRelation.end()){
+                    if(it->second.leftShiftOffset == 0){
+                        varEQvar(dst,it->first);
+                    }else {
+                        varEQvarp(it->first,dst, it->second.leftShiftOffset);
+                    }
                 }else{
-                    if(heuristcs){
-                        Arg c1 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")@"+to_string(width));
-                        Arg c2 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")");
-                        s = Statement::Assert(Predicate::True(), Predicate::Eq(dst,c1));
+                    this->variableRelation[dst] = cur;
+                }
+                
+                if(heuristcs && heuristic_for_joint){
+                    DV tmp = DV(src_dv->source_var, src_dv->high, src_dv->low+len+1);
+                    auto it1 = find_value(variableRelation, tmp);
+                    if (it1 != variableRelation.end() && it->second.leftShiftOffset == 0){
+                        s = Statement::Comment("Heuristics for joint applied.");
                         this->result.push_back(s);
-                        s = Statement::Assume(Predicate::Eq(dst,c2), Predicate::True());
+                        s = Statement::Assert(Predicate::True(), Predicate::Eq(src,Arg::Flag(dst.toRangeArg() + " + " + it1->first.name +
+                        " * (2**" + to_string(len+1) + ")@" + to_string(width))));
+                        this->result.push_back(s);
+                        s = Statement::Assume(Predicate::Eq(src,Arg::Flag(dst.toRangeArg() + " + " +it1->first.name +
+                        " * (2**" + to_string(len+1) + ")")), Predicate::True());
                         this->result.push_back(s);
                     }
-                }
-            }else{
-                this->variableRelation[dst] = t;
-            }      
-        }else if(dv->leftShiftOffset == r0s){
-            if(width-l0s-r0s > dv->high - dv->low){
+                } 
+            }     
+        }else if(src_dv->leftShiftOffset == r0s){
+            if(src_dv->high - src_dv->low +1 <= len){
             // the set bit of mask cover DV_src 
                 varEQvar(dst,src);
             }else{
-                DV t = DV(dv->source_var, dv->low+width-l0s-r0s-1, dv->low, dv->leftShiftOffset);
-                if(const Var* tmp = findVar(t)){
-                    if(heuristcs){
-                        Var qualifyVar = Var(this->defaultType, width, tmp->name);
-                        s = Statement::Comment("Heuristics applied.");
-                        this->result.push_back(s);
-                        s = Statement::Assert(Predicate::True(), Predicate::Eq(dst,Arg::Flag(qualifyVar.toRangeArg() + " * (2**" + to_string(dv->leftShiftOffset) + ")@" + to_string(width))));
-                        this->result.push_back(s);
-                        s = Statement::Assume(Predicate::Eq(dst,Arg::Flag(qualifyVar.toRangeArg() + " * (2**" + to_string(dv->leftShiftOffset) + ")")), Predicate::True());
-                        this->result.push_back(s);
+                DV t = DV(src_dv->source_var, src_dv->low+len, src_dv->low, r0s);
+                auto it = find_value(variableRelation, t);
+                if (it != variableRelation.end()){
+                    if(it->second.leftShiftOffset == r0s){
+                        varEQvar(dst,it->first);
+                    }else if(it->second.leftShiftOffset > r0s) {
+                        varEQvarp(it->first,dst, it->second.leftShiftOffset - r0s);
+                    }else{
+                        varEQvarp(dst,it->first,r0s - it->second.leftShiftOffset);
                     }
                 }else{
                     this->variableRelation[dst] = t;
                 }
+
                 // heuristic for joint
                 if(heuristcs && heuristic_for_joint){
-                    DV tmp = DV(dv->source_var, dv->high, dv->low+width-l0s-r0s);
-                    if(findVar(tmp)){
-                        const Var* v_tmp = findVar(tmp);
-                        Var var_tmp = Var(this->defaultType, width, v_tmp->name);
+                    DV tmp = DV(src_dv->source_var, src_dv->high, src_dv->low+len+1);
+                    auto it1 = find_value(variableRelation, tmp);
+                    if (it1 != variableRelation.end() && it1->second.leftShiftOffset == 0){
                         s = Statement::Comment("Heuristics for joint applied.");
                         this->result.push_back(s);
                         s = Statement::Assert(Predicate::True(), Predicate::Eq(src,
-                        Arg::Flag(dst.toRangeArg() + " + " + var_tmp.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")@" + to_string(width))));
+                        Arg::Flag(dst.toRangeArg() + " + " + it1->first.name + "* (2**" + to_string(width-l0s) + ")@" + to_string(width))));
                         this->result.push_back(s);
                         s = Statement::Assume(Predicate::Eq(src,
-                        Arg::Flag(dst.toRangeArg() + " + " + var_tmp.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")" )), Predicate::True());
+                        Arg::Flag(dst.toRangeArg() + " + " + it1->first.name + "* (2**" + to_string(width-l0s) + ")" )), Predicate::True());
                         this->result.push_back(s);
                     }
+                    // if(findVar(tmp)){
+                    //     const Var* v_tmp = findVar(tmp);
+                    //     Var var_tmp = Var(this->defaultType, width, v_tmp->name);
+                    //     s = Statement::Comment("Heuristics for joint applied.");
+                    //     this->result.push_back(s);
+                    //     s = Statement::Assert(Predicate::True(), Predicate::Eq(src,
+                    //     Arg::Flag(dst.toRangeArg() + " + " + var_tmp.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")@" + to_string(width))));
+                    //     this->result.push_back(s);
+                    //     s = Statement::Assume(Predicate::Eq(src,
+                    //     Arg::Flag(dst.toRangeArg() + " + " + var_tmp.toRangeArg()+ "* (2**" + to_string(width-l0s) + ")" )), Predicate::True());
+                    //     this->result.push_back(s);
+                    // }
                 }
             }
         }else{
-            // leftShiftOffset !=0 and !=r0s 
+
         }
                     
     }else{
         // record relations between dst and src
         DV t = DV(src, width-l0s, r0s+1);
-        if(const Var* e = findVar(t) ){
-            if(r0s == 0){
-                Var eq = Var(this->defaultType, e->width, e->val);
-                varEQvar(dst,eq);
+        auto it = find_value(variableRelation, t);
+        if (it != variableRelation.end()){
+            if(it->second.leftShiftOffset == r0s){
+                varEQvar(dst,it->first);
+            }else if(it->second.leftShiftOffset > r0s) {
+                varEQvarp(it->first,dst, it->second.leftShiftOffset - r0s);
             }else{
-                if(heuristcs){
-                    s = Statement::Comment("Heuristics applied.");
-                    this->result.push_back(s);
-                    Arg c1 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")@"+to_string(width));
-                    Arg c2 = Arg::Flag(e->name + "*(2**" +to_string(r0s) +")");
-                    s = Statement::Assert(Predicate::True(), Predicate::Eq(dst,c1));
-                    this->result.push_back(s);
-                    s = Statement::Assume(Predicate::Eq(dst,c2), Predicate::True());
-                    this->result.push_back(s);
-                }
+                varEQvarp(dst,it->first,r0s - it->second.leftShiftOffset);
             }
         }
 
@@ -2949,3 +2990,23 @@ void Translator::varEQzero(Variable v){
         this->result.push_back(s);
     }
 }
+
+void Translator::varEQvarp(Variable v1,Variable v2, int off){
+    //v1 = v2 * (2**off)
+    Statement s; 
+    if(heuristcs){
+        if(v1.width == v2.width){
+            s = Statement::Comment("Heuristics applied.");
+            this->result.push_back(s);
+            Arg c1 = Arg::Flag(v2.name + "*(2**" +to_string(off) +")@"+to_string(v2.width));
+            Arg c2 = Arg::Flag(v2.name + "*(2**" +to_string(off) +")");
+            s = Statement::Assert(Predicate::True(), Predicate::Eq(v1,c1));
+            this->result.push_back(s);
+            s = Statement::Assume(Predicate::Eq(v1,c2), Predicate::True());
+            this->result.push_back(s);
+        }
+    }
+}
+
+
+

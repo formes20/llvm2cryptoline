@@ -273,7 +273,11 @@ public:
 
   std::any visitCc_op(conditionParser::Cc_opContext *ctx);
 
-  std::any visitAssert_rule(conditionParser::Assert_ruleContext *ctx);
+  //std::any visitAssert_rule(conditionParser::Assert_ruleContext *ctx);
+
+  std::any visitAnno_llvar(conditionParser::Anno_llvarContext *ctx);
+
+  std::any visitAnno_var(conditionParser::Anno_varContext *ctx);
 
   static std::string replaceChar(std::string str, char target, char c);
 

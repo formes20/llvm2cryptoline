@@ -161,7 +161,9 @@ complex_const : num					# cc_n
 var: VAR (PRIME)? (array)?;
 array: LSQUARE INT RSQUARE;
 
-assert_rule: ASSERT ll_var EQOP ll_var;
+assert_rule: ASSERT ll_var EQOP ll_var                  # anno_llvar
+            |ASSERT VAR EQOP op=(VAR|INT)               # anno_var
+            ;
 ll_var: LL_VAR
 	| INT;
 

@@ -72,7 +72,7 @@ INT: [0-9]+;
 HEX: '0x'[0-9a-fA-F]+;
 
 
-VAR: LETTER (LETTER | '0'..'9')* ;
+VAR: LETTER (LETTER | '0'..'9' | DOT)* ;
 LL_VAR: PERCENT (LETTER | '0'..'9' | DOT)* ;
 fragment LETTER : [a-zA-Z_];
 

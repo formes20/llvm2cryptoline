@@ -24,7 +24,7 @@ void print_usage()
 {
     std::cout<<"\nUsage: verify FILE FUNCTION_NAME CONDITION " << " [options]" << std::endl
         << "Options:" << std::endl
-        << "  -block <blockName>           Translate the block of the IR program \n"
+        << "  -block <b>                   Translate the block of the IR program \n"
         << "  -disable_heuristic           Disable heuristics \n"
         << "  -enable_aggr_heuristic       Enable heuristcs_sound \n"
         << "  -enable_aggr_shl             Shift left directly instead of shifting left after split\n" 

@@ -9,7 +9,7 @@ entry:
   %scalar.sroa.2.0.insert.ext = zext i64 %scalar.coerce1 to i128
   %scalar.sroa.2.0.insert.shift = shl nuw i128 %scalar.sroa.2.0.insert.ext, 64
   %scalar.sroa.0.0.insert.ext = zext i64 %scalar.coerce0 to i128 
-  %scalar.sroa.0.0.insert.insert = or i128 %scalar.sroa.2.0.insert.shift, %scalar.sroa.0.0.insert.ext
+  %scalar.sroa.0.0.insert.insert = or i128 %scalar.sroa.2.0.insert.shift, %scalar.sroa.0.0.insert.ext , !annotation !32
   %0 = load i128, i128* %out, align 16, !tbaa !30
   %mul = mul i128 %0, %scalar.sroa.0.0.insert.insert
   store i128 %mul, i128* %out, align 16, !tbaa !30
@@ -89,7 +89,7 @@ attributes #12 = { nounwind }
 !29 = !{!5, !7, i64 152}
 !30 = !{!31, !31, i64 0}
 !31 = !{!"__int128", !7, i64 0}
-
+!32 = !{!"assert scalar.sroa.0.0.insert.insert = scalar.coerce0"}
 
 
 
