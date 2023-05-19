@@ -1,4 +1,4 @@
-proc fe51_mul (uint64 f_0, uint64 f_8, uint64 f_16, uint64 f_24, uint64 f_32, uint64 g_0, uint64 g_8, uint64 g_16, uint64 g_24, uint64 g_32, uint64 h_0, uint64 h_8, uint64 h_16, uint64 h_24, uint64 h_32) =
+proc fe51_mul (uint64 f_0, uint64 f_8, uint64 f_16, uint64 f_24, uint64 f_32, uint64 g_0, uint64 g_8, uint64 g_16, uint64 g_24, uint64 g_32; uint64 h_0, uint64 h_8, uint64 h_16, uint64 h_24, uint64 h_32) =
 
 (*   %0 = load i64, i64* %f, align 8, !tbaa !4 *)
 mov v0 f_0;
@@ -156,138 +156,128 @@ mul v_mul104 v_conv85 v_conv2;
 add v_add105 v_add83 v_mul104;
 (*   %shr = lshr i128 %add97, 51 *)
 (* You may need to modify here *)
-split v_shr tmp_to_be_used v_add97 51;
+split v_shr tmp_v_add97_low51 v_add97 51;
 (*   %conv107 = and i128 %shr, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv107 v_shr (0xFFFFFFFFFFFFFFFF)@uint128;
-(*modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv107 v_shr;
 assume eq v_conv107 v_shr && true;
 (*   %add108 = add i128 %add101, %conv107 *)
 add v_add108 v_add101 v_conv107;
 (*   %conv109 = trunc i128 %add97 to i64 *)
-split tmp_v_add97 v_conv109 v_add97 64;
+split tmp_v_add97_high64 v_conv109 v_add97 64;
 vpc v_conv109@uint64 v_conv109@uint128;
 (*   %and = and i64 %conv109, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and v_conv109 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(*modify*)
-assert true && eq v_and tmp_to_be_used;
-assume eq v_and tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and 64 tmp_v_add97_low51;
+assume eq v_and tmp_v_add97_low51 && true;
 (*   %shr110 = lshr i128 %add89, 51 *)
 (* You may need to modify here *)
-split v_shr110 tmp_to_be_used v_add89 51;
+split v_shr110 tmp_v_add89_low51 v_add89 51;
 (*   %conv112 = and i128 %shr110, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv112 v_shr110 (0xFFFFFFFFFFFFFFFF)@uint128;
-(*modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv112 v_shr110;
 assume eq v_conv112 v_shr110 && true;
 (*   %add113 = add i128 %add93, %conv112 *)
 add v_add113 v_add93 v_conv112;
 (*   %conv114 = trunc i128 %add89 to i64 *)
-split tmp_v_add89 v_conv114 v_add89 64;
+split tmp_v_add89_high64 v_conv114 v_add89 64;
 vpc v_conv114@uint64 v_conv114@uint128;
 (*   %and115 = and i64 %conv114, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and115 v_conv114 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(*modify*)
-assert true && eq v_and115 tmp_to_be_used;
-assume eq v_and115 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and115 64 tmp_v_add89_low51;
+assume eq v_and115 tmp_v_add89_low51 && true;
 (*   %shr116 = lshr i128 %add108, 51 *)
 (* You may need to modify here *)
-split v_shr116 tmp_to_be_used v_add108 51;
+split v_shr116 tmp_v_add108_low51 v_add108 51;
 (*   %conv118 = and i128 %shr116, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv118 v_shr116 (0xFFFFFFFFFFFFFFFF)@uint128;
-(*modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv118 v_shr116;
 assume eq v_conv118 v_shr116 && true;
 (*   %add119 = add i128 %add105, %conv118 *)
 add v_add119 v_add105 v_conv118;
 (*   %conv120 = trunc i128 %add108 to i64 *)
-split tmp_v_add108 v_conv120 v_add108 64;
+split tmp_v_add108_high64 v_conv120 v_add108 64;
 vpc v_conv120@uint64 v_conv120@uint128;
 (*   %and121 = and i64 %conv120, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and121 v_conv120 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(*modify*)
-assert true && eq v_and121 tmp_to_be_used;
-assume eq v_and121 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and121 64 tmp_v_add108_low51;
+assume eq v_and121 tmp_v_add108_low51 && true;
 (*   %shr122 = lshr i128 %add113, 51 *)
 (* You may need to modify here *)
-split v_shr122 tmp_to_be_used v_add113 51;
+split v_shr122 tmp_v_add113_low51 v_add113 51;
 (*   %conv123 = trunc i128 %shr122 to i64 *)
-split tmp_v_shr122 v_conv123 v_shr122 64;
+split tmp_v_shr122_high64 v_conv123 v_shr122 64;
 vpc v_conv123@uint64 v_conv123@uint128;
 (*modify*)
-assert true && eq tmp_v_shr122 0@128;
-assume eq tmp_v_shr122 0 && true;
+assert true && eq tmp_v_shr122_high64 0@128;
+assume eq tmp_v_shr122_high64 0 && true;
 (*   %add124 = add i64 %and, %conv123 *)
 add v_add124 v_and v_conv123;
 (*   %conv125 = trunc i128 %add113 to i64 *)
-split tmp_v_add113 v_conv125 v_add113 64;
+split tmp_v_add113_high64 v_conv125 v_add113 64;
 vpc v_conv125@uint64 v_conv125@uint128;
 (*   %and126 = and i64 %conv125, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and126 v_conv125 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(*modify*)
-assert true && eq v_and126 tmp_to_be_used;
-assume eq v_and126 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and126 64 tmp_v_add113_low51;
+assume eq v_and126 tmp_v_add113_low51 && true;
 (*   %shr127 = lshr i128 %add119, 51 *)
 (* You may need to modify here *)
-split v_shr127 tmp_to_be_used v_add119 51;
+split v_shr127 tmp_v_add119_low51 v_add119 51;
 (*   %conv128 = trunc i128 %shr127 to i64 *)
-split tmp_v_shr127 v_conv128 v_shr127 64;
+split tmp_v_shr127_high64 v_conv128 v_shr127 64;
 vpc v_conv128@uint64 v_conv128@uint128;
 (*modify*)
-assert true && eq tmp_v_shr127 0@128;
-assume eq tmp_v_shr127 0 && true;
+assert true && eq tmp_v_shr127_high64 0@128;
+assume eq tmp_v_shr127_high64 0 && true;
 (*   %mul129 = mul i64 %conv128, 19 *)
 mul v_mul129 v_conv128 (19)@uint64;
 (*   %add130 = add i64 %mul129, %and115 *)
 add v_add130 v_mul129 v_and115;
 (*   %conv131 = trunc i128 %add119 to i64 *)
-split tmp_v_add119 v_conv131 v_add119 64;
+split tmp_v_add119_high64 v_conv131 v_add119 64;
 vpc v_conv131@uint64 v_conv131@uint128;
 (*   %and132 = and i64 %conv131, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and132 v_conv131 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-(*modify*)
-assert true && eq v_and132 tmp_to_be_used;
-assume eq v_and132 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and132 64 tmp_v_add119_low51;
+assume eq v_and132 tmp_v_add119_low51 && true;
 (*   %shr133 = lshr i64 %add124, 51 *)
 (* You may need to modify here *)
-split v_shr133 tmp_to_be_used v_add124 51;
+split v_shr133 tmp_v_add124_low51 v_add124 51;
 (*   %add134 = add nuw nsw i64 %shr133, %and121 *)
 add v_add134 v_shr133 v_and121;
 (*   %and135 = and i64 %add124, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and135 v_add124 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
-assert true && eq v_and135 tmp_to_be_used;
-assume eq v_and135 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and135 tmp_v_add124_low51;
+assume eq v_and135 tmp_v_add124_low51 && true;
 (*   %shr136 = lshr i64 %add130, 51 *)
 (* You may need to modify here *)
-split v_shr136 tmp_to_be_used v_add130 51;
+split v_shr136 tmp_v_add130_low51 v_add130 51;
 (*   %add137 = add nuw nsw i64 %shr136, %and126 *)
 add v_add137 v_shr136 v_and126;
 (*   %and138 = and i64 %add130, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and138 v_add130 (0x7FFFFFFFFFFFF)@uint64;
-(*modify*)
-assert true && eq v_and138 tmp_to_be_used;
-assume eq v_and138 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and138 tmp_v_add130_low51;
+assume eq v_and138 tmp_v_add130_low51 && true;
 (*   store i64 %and138, i64* %h, align 8, !tbaa !4 *)
 mov h_0 v_and138;
 (*   %arrayidx140 = getelementptr inbounds i64, i64* %h, i64 1 *)
@@ -307,20 +297,19 @@ mov h_32 v_and132;
 
 (* Outputs *)
 
-mov _ h_0@uint64;
-mov _ h_8@uint64;
-mov _ h_16@uint64;
-mov _ h_24@uint64;
-mov _ h_32@uint64;
+mov h_0_prime h_0@uint64;
+mov h_8_prime h_8@uint64;
+mov h_16_prime h_16@uint64;
+mov h_24_prime h_24@uint64;
+mov h_32_prime h_32@uint64;
 
 
-
-
+//proc main (uint8 arrayidx16_0, uint64 v100, uint64 v86, uint64 v87, uint64 v88, uint64 v89, uint64 v90, uint64 v91, uint64 v92, uint64 v93, uint64 v94, uint64 v95, uint64 v96, uint64 v97, uint64 v98, uint64 v99, uint32 v_pos_0597, uint32 v_shr, uint32 v_swap_0598, uint64 v_x3_sroa_0_0596, uint64 v_x3_sroa_11_0595, uint64 v_x3_sroa_20_0594, uint64 v_x3_sroa_29_0593, uint64 v_x3_sroa_38_0592) =
 proc main (uint64 arraydecay_0, uint64 arraydecay_8, uint64 arraydecay_16, uint64 arraydecay_24, uint64 arraydecay_32, uint64 v_xor6_1_i, uint64 v_xor6_1_i100, uint64 v_xor6_2_i, uint64 v_xor6_2_i106, uint64 v_xor6_3_i, uint64 v_xor6_3_i112, uint64 v_xor6_4_i, uint64 v_xor6_4_i118, uint64 v_xor6_i, uint64 v_xor6_i94, uint64 v_xor9_1_i, uint64 v_xor9_1_i101, uint64 v_xor9_2_i, uint64 v_xor9_2_i107, uint64 v_xor9_3_i, uint64 v_xor9_3_i113, uint64 v_xor9_4_i, uint64 v_xor9_4_i119, uint64 v_xor9_i, uint64 v_xor9_i95) =
 {
-  true
-  &&
-  and[
+	true
+	&&
+	and[
     arraydecay_0 <= const 64 (2**51),
     arraydecay_8 <= const 64 (2**51),
     arraydecay_16 <= const 64 (2**51),
@@ -350,6 +339,9 @@ proc main (uint64 arraydecay_0, uint64 arraydecay_8, uint64 arraydecay_16, uint6
 }
 
 
+
+(* Initialize Inputs *)
+
 mov X1_0 arraydecay_0;
 mov X1_1 arraydecay_8;
 mov X1_2 arraydecay_16;
@@ -376,7 +368,30 @@ mov Z3_2 v_xor9_2_i107;
 mov Z3_3 v_xor9_3_i113;
 mov Z3_4 v_xor9_4_i119;
 
-
+// mov arrayidx16_0_init arrayidx16_0;
+// mov v100_init v100;
+// mov v86_init v86;
+// mov v87_init v87;
+// mov v88_init v88;
+// mov v89_init v89;
+// mov v90_init v90;
+// mov v91_init v91;
+// mov v92_init v92;
+// mov v93_init v93;
+// mov v94_init v94;
+// mov v95_init v95;
+// mov v96_init v96;
+// mov v97_init v97;
+// mov v98_init v98;
+// mov v99_init v99;
+// mov v_pos_0597_init v_pos_0597;
+// mov v_shr_init v_shr;
+// mov v_swap_0598_init v_swap_0598;
+// mov v_x3_sroa_0_0596_init v_x3_sroa_0_0596;
+// mov v_x3_sroa_11_0595_init v_x3_sroa_11_0595;
+// mov v_x3_sroa_20_0594_init v_x3_sroa_20_0594;
+// mov v_x3_sroa_29_0593_init v_x3_sroa_29_0593;
+// mov v_x3_sroa_38_0592_init v_x3_sroa_38_0592;
 
 (*   %86 = phi i64 [ 0, %entry ], [ %.pre612, %for.body.for.body_crit_edge ] *)
 (*   %87 = phi i64 [ 0, %entry ], [ %.pre611, %for.body.for.body_crit_edge ] *)
@@ -402,7 +417,7 @@ mov Z3_4 v_xor9_4_i119;
 (*   %x3.sroa.38.0592 = phi i64 [ %or19.i, %entry ], [ %and89.i495, %for.body.for.body_crit_edge ] *)
 (*   %div582 = lshr i32 %pos.0597, 3 *)
 (* You may need to modify here *)
-//split v_div582 tmp_to_be_used v_pos_0597 3;
+//split v_div582 tmp_v_pos_0597_low3 v_pos_0597 3;
 (*   %101 = zext i32 %div582 to i64 *)
 //cast v101@uint64 v_div582@uint32;
 (*   %arrayidx16 = getelementptr inbounds [32 x i8], [32 x i8]* %e, i64 0, i64 %101 *)
@@ -413,6 +428,9 @@ mov Z3_4 v_xor9_4_i119;
 (*   %and18 = and i32 %pos.0597, 7 *)
 (* You may need to modify here *)
 //and uint32 v_and18 v_pos_0597 (0x7)@uint32;
+(* Heuristics applied. *)
+//assert true && eq v_and18 tmp_v_pos_0597_low3;
+//assume eq v_and18 tmp_v_pos_0597_low3 && true;
 (*   %shr = lshr i32 %conv17, %and18 *)
 (*   %and19 = and i32 %shr, 1 *)
 (* You may need to modify here *)
@@ -423,16 +441,16 @@ mov Z3_4 v_xor9_4_i119;
 (*   %conv.i = zext i32 %xor to i64 *)
 //cast v_conv_i@uint64 v_xor@uint32;
 (*   %sub.i = sub nsw i64 0, %conv.i *)
-//subb b v_sub_i (0)@uint64 v_conv_i;
+//sub v_sub_i (0)@uint64 v_conv_i;
 (*   %xor.i = xor i64 %100, %x3.sroa.0.0596 *)
 (* You may need to modify here *)
-//xor uint64 v_xor_i v100 v_x3_sroa_0_0596;
+////xor uint64 v_xor_i v100 v_x3_sroa_0_0596;
 (*   %and.i = and i64 %xor.i, %sub.i *)
 (* You may need to modify here *)
 //and uint64 v_and_i v_xor_i v_sub_i;
 (*   %xor6.i = xor i64 %and.i, %100 *)
 (* You may need to modify here *)
-//xor uint64 v_xor6_i v_and_i v100;
+////xor uint64 v_xor6_i v_and_i v100;
 (*   %xor9.i = xor i64 %and.i, %x3.sroa.0.0596 *)
 (* You may need to modify here *)
 //xor uint64 v_xor9_i v_and_i v_x3_sroa_0_0596;
@@ -497,6 +515,7 @@ mov Z3_4 v_xor9_4_i119;
 (* You may need to modify here *)
 //xor uint64 v_xor9_i95 v_and_i93 v94;
 (*   store i64 %xor9.i95, i64* %arraydecay14, align 16, !tbaa !7 *)
+//mov arraydecay14_0 v_xor9_i95;
 mov L1_0 v_xor9_i95;
 (*   %xor.1.i98 = xor i64 %92, %93 *)
 (* You may need to modify here *)
@@ -511,6 +530,7 @@ mov L1_0 v_xor9_i95;
 (* You may need to modify here *)
 //xor uint64 v_xor9_1_i101 v_and_1_i99 v92;
 (*   store i64 %xor9.1.i101, i64* %arrayidx1.i89, align 8, !tbaa !7 *)
+//mov arrayidx1_i89_0 v_xor9_1_i101;
 mov L2_0 v_xor9_1_i101;
 (*   %xor.2.i104 = xor i64 %90, %91 *)
 (* You may need to modify here *)
@@ -525,6 +545,7 @@ mov L2_0 v_xor9_1_i101;
 (* You may need to modify here *)
 //xor uint64 v_xor9_2_i107 v_and_2_i105 v90;
 (*   store i64 %xor9.2.i107, i64* %arrayidx3.2.i103, align 16, !tbaa !7 *)
+//mov arrayidx3_2_i103_0 v_xor9_2_i107;
 mov L3_0 v_xor9_2_i107;
 (*   %xor.3.i110 = xor i64 %88, %89 *)
 (* You may need to modify here *)
@@ -539,6 +560,7 @@ mov L3_0 v_xor9_2_i107;
 (* You may need to modify here *)
 //xor uint64 v_xor9_3_i113 v_and_3_i111 v88;
 (*   store i64 %xor9.3.i113, i64* %arrayidx3.3.i109, align 8, !tbaa !7 *)
+//mov arrayidx3_3_i109_0 v_xor9_3_i113;
 mov L4_0 v_xor9_3_i113;
 (*   %xor.4.i116 = xor i64 %86, %87 *)
 (* You may need to modify here *)
@@ -553,106 +575,127 @@ mov L4_0 v_xor9_3_i113;
 (* You may need to modify here *)
 //xor uint64 v_xor9_4_i119 v_and_4_i117 v86;
 (*   store i64 %xor9.4.i119, i64* %arrayidx3.4.i115, align 16, !tbaa !7 *)
+//mov arrayidx3_4_i115_0 v_xor9_4_i119;
 mov L5_0 v_xor9_4_i119;
 (*   %add.i = add i64 %xor9.i, 4503599627370458 *)
 add v_add_i v_xor9_i (4503599627370458)@uint64;
 (*   %sub.i120 = sub i64 %add.i, %xor9.i95 *)
 sub v_sub_i120 v_add_i v_xor9_i95;
 (*   store i64 %sub.i120, i64* %arraydecay24, align 16, !tbaa !7 *)
+//mov arraydecay24_0 v_sub_i120;
 mov L6_0 v_sub_i120;
 (*   %add4.i = add i64 %xor9.1.i, 4503599627370494 *)
 add v_add4_i v_xor9_1_i (4503599627370494)@uint64;
 (*   %sub6.i = sub i64 %add4.i, %xor9.1.i101 *)
 sub v_sub6_i v_add4_i v_xor9_1_i101;
 (*   store i64 %sub6.i, i64* %arrayidx7.i123, align 8, !tbaa !7 *)
+//mov arrayidx7_i123_0 v_sub6_i;
 mov L7_0 v_sub6_i;
 (*   %add9.i = add i64 %xor9.2.i, 4503599627370494 *)
 add v_add9_i v_xor9_2_i (4503599627370494)@uint64;
 (*   %sub11.i = sub i64 %add9.i, %xor9.2.i107 *)
 sub v_sub11_i v_add9_i v_xor9_2_i107;
 (*   store i64 %sub11.i, i64* %arrayidx12.i, align 16, !tbaa !7 *)
+//mov arrayidx12_i_0 v_sub11_i;
 mov L8_0 v_sub11_i;
 (*   %add14.i = add i64 %xor9.3.i, 4503599627370494 *)
 add v_add14_i v_xor9_3_i (4503599627370494)@uint64;
 (*   %sub16.i = sub i64 %add14.i, %xor9.3.i113 *)
 sub v_sub16_i v_add14_i v_xor9_3_i113;
 (*   store i64 %sub16.i, i64* %arrayidx17.i, align 8, !tbaa !7 *)
+//mov arrayidx17_i_0 v_sub16_i;
 mov L9_0 v_sub16_i;
 (*   %add19.i = add i64 %xor9.4.i, 4503599627370494 *)
 add v_add19_i v_xor9_4_i (4503599627370494)@uint64;
 (*   %sub21.i = sub i64 %add19.i, %xor9.4.i119 *)
 sub v_sub21_i v_add19_i v_xor9_4_i119;
 (*   store i64 %sub21.i, i64* %arrayidx22.i125, align 16, !tbaa !7 *)
+//mov arrayidx22_i125_0 v_sub21_i;
 mov L10_0 v_sub21_i;
 (*   %add.i126 = add i64 %xor6.i, 4503599627370458 *)
 add v_add_i126 v_xor6_i (4503599627370458)@uint64;
 (*   %sub.i127 = sub i64 %add.i126, %xor6.i94 *)
 sub v_sub_i127 v_add_i126 v_xor6_i94;
 (*   store i64 %sub.i127, i64* %arraydecay27, align 16, !tbaa !7 *)
+//mov arraydecay27_0 v_sub_i127;
 mov L11_0 v_sub_i127;
 (*   %add4.i129 = add i64 %xor6.1.i, 4503599627370494 *)
 add v_add4_i129 v_xor6_1_i (4503599627370494)@uint64;
 (*   %sub6.i131 = sub i64 %add4.i129, %xor6.1.i100 *)
 sub v_sub6_i131 v_add4_i129 v_xor6_1_i100;
 (*   store i64 %sub6.i131, i64* %arrayidx7.i132, align 8, !tbaa !7 *)
+//mov arrayidx7_i132_0 v_sub6_i131;
 mov L12_0 v_sub6_i131;
 (*   %add9.i134 = add i64 %xor6.2.i, 4503599627370494 *)
 add v_add9_i134 v_xor6_2_i (4503599627370494)@uint64;
 (*   %sub11.i136 = sub i64 %add9.i134, %xor6.2.i106 *)
 sub v_sub11_i136 v_add9_i134 v_xor6_2_i106;
 (*   store i64 %sub11.i136, i64* %arrayidx12.i137, align 16, !tbaa !7 *)
+//mov arrayidx12_i137_0 v_sub11_i136;
 mov L13_0 v_sub11_i136;
 (*   %add14.i139 = add i64 %xor6.3.i, 4503599627370494 *)
 add v_add14_i139 v_xor6_3_i (4503599627370494)@uint64;
 (*   %sub16.i141 = sub i64 %add14.i139, %xor6.3.i112 *)
 sub v_sub16_i141 v_add14_i139 v_xor6_3_i112;
 (*   store i64 %sub16.i141, i64* %arrayidx17.i142, align 8, !tbaa !7 *)
+//mov arrayidx17_i142_0 v_sub16_i141;
 mov L14_0 v_sub16_i141;
 (*   %add19.i144 = add i64 %xor6.4.i, 4503599627370494 *)
 add v_add19_i144 v_xor6_4_i (4503599627370494)@uint64;
 (*   %sub21.i146 = sub i64 %add19.i144, %xor6.4.i118 *)
 sub v_sub21_i146 v_add19_i144 v_xor6_4_i118;
 (*   store i64 %sub21.i146, i64* %arrayidx22.i147, align 16, !tbaa !7 *)
+//mov arrayidx22_i147_0 v_sub21_i146;
 mov L15_0 v_sub21_i146;
 (*   %add.i148 = add i64 %xor6.i94, %xor6.i *)
 add v_add_i148 v_xor6_i94 v_xor6_i;
 (*   store i64 %add.i148, i64* %arraydecay10, align 16, !tbaa !7 *)
+//mov arraydecay10_0 v_add_i148;
 mov L16_0 v_add_i148;
 (*   %add5.i = add i64 %xor6.1.i100, %xor6.1.i *)
 add v_add5_i v_xor6_1_i100 v_xor6_1_i;
 (*   store i64 %add5.i, i64* %arrayidx1.i, align 8, !tbaa !7 *)
+//mov arrayidx1_i_0 v_add5_i;
 mov L17_0 v_add5_i;
 (*   %add9.i154 = add i64 %xor6.2.i106, %xor6.2.i *)
 add v_add9_i154 v_xor6_2_i106 v_xor6_2_i;
 (*   store i64 %add9.i154, i64* %arrayidx.2.i, align 16, !tbaa !7 *)
+//mov arrayidx_2_i_0 v_add9_i154;
 mov L18_0 v_add9_i154;
 (*   %add13.i = add i64 %xor6.3.i112, %xor6.3.i *)
 add v_add13_i v_xor6_3_i112 v_xor6_3_i;
 (*   store i64 %add13.i, i64* %arrayidx.3.i, align 8, !tbaa !7 *)
+//mov arrayidx_3_i_0 v_add13_i;
 mov L19_0 v_add13_i;
 (*   %add17.i = add i64 %xor6.4.i118, %xor6.4.i *)
 add v_add17_i v_xor6_4_i118 v_xor6_4_i;
 (*   store i64 %add17.i, i64* %arrayidx.4.i, align 16, !tbaa !7 *)
+//mov arrayidx_4_i_0 v_add17_i;
 mov L20_0 v_add17_i;
 (*   %add.i159 = add i64 %xor9.i95, %xor9.i *)
 add v_add_i159 v_xor9_i95 v_xor9_i;
 (*   store i64 %add.i159, i64* %arraydecay11, align 16, !tbaa !7 *)
+//mov arraydecay11_0 v_add_i159;
 mov L21_0 v_add_i159;
 (*   %add5.i162 = add i64 %xor9.1.i101, %xor9.1.i *)
 add v_add5_i162 v_xor9_1_i101 v_xor9_1_i;
 (*   store i64 %add5.i162, i64* %arrayidx.1.i96, align 8, !tbaa !7 *)
+//mov arrayidx_1_i96_0 v_add5_i162;
 mov L22_0 v_add5_i162;
 (*   %add9.i166 = add i64 %xor9.2.i107, %xor9.2.i *)
 add v_add9_i166 v_xor9_2_i107 v_xor9_2_i;
 (*   store i64 %add9.i166, i64* %arrayidx.2.i102, align 16, !tbaa !7 *)
+//mov arrayidx_2_i102_0 v_add9_i166;
 mov L23_0 v_add9_i166;
 (*   %add13.i170 = add i64 %xor9.3.i113, %xor9.3.i *)
 add v_add13_i170 v_xor9_3_i113 v_xor9_3_i;
 (*   store i64 %add13.i170, i64* %arrayidx.3.i108, align 8, !tbaa !7 *)
+//mov arrayidx_3_i108_0 v_add13_i170;
 mov L24_0 v_add13_i170;
 (*   %add17.i174 = add i64 %xor9.4.i119, %xor9.4.i *)
 add v_add17_i174 v_xor9_4_i119 v_xor9_4_i;
 (*   store i64 %add17.i174, i64* %arrayidx.4.i114, align 16, !tbaa !7 *)
+//mov arrayidx_4_i114_0 v_add17_i174;
 mov L25_0 v_add17_i174;
 (*   call fastcc void @fe51_mul(i64* noundef nonnull %arraydecay14, i64* noundef nonnull %arraydecay24, i64* noundef nonnull %arraydecay10) *)
 (* modify *)
@@ -738,11 +781,11 @@ mul v_mul61_i v_conv21_i v_conv55_i;
 add v_add62_i v_add44_i v_mul61_i;
 (*   %shr.i181 = lshr i128 %add49.i, 51 *)
 (* You may need to modify here *)
-split v_shr_i181 tmp_to_be_used v_add49_i 51;
+split v_shr_i181 tmp_v_add49_i_low51 v_add49_i 51;
 (*   %conv64.i = and i128 %shr.i181, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i v_shr_i181 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv64_i v_shr_i181;
 assume eq v_conv64_i v_shr_i181 && true;
 (*   %add.i182 = add i128 %mul15.i, %mul30.i *)
@@ -752,43 +795,41 @@ add v_add31_i v_add_i182 v_mul22_i;
 (*   %add65.i = add i128 %add31.i, %conv64.i *)
 add v_add65_i v_add31_i v_conv64_i;
 (*   %conv66.i = trunc i128 %add49.i to i64 *)
-split tmp_v_add49_i v_conv66_i v_add49_i 64;
+split tmp_v_add49_i_high64 v_conv66_i v_add49_i 64;
 vpc v_conv66_i@uint64 v_conv66_i@uint128;
 (*   %and.i183 = and i64 %conv66.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i183 v_conv66_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and_i183 tmp_to_be_used;
-assume eq v_and_i183 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and_i183 64 tmp_v_add49_i_low51;
+assume eq v_and_i183 tmp_v_add49_i_low51 && true;
 (*   %shr67.i = lshr i128 %add58.i, 51 *)
 (* You may need to modify here *)
-split v_shr67_i tmp_to_be_used v_add58_i 51;
+split v_shr67_i tmp_v_add58_i_low51 v_add58_i 51;
 (*   %conv69.i = and i128 %shr67.i, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i v_shr67_i (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv69_i v_shr67_i;
 assume eq v_conv69_i v_shr67_i && true;
 (*   %add70.i = add i128 %add62.i, %conv69.i *)
 add v_add70_i v_add62_i v_conv69_i;
 (*   %conv71.i = trunc i128 %add58.i to i64 *)
-split tmp_v_add58_i v_conv71_i v_add58_i 64;
+split tmp_v_add58_i_high64 v_conv71_i v_add58_i 64;
 vpc v_conv71_i@uint64 v_conv71_i@uint128;
 (*   %and72.i = and i64 %conv71.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i v_conv71_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and72_i tmp_to_be_used;
-assume eq v_and72_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and72_i 64 tmp_v_add58_i_low51;
+assume eq v_and72_i tmp_v_add58_i_low51 && true;
 (*   %shr73.i = lshr i128 %add65.i, 51 *)
 (* You may need to modify here *)
-split v_shr73_i tmp_to_be_used v_add65_i 51;
+split v_shr73_i tmp_v_add65_i_low51 v_add65_i 51;
 (*   %conv75.i = and i128 %shr73.i, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i v_shr73_i (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv75_i v_shr73_i;
 assume eq v_conv75_i v_shr73_i && true;
 (*   %add35.i = add i128 %mul34.i, %mul52.i *)
@@ -798,92 +839,95 @@ add v_add53_i v_add35_i v_mul18_i;
 (*   %add76.i = add i128 %add53.i, %conv75.i *)
 add v_add76_i v_add53_i v_conv75_i;
 (*   %conv77.i = trunc i128 %add65.i to i64 *)
-split tmp_v_add65_i v_conv77_i v_add65_i 64;
+split tmp_v_add65_i_high64 v_conv77_i v_add65_i 64;
 vpc v_conv77_i@uint64 v_conv77_i@uint128;
 (*   %and78.i = and i64 %conv77.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i v_conv77_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and78_i tmp_to_be_used;
-assume eq v_and78_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and78_i 64 tmp_v_add65_i_low51;
+assume eq v_and78_i tmp_v_add65_i_low51 && true;
 (*   %shr79.i = lshr i128 %add70.i, 51 *)
 (* You may need to modify here *)
-split v_shr79_i tmp_to_be_used v_add70_i 51;
+split v_shr79_i tmp_v_add70_i_low51 v_add70_i 51;
 (*   %conv80.i = trunc i128 %shr79.i to i64 *)
-split tmp_v_shr79_i v_conv80_i v_shr79_i 64;
+split tmp_v_shr79_i_high64 v_conv80_i v_shr79_i 64;
 vpc v_conv80_i@uint64 v_conv80_i@uint128;
-(* modify*)
-assert true && eq tmp_v_shr79_i 0@128;
-assume eq tmp_v_shr79_i 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr79_i_high64 0@128;
+assume eq tmp_v_shr79_i_high64 0 && true;
 (*   %add81.i = add i64 %and.i183, %conv80.i *)
 add v_add81_i v_and_i183 v_conv80_i;
 (*   %conv82.i = trunc i128 %add70.i to i64 *)
-split tmp_v_add70_i v_conv82_i v_add70_i 64;
+split tmp_v_add70_i_high64 v_conv82_i v_add70_i 64;
 vpc v_conv82_i@uint64 v_conv82_i@uint128;
 (*   %and83.i = and i64 %conv82.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i v_conv82_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and83_i tmp_to_be_used;
-assume eq v_and83_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and83_i 64 tmp_v_add70_i_low51;
+assume eq v_and83_i tmp_v_add70_i_low51 && true;
 (*   %shr84.i = lshr i128 %add76.i, 51 *)
 (* You may need to modify here *)
-split v_shr84_i tmp_to_be_used v_add76_i 51;
+split v_shr84_i tmp_v_add76_i_low51 v_add76_i 51;
 (*   %conv85.i = trunc i128 %shr84.i to i64 *)
-split tmp_v_shr84_i v_conv85_i v_shr84_i 64;
+split tmp_v_shr84_i_high64 v_conv85_i v_shr84_i 64;
 vpc v_conv85_i@uint64 v_conv85_i@uint128;
-(* modify*)
-assert true && eq tmp_v_shr84_i 0@128;
-assume eq tmp_v_shr84_i 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr84_i_high64 0@128;
+assume eq tmp_v_shr84_i_high64 0 && true;
 (*   %mul86.i = mul i64 %conv85.i, 19 *)
 mul v_mul86_i v_conv85_i (19)@uint64;
 (*   %add87.i = add i64 %mul86.i, %and72.i *)
 add v_add87_i v_mul86_i v_and72_i;
 (*   %conv88.i = trunc i128 %add76.i to i64 *)
-split tmp_v_add76_i v_conv88_i v_add76_i 64;
+split tmp_v_add76_i_high64 v_conv88_i v_add76_i 64;
 vpc v_conv88_i@uint64 v_conv88_i@uint128;
 (*   %and89.i = and i64 %conv88.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i v_conv88_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and89_i tmp_to_be_used;
-assume eq v_and89_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and89_i 64 tmp_v_add76_i_low51;
+assume eq v_and89_i tmp_v_add76_i_low51 && true;
 (*   %shr90.i = lshr i64 %add81.i, 51 *)
 (* You may need to modify here *)
-split v_shr90_i tmp_to_be_used v_add81_i 51;
+split v_shr90_i tmp_v_add81_i_low51 v_add81_i 51;
 (*   %add91.i = add nuw nsw i64 %shr90.i, %and78.i *)
 add v_add91_i v_shr90_i v_and78_i;
 (*   %and92.i = and i64 %add81.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and92_i v_add81_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and92_i tmp_to_be_used;
-assume eq v_and92_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and92_i tmp_v_add81_i_low51;
+assume eq v_and92_i tmp_v_add81_i_low51 && true;
 (*   %shr93.i = lshr i64 %add87.i, 51 *)
 (* You may need to modify here *)
-split v_shr93_i tmp_to_be_used v_add87_i 51;
+split v_shr93_i tmp_v_add87_i_low51 v_add87_i 51;
 (*   %add94.i = add nuw nsw i64 %shr93.i, %and83.i *)
 add v_add94_i v_shr93_i v_and83_i;
 (*   %and95.i = and i64 %add87.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and95_i v_add87_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and95_i tmp_to_be_used;
-assume eq v_and95_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and95_i tmp_v_add87_i_low51;
+assume eq v_and95_i tmp_v_add87_i_low51 && true;
 (*   store i64 %and95.i, i64* %arraydecay24, align 16, !tbaa !7 *)
+//mov arraydecay24_0 v_and95_i;
 mov L6_0 v_and95_i;
 (*   store i64 %add94.i, i64* %arrayidx7.i123, align 8, !tbaa !7 *)
+//mov arrayidx7_i123_0 v_add94_i;
 mov L7_0 v_add94_i;
 (*   store i64 %and92.i, i64* %arrayidx12.i, align 16, !tbaa !7 *)
+//mov arrayidx12_i_0 v_and92_i;
 mov L8_0 v_and92_i;
 (*   store i64 %add91.i, i64* %arrayidx17.i, align 8, !tbaa !7 *)
+//mov arrayidx17_i_0 v_add91_i;
 mov L9_0 v_add91_i;
 (*   store i64 %and89.i, i64* %arrayidx22.i125, align 16, !tbaa !7 *)
+//mov arrayidx22_i125_0 v_and89_i;
 mov L10_0 v_and89_i;
 (*   %103 = load i64, i64* %arraydecay10, align 16, !tbaa !7 *)
+//mov v103 arraydecay10_0;
 mov v103 L16_0;
 (*   %conv.i188 = zext i64 %103 to i128 *)
 cast v_conv_i188@uint128 v103@uint64;
@@ -945,7 +989,6 @@ cast v_conv46_i215@uint128 v_mul45_i214@uint64;
 mul v_mul48_i216 v_conv21_i201 v_conv46_i215;
 (*   %add49.i217 = add i128 %add26.i204, %mul48.i216 *)
 add v_add49_i217 v_add26_i204 v_mul48_i216;
-
 (*   %mul52.i218 = mul nuw i128 %conv11.i194, %conv11.i194 *)
 mul v_mul52_i218 v_conv11_i194 v_conv11_i194;
 (*   %mul54.i219 = shl i64 %add9.i154, 1 *)
@@ -956,21 +999,19 @@ cast v_conv55_i220@uint128 v_mul54_i219@uint64;
 mul v_mul57_i221 v_conv42_i211 v_conv55_i220;
 (*   %add39.i222 = add i128 %mul57.i221, %mul.i189 *)
 add v_add39_i222 v_mul57_i221 v_mul_i189;
-
 (*   %add58.i223 = add i128 %add39.i222, %mul38.i209 *)
 add v_add58_i223 v_add39_i222 v_mul38_i209;
 (*   %mul61.i224 = mul nuw i128 %conv21.i201, %conv55.i220 *)
 mul v_mul61_i224 v_conv21_i201 v_conv55_i220;
 (*   %add62.i225 = add i128 %add44.i213, %mul61.i224 *)
 add v_add62_i225 v_add44_i213 v_mul61_i224;
-
 (*   %shr.i226 = lshr i128 %add49.i217, 51 *)
 (* You may need to modify here *)
-split v_shr_i226 tmp_to_be_used v_add49_i217 51;
+split v_shr_i226 tmp_v_add49_i217_low51 v_add49_i217 51;
 (*   %conv64.i227 = and i128 %shr.i226, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i227 v_shr_i226 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv64_i227 v_shr_i226;
 assume eq v_conv64_i227 v_shr_i226 && true;
 (*   %add.i228 = add i128 %mul15.i197, %mul30.i207 *)
@@ -980,44 +1021,41 @@ add v_add31_i229 v_add_i228 v_mul22_i202;
 (*   %add65.i230 = add i128 %add31.i229, %conv64.i227 *)
 add v_add65_i230 v_add31_i229 v_conv64_i227;
 (*   %conv66.i231 = trunc i128 %add49.i217 to i64 *)
-split tmp_v_add49_i217 v_conv66_i231 v_add49_i217 64;
+split tmp_v_add49_i217_high64 v_conv66_i231 v_add49_i217 64;
 vpc v_conv66_i231@uint64 v_conv66_i231@uint128;
 (*   %and.i232 = and i64 %conv66.i231, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i232 v_conv66_i231 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and_i232 tmp_to_be_used;
-assume eq v_and_i232 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and_i232 64 tmp_v_add49_i217_low51;
+assume eq v_and_i232 tmp_v_add49_i217_low51 && true;
 (*   %shr67.i233 = lshr i128 %add58.i223, 51 *)
 (* You may need to modify here *)
-split v_shr67_i233 tmp_to_be_used v_add58_i223 51;
+split v_shr67_i233 tmp_v_add58_i223_low51 v_add58_i223 51;
 (*   %conv69.i234 = and i128 %shr67.i233, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i234 v_shr67_i233 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv69_i234 v_shr67_i233;
 assume eq v_conv69_i234 v_shr67_i233 && true;
 (*   %add70.i235 = add i128 %add62.i225, %conv69.i234 *)
 add v_add70_i235 v_add62_i225 v_conv69_i234;
-
 (*   %conv71.i236 = trunc i128 %add58.i223 to i64 *)
-split tmp_v_add58_i223 v_conv71_i236 v_add58_i223 64;
+split tmp_v_add58_i223_high64 v_conv71_i236 v_add58_i223 64;
 vpc v_conv71_i236@uint64 v_conv71_i236@uint128;
 (*   %and72.i237 = and i64 %conv71.i236, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i237 v_conv71_i236 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and72_i237 tmp_to_be_used;
-assume eq v_and72_i237 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and72_i237 64 tmp_v_add58_i223_low51;
+assume eq v_and72_i237 tmp_v_add58_i223_low51 && true;
 (*   %shr73.i238 = lshr i128 %add65.i230, 51 *)
 (* You may need to modify here *)
-split v_shr73_i238 tmp_to_be_used v_add65_i230 51;
+split v_shr73_i238 tmp_v_add65_i230_low51 v_add65_i230 51;
 (*   %conv75.i239 = and i128 %shr73.i238, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i239 v_shr73_i238 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv75_i239 v_shr73_i238;
 assume eq v_conv75_i239 v_shr73_i238 && true;
 (*   %add35.i240 = add i128 %mul34.i208, %mul52.i218 *)
@@ -1027,118 +1065,130 @@ add v_add53_i241 v_add35_i240 v_mul18_i199;
 (*   %add76.i242 = add i128 %add53.i241, %conv75.i239 *)
 add v_add76_i242 v_add53_i241 v_conv75_i239;
 (*   %conv77.i243 = trunc i128 %add65.i230 to i64 *)
-split tmp_v_add65_i230 v_conv77_i243 v_add65_i230 64;
+split tmp_v_add65_i230_high64 v_conv77_i243 v_add65_i230 64;
 vpc v_conv77_i243@uint64 v_conv77_i243@uint128;
 (*   %and78.i244 = and i64 %conv77.i243, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i244 v_conv77_i243 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and78_i244 tmp_to_be_used;
-assume eq v_and78_i244 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and78_i244 64 tmp_v_add65_i230_low51;
+assume eq v_and78_i244 tmp_v_add65_i230_low51 && true;
 (*   %shr79.i245 = lshr i128 %add70.i235, 51 *)
 (* You may need to modify here *)
-split v_shr79_i245 tmp_to_be_used v_add70_i235 51;
+split v_shr79_i245 tmp_v_add70_i235_low51 v_add70_i235 51;
 (*   %conv80.i246 = trunc i128 %shr79.i245 to i64 *)
-split tmp_v_shr79_i245 v_conv80_i246 v_shr79_i245 64;
+split tmp_v_shr79_i245_high64 v_conv80_i246 v_shr79_i245 64;
 vpc v_conv80_i246@uint64 v_conv80_i246@uint128;
-(* modify*)
-assert true && eq tmp_v_shr79_i245 0@128;
-assume eq tmp_v_shr79_i245 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr79_i245_high64 0@128;
+assume eq tmp_v_shr79_i245_high64 0 && true;
 (*   %add81.i247 = add i64 %and.i232, %conv80.i246 *)
 add v_add81_i247 v_and_i232 v_conv80_i246;
 (*   %conv82.i248 = trunc i128 %add70.i235 to i64 *)
-split tmp_v_add70_i235 v_conv82_i248 v_add70_i235 64;
+split tmp_v_add70_i235_high64 v_conv82_i248 v_add70_i235 64;
 vpc v_conv82_i248@uint64 v_conv82_i248@uint128;
 (*   %and83.i249 = and i64 %conv82.i248, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i249 v_conv82_i248 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and83_i249 tmp_to_be_used;
-assume eq v_and83_i249 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and83_i249 64 tmp_v_add70_i235_low51;
+assume eq v_and83_i249 tmp_v_add70_i235_low51 && true;
 (*   %shr84.i250 = lshr i128 %add76.i242, 51 *)
 (* You may need to modify here *)
-split v_shr84_i250 tmp_to_be_used v_add76_i242 51;
+split v_shr84_i250 tmp_v_add76_i242_low51 v_add76_i242 51;
 (*   %conv85.i251 = trunc i128 %shr84.i250 to i64 *)
-split tmp_v_shr84_i250 v_conv85_i251 v_shr84_i250 64;
+split tmp_v_shr84_i250_high64 v_conv85_i251 v_shr84_i250 64;
 vpc v_conv85_i251@uint64 v_conv85_i251@uint128;
-(* modify*)
-assert true && eq tmp_v_shr84_i250 0@128;
-assume eq tmp_v_shr84_i250 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr84_i250_high64 0@128;
+assume eq tmp_v_shr84_i250_high64 0 && true;
 (*   %mul86.i252 = mul i64 %conv85.i251, 19 *)
 mul v_mul86_i252 v_conv85_i251 (19)@uint64;
 (*   %add87.i253 = add i64 %mul86.i252, %and72.i237 *)
 add v_add87_i253 v_mul86_i252 v_and72_i237;
 (*   %conv88.i254 = trunc i128 %add76.i242 to i64 *)
-split tmp_v_add76_i242 v_conv88_i254 v_add76_i242 64;
+split tmp_v_add76_i242_high64 v_conv88_i254 v_add76_i242 64;
 vpc v_conv88_i254@uint64 v_conv88_i254@uint128;
 (*   %and89.i255 = and i64 %conv88.i254, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i255 v_conv88_i254 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and89_i255 tmp_to_be_used;
-assume eq v_and89_i255 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and89_i255 64 tmp_v_add76_i242_low51;
+assume eq v_and89_i255 tmp_v_add76_i242_low51 && true;
 (*   %shr90.i256 = lshr i64 %add81.i247, 51 *)
 (* You may need to modify here *)
-split v_shr90_i256 tmp_to_be_used v_add81_i247 51;
+split v_shr90_i256 tmp_v_add81_i247_low51 v_add81_i247 51;
 (*   %add91.i257 = add nuw nsw i64 %shr90.i256, %and78.i244 *)
 add v_add91_i257 v_shr90_i256 v_and78_i244;
 (*   %and92.i258 = and i64 %add81.i247, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and92_i258 v_add81_i247 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and92_i258 tmp_to_be_used;
-assume eq v_and92_i258 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and92_i258 tmp_v_add81_i247_low51;
+assume eq v_and92_i258 tmp_v_add81_i247_low51 && true;
 (*   %shr93.i259 = lshr i64 %add87.i253, 51 *)
 (* You may need to modify here *)
-split v_shr93_i259 tmp_to_be_used v_add87_i253 51;
+split v_shr93_i259 tmp_v_add87_i253_low51 v_add87_i253 51;
 (*   %add94.i260 = add nuw nsw i64 %shr93.i259, %and83.i249 *)
 add v_add94_i260 v_shr93_i259 v_and83_i249;
 (*   %and95.i261 = and i64 %add87.i253, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and95_i261 v_add87_i253 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and95_i261 tmp_to_be_used;
-assume eq v_and95_i261 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and95_i261 tmp_v_add87_i253_low51;
+assume eq v_and95_i261 tmp_v_add87_i253_low51 && true;
 (*   store i64 %and95.i261, i64* %arraydecay27, align 16, !tbaa !7 *)
+//mov arraydecay27_0 v_and95_i261;
 mov L11_0 v_and95_i261;
 (*   store i64 %add94.i260, i64* %arrayidx7.i132, align 8, !tbaa !7 *)
+//mov arrayidx7_i132_0 v_add94_i260;
 mov L12_0 v_add94_i260;
 (*   store i64 %and92.i258, i64* %arrayidx12.i137, align 16, !tbaa !7 *)
+//mov arrayidx12_i137_0 v_and92_i258;
 mov L13_0 v_and92_i258;
 (*   store i64 %add91.i257, i64* %arrayidx17.i142, align 8, !tbaa !7 *)
+//mov arrayidx17_i142_0 v_add91_i257;
 mov L14_0 v_add91_i257;
 (*   store i64 %and89.i255, i64* %arrayidx22.i147, align 16, !tbaa !7 *)
+//mov arrayidx22_i147_0 v_and89_i255;
 mov L15_0 v_and89_i255;
 (*   %104 = load i64, i64* %arraydecay14, align 16, !tbaa !7 *)
+//mov v104 arraydecay14_0;
 mov v104 L1_0;
 (*   %105 = load i64, i64* %arraydecay11, align 16, !tbaa !7 *)
+//mov v105 arraydecay11_0;
 mov v105 L21_0;
 (*   %add.i266 = add i64 %105, %104 *)
 add v_add_i266 v105 v104;
 (*   %106 = load i64, i64* %arrayidx1.i89, align 8, !tbaa !7 *)
+//mov v106 arrayidx1_i89_0;
 mov v106 L2_0;
 (*   %107 = load i64, i64* %arrayidx.1.i96, align 8, !tbaa !7 *)
+//mov v107 arrayidx_1_i96_0;
 mov v107 L22_0;
 (*   %add5.i269 = add i64 %107, %106 *)
 add v_add5_i269 v107 v106;
 (*   %108 = load i64, i64* %arrayidx3.2.i103, align 16, !tbaa !7 *)
+//mov v108 arrayidx3_2_i103_0;
 mov v108 L3_0;
 (*   %109 = load i64, i64* %arrayidx.2.i102, align 16, !tbaa !7 *)
+//mov v109 arrayidx_2_i102_0;
 mov v109 L23_0;
 (*   %add9.i273 = add i64 %109, %108 *)
 add v_add9_i273 v109 v108;
 (*   %110 = load i64, i64* %arrayidx3.3.i109, align 8, !tbaa !7 *)
+//mov v110 arrayidx3_3_i109_0;
 mov v110 L4_0;
 (*   %111 = load i64, i64* %arrayidx.3.i108, align 8, !tbaa !7 *)
+//mov v111 arrayidx_3_i108_0;
 mov v111 L24_0;
 (*   %add13.i277 = add i64 %111, %110 *)
 add v_add13_i277 v111 v110;
 (*   %112 = load i64, i64* %arrayidx3.4.i115, align 16, !tbaa !7 *)
+//mov v112 arrayidx3_4_i115_0;
 mov v112 L5_0;
 (*   %113 = load i64, i64* %arrayidx.4.i114, align 16, !tbaa !7 *)
+//mov v113 arrayidx_4_i114_0;
 mov v113 L25_0;
 (*   %add17.i281 = add i64 %113, %112 *)
 add v_add17_i281 v113 v112;
@@ -1146,74 +1196,79 @@ add v_add17_i281 v113 v112;
 add v_add_i283 v104 (4503599627370458)@uint64;
 (*   %sub.i284 = sub i64 %add.i283, %105 *)
 sub v_sub_i284 v_add_i283 v105;
-(*moddify*)
 mov L21_0 v_sub_i284;
 (*   %add4.i286 = add i64 %106, 4503599627370494 *)
 add v_add4_i286 v106 (4503599627370494)@uint64;
 (*   %sub6.i288 = sub i64 %add4.i286, %107 *)
 sub v_sub6_i288 v_add4_i286 v107;
-(*moddify*)
 mov L22_0 v_sub6_i288;
 (*   %add9.i291 = add i64 %108, 4503599627370494 *)
 add v_add9_i291 v108 (4503599627370494)@uint64;
 (*   %sub11.i293 = sub i64 %add9.i291, %109 *)
 sub v_sub11_i293 v_add9_i291 v109;
-(*moddify*)
 mov L23_0 v_sub11_i293;
 (*   %add14.i296 = add i64 %110, 4503599627370494 *)
 add v_add14_i296 v110 (4503599627370494)@uint64;
 (*   %sub16.i298 = sub i64 %add14.i296, %111 *)
 sub v_sub16_i298 v_add14_i296 v111;
-(*moddify*)
 mov L24_0 v_sub16_i298;
 (*   %add19.i301 = add i64 %112, 4503599627370494 *)
 add v_add19_i301 v112 (4503599627370494)@uint64;
 (*   %sub21.i303 = sub i64 %add19.i301, %113 *)
 sub v_sub21_i303 v_add19_i301 v113;
-(*moddify*)
 mov L25_0 v_sub21_i303;
 (*   call fastcc void @fe51_mul(i64* noundef nonnull %arraydecay10, i64* noundef nonnull %arraydecay27, i64* noundef nonnull %arraydecay24) *)
-(* modify *)
+(*modify*)
 call fe51_mul(L11_0, L12_0, L13_0, L14_0, L15_0, L6_0, L7_0, L8_0, L9_0, L10_0, L16_0, L17_0, L18_0, L19_0, L20_0);
 (*   %add.i305 = add nuw nsw i64 %and95.i261, 4503599627370458 *)
 add v_add_i305 v_and95_i261 (4503599627370458)@uint64;
 (*   %114 = load i64, i64* %arraydecay24, align 16, !tbaa !7 *)
+//mov v114 arraydecay24_0;
 mov v114 L6_0;
 (*   %sub.i306 = sub i64 %add.i305, %114 *)
 sub v_sub_i306 v_add_i305 v114;
 (*   store i64 %sub.i306, i64* %arraydecay27, align 16, !tbaa !7 *)
+//mov arraydecay27_0 v_sub_i306;
 mov L11_0 v_sub_i306;
 (*   %add4.i308 = add nuw nsw i64 %add94.i260, 4503599627370494 *)
 add v_add4_i308 v_add94_i260 (4503599627370494)@uint64;
 (*   %115 = load i64, i64* %arrayidx7.i123, align 8, !tbaa !7 *)
+//mov v115 arrayidx7_i123_0;
 mov v115 L7_0;
 (*   %sub6.i310 = sub i64 %add4.i308, %115 *)
 sub v_sub6_i310 v_add4_i308 v115;
 (*   store i64 %sub6.i310, i64* %arrayidx7.i132, align 8, !tbaa !7 *)
+//mov arrayidx7_i132_0 v_sub6_i310;
 mov L12_0 v_sub6_i310;
 (*   %add9.i313 = add nuw nsw i64 %and92.i258, 4503599627370494 *)
 add v_add9_i313 v_and92_i258 (4503599627370494)@uint64;
 (*   %116 = load i64, i64* %arrayidx12.i, align 16, !tbaa !7 *)
+//mov v116 arrayidx12_i_0;
 mov v116 L8_0;
 (*   %sub11.i315 = sub i64 %add9.i313, %116 *)
 sub v_sub11_i315 v_add9_i313 v116;
 (*   store i64 %sub11.i315, i64* %arrayidx12.i137, align 16, !tbaa !7 *)
+//mov arrayidx12_i137_0 v_sub11_i315;
 mov L13_0 v_sub11_i315;
 (*   %add14.i318 = add nuw nsw i64 %add91.i257, 4503599627370494 *)
 add v_add14_i318 v_add91_i257 (4503599627370494)@uint64;
 (*   %117 = load i64, i64* %arrayidx17.i, align 8, !tbaa !7 *)
+//mov v117 arrayidx17_i_0;
 mov v117 L9_0;
 (*   %sub16.i320 = sub i64 %add14.i318, %117 *)
 sub v_sub16_i320 v_add14_i318 v117;
 (*   store i64 %sub16.i320, i64* %arrayidx17.i142, align 8, !tbaa !7 *)
+//mov arrayidx17_i142_0 v_sub16_i320;
 mov L14_0 v_sub16_i320;
 (*   %add19.i323 = add nuw nsw i64 %and89.i255, 4503599627370494 *)
 add v_add19_i323 v_and89_i255 (4503599627370494)@uint64;
 (*   %118 = load i64, i64* %arrayidx22.i125, align 16, !tbaa !7 *)
+//mov v118 arrayidx22_i125_0;
 mov v118 L10_0;
 (*   %sub21.i325 = sub i64 %add19.i323, %118 *)
 sub v_sub21_i325 v_add19_i323 v118;
 (*   store i64 %sub21.i325, i64* %arrayidx22.i147, align 16, !tbaa !7 *)
+//mov arrayidx22_i147_0 v_sub21_i325;
 mov L15_0 v_sub21_i325;
 (*   %conv.i331 = zext i64 %sub.i284 to i128 *)
 cast v_conv_i331@uint128 v_sub_i284@uint64;
@@ -1293,11 +1348,11 @@ mul v_mul61_i367 v_conv21_i344 v_conv55_i363;
 add v_add62_i368 v_add44_i356 v_mul61_i367;
 (*   %shr.i369 = lshr i128 %add49.i360, 51 *)
 (* You may need to modify here *)
-split v_shr_i369 tmp_to_be_used v_add49_i360 51;
+split v_shr_i369 tmp_v_add49_i360_low51 v_add49_i360 51;
 (*   %conv64.i370 = and i128 %shr.i369, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i370 v_shr_i369 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv64_i370 v_shr_i369;
 assume eq v_conv64_i370 v_shr_i369 && true;
 (*   %add.i371 = add i128 %mul15.i340, %mul30.i350 *)
@@ -1307,43 +1362,41 @@ add v_add31_i372 v_add_i371 v_mul22_i345;
 (*   %add65.i373 = add i128 %add31.i372, %conv64.i370 *)
 add v_add65_i373 v_add31_i372 v_conv64_i370;
 (*   %conv66.i374 = trunc i128 %add49.i360 to i64 *)
-split tmp_v_add49_i360 v_conv66_i374 v_add49_i360 64;
+split tmp_v_add49_i360_high64 v_conv66_i374 v_add49_i360 64;
 vpc v_conv66_i374@uint64 v_conv66_i374@uint128;
 (*   %and.i375 = and i64 %conv66.i374, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i375 v_conv66_i374 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and_i375 tmp_to_be_used;
-assume eq v_and_i375 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and_i375 64 tmp_v_add49_i360_low51;
+assume eq v_and_i375 tmp_v_add49_i360_low51 && true;
 (*   %shr67.i376 = lshr i128 %add58.i366, 51 *)
 (* You may need to modify here *)
-split v_shr67_i376 tmp_to_be_used v_add58_i366 51;
+split v_shr67_i376 tmp_v_add58_i366_low51 v_add58_i366 51;
 (*   %conv69.i377 = and i128 %shr67.i376, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i377 v_shr67_i376 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv69_i377 v_shr67_i376;
 assume eq v_conv69_i377 v_shr67_i376 && true;
 (*   %add70.i378 = add i128 %add62.i368, %conv69.i377 *)
 add v_add70_i378 v_add62_i368 v_conv69_i377;
 (*   %conv71.i379 = trunc i128 %add58.i366 to i64 *)
-split tmp_v_add58_i366 v_conv71_i379 v_add58_i366 64;
+split tmp_v_add58_i366_high64 v_conv71_i379 v_add58_i366 64;
 vpc v_conv71_i379@uint64 v_conv71_i379@uint128;
 (*   %and72.i380 = and i64 %conv71.i379, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i380 v_conv71_i379 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and72_i380 tmp_to_be_used;
-assume eq v_and72_i380 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and72_i380 64 tmp_v_add58_i366_low51;
+assume eq v_and72_i380 tmp_v_add58_i366_low51 && true;
 (*   %shr73.i381 = lshr i128 %add65.i373, 51 *)
 (* You may need to modify here *)
-split v_shr73_i381 tmp_to_be_used v_add65_i373 51;
+split v_shr73_i381 tmp_v_add65_i373_low51 v_add65_i373 51;
 (*   %conv75.i382 = and i128 %shr73.i381, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i382 v_shr73_i381 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv75_i382 v_shr73_i381;
 assume eq v_conv75_i382 v_shr73_i381 && true;
 (*   %add35.i383 = add i128 %mul34.i351, %mul52.i361 *)
@@ -1353,90 +1406,92 @@ add v_add53_i384 v_add35_i383 v_mul18_i342;
 (*   %add76.i385 = add i128 %add53.i384, %conv75.i382 *)
 add v_add76_i385 v_add53_i384 v_conv75_i382;
 (*   %conv77.i386 = trunc i128 %add65.i373 to i64 *)
-split tmp_v_add65_i373 v_conv77_i386 v_add65_i373 64;
+split tmp_v_add65_i373_high64 v_conv77_i386 v_add65_i373 64;
 vpc v_conv77_i386@uint64 v_conv77_i386@uint128;
 (*   %and78.i387 = and i64 %conv77.i386, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i387 v_conv77_i386 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and78_i387 tmp_to_be_used;
-assume eq v_and78_i387 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and78_i387 64 tmp_v_add65_i373_low51;
+assume eq v_and78_i387 tmp_v_add65_i373_low51 && true;
 (*   %shr79.i388 = lshr i128 %add70.i378, 51 *)
 (* You may need to modify here *)
-split v_shr79_i388 tmp_to_be_used v_add70_i378 51;
+split v_shr79_i388 tmp_v_add70_i378_low51 v_add70_i378 51;
 (*   %conv80.i389 = trunc i128 %shr79.i388 to i64 *)
-split tmp_v_shr79_i388 v_conv80_i389 v_shr79_i388 64;
+split tmp_v_shr79_i388_high64 v_conv80_i389 v_shr79_i388 64;
 vpc v_conv80_i389@uint64 v_conv80_i389@uint128;
-(* modify*)
-assert true && eq tmp_v_shr79_i388 0@128;
-assume eq tmp_v_shr79_i388 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr79_i388_high64 0@128;
+assume eq tmp_v_shr79_i388_high64 0 && true;
 (*   %add81.i390 = add i64 %and.i375, %conv80.i389 *)
 add v_add81_i390 v_and_i375 v_conv80_i389;
 (*   %conv82.i391 = trunc i128 %add70.i378 to i64 *)
-split tmp_v_add70_i378 v_conv82_i391 v_add70_i378 64;
+split tmp_v_add70_i378_high64 v_conv82_i391 v_add70_i378 64;
 vpc v_conv82_i391@uint64 v_conv82_i391@uint128;
 (*   %and83.i392 = and i64 %conv82.i391, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i392 v_conv82_i391 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and83_i392 tmp_to_be_used;
-assume eq v_and83_i392 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and83_i392 64 tmp_v_add70_i378_low51;
+assume eq v_and83_i392 tmp_v_add70_i378_low51 && true;
 (*   %shr84.i393 = lshr i128 %add76.i385, 51 *)
 (* You may need to modify here *)
-split v_shr84_i393 tmp_to_be_used v_add76_i385 51;
+split v_shr84_i393 tmp_v_add76_i385_low51 v_add76_i385 51;
 (*   %conv85.i394 = trunc i128 %shr84.i393 to i64 *)
-split tmp_v_shr84_i393 v_conv85_i394 v_shr84_i393 64;
+split tmp_v_shr84_i393_high64 v_conv85_i394 v_shr84_i393 64;
 vpc v_conv85_i394@uint64 v_conv85_i394@uint128;
-(* modify*)
-assert true && eq tmp_v_shr84_i393 0@128;
-assume eq tmp_v_shr84_i393 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr84_i393_high64 0@128;
+assume eq tmp_v_shr84_i393_high64 0 && true;
 (*   %mul86.i395 = mul i64 %conv85.i394, 19 *)
 mul v_mul86_i395 v_conv85_i394 (19)@uint64;
 (*   %add87.i396 = add i64 %mul86.i395, %and72.i380 *)
 add v_add87_i396 v_mul86_i395 v_and72_i380;
 (*   %conv88.i397 = trunc i128 %add76.i385 to i64 *)
-split tmp_v_add76_i385 v_conv88_i397 v_add76_i385 64;
+split tmp_v_add76_i385_high64 v_conv88_i397 v_add76_i385 64;
 vpc v_conv88_i397@uint64 v_conv88_i397@uint128;
 (*   %and89.i398 = and i64 %conv88.i397, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i398 v_conv88_i397 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and89_i398 tmp_to_be_used;
-assume eq v_and89_i398 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and89_i398 64 tmp_v_add76_i385_low51;
+assume eq v_and89_i398 tmp_v_add76_i385_low51 && true;
 (*   %shr90.i399 = lshr i64 %add81.i390, 51 *)
 (* You may need to modify here *)
-split v_shr90_i399 tmp_to_be_used v_add81_i390 51;
+split v_shr90_i399 tmp_v_add81_i390_low51 v_add81_i390 51;
 (*   %add91.i400 = add nuw nsw i64 %shr90.i399, %and78.i387 *)
 add v_add91_i400 v_shr90_i399 v_and78_i387;
 (*   %and92.i401 = and i64 %add81.i390, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and92_i401 v_add81_i390 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and92_i401 tmp_to_be_used;
-assume eq v_and92_i401 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and92_i401 tmp_v_add81_i390_low51;
+assume eq v_and92_i401 tmp_v_add81_i390_low51 && true;
 (*   %shr93.i402 = lshr i64 %add87.i396, 51 *)
 (* You may need to modify here *)
-split v_shr93_i402 tmp_to_be_used v_add87_i396 51;
+split v_shr93_i402 tmp_v_add87_i396_low51 v_add87_i396 51;
 (*   %add94.i403 = add nuw nsw i64 %shr93.i402, %and83.i392 *)
 add v_add94_i403 v_shr93_i402 v_and83_i392;
 (*   %and95.i404 = and i64 %add87.i396, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and95_i404 v_add87_i396 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and95_i404 tmp_to_be_used;
-assume eq v_and95_i404 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and95_i404 tmp_v_add87_i396_low51;
+assume eq v_and95_i404 tmp_v_add87_i396_low51 && true;
 (*   store i64 %and95.i404, i64* %arraydecay11, align 16, !tbaa !7 *)
+//mov arraydecay11_0 v_and95_i404;
 mov L21_0 v_and95_i404;
 (*   store i64 %add94.i403, i64* %arrayidx.1.i96, align 8, !tbaa !7 *)
+//mov arrayidx_1_i96_0 v_add94_i403;
 mov L22_0 v_add94_i403;
 (*   store i64 %and92.i401, i64* %arrayidx.2.i102, align 16, !tbaa !7 *)
+//mov arrayidx_2_i102_0 v_and92_i401;
 mov L23_0 v_and92_i401;
 (*   store i64 %add91.i400, i64* %arrayidx.3.i108, align 8, !tbaa !7 *)
+//mov arrayidx_3_i108_0 v_add91_i400;
 mov L24_0 v_add91_i400;
 (*   store i64 %and89.i398, i64* %arrayidx.4.i114, align 16, !tbaa !7 *)
+//mov arrayidx_4_i114_0 v_and89_i398;
 mov L25_0 v_and89_i398;
 (*   %conv.i409 = zext i64 %sub.i306 to i128 *)
 cast v_conv_i409@uint128 v_sub_i306@uint64;
@@ -1460,124 +1515,124 @@ cast v_conv11_i418@uint128 v_sub21_i325@uint64;
 mul v_mul12_i419 v_conv11_i418 (121666)@uint128;
 (*   %shr.i420 = lshr i128 %mul6.i413, 51 *)
 (* You may need to modify here *)
-split v_shr_i420 tmp_to_be_used v_mul6_i413 51;
+split v_shr_i420 tmp_v_mul6_i413_low51 v_mul6_i413 51;
 (*   %add.i421 = add nuw nsw i128 %mul9.i416, %shr.i420 *)
 add v_add_i421 v_mul9_i416 v_shr_i420;
 (*   %conv15.i = trunc i128 %mul6.i413 to i64 *)
-split tmp_v_mul6_i413 v_conv15_i v_mul6_i413 64;
+split tmp_v_mul6_i413_high64 v_conv15_i v_mul6_i413 64;
 vpc v_conv15_i@uint64 v_conv15_i@uint128;
 (*   %and.i422 = and i64 %conv15.i, 2251799813685246 *)
 (* You may need to modify here *)
 and uint64 v_and_i422 v_conv15_i (0x7FFFFFFFFFFFE)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and_i422 tmp_to_be_used;
-assume eq v_and_i422 tmp_to_be_used && true;
+(*modify*)
+assert true && eq (uext v_and_i422 64) tmp_v_mul6_i413_low51;
+assume eq v_and_i422 tmp_v_mul6_i413_low51 && true;
 (*   %shr16.i = lshr i128 %mul.i410, 51 *)
 (* You may need to modify here *)
-split v_shr16_i tmp_to_be_used v_mul_i410 51;
+split v_shr16_i tmp_v_mul_i410_low51 v_mul_i410 51;
 (*   %add19.i423 = add nuw nsw i128 %mul3.i, %shr16.i *)
 add v_add19_i423 v_mul3_i v_shr16_i;
 (*   %conv20.i = trunc i128 %mul.i410 to i64 *)
-split tmp_v_mul_i410 v_conv20_i v_mul_i410 64;
+split tmp_v_mul_i410_high64 v_conv20_i v_mul_i410 64;
 vpc v_conv20_i@uint64 v_conv20_i@uint128;
 (*   %and21.i = and i64 %conv20.i, 2251799813685246 *)
 (* You may need to modify here *)
 and uint64 v_and21_i v_conv20_i (0x7FFFFFFFFFFFE)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and21_i tmp_to_be_used;
-assume eq v_and21_i tmp_to_be_used && true;
+(*modify*)
+assert true && eq (uext v_and21_i 64) tmp_v_mul_i410_low51;
+assume eq v_and21_i tmp_v_mul_i410_low51 && true;
 (*   %shr22.i = lshr i128 %add.i421, 51 *)
 (* You may need to modify here *)
-split v_shr22_i tmp_to_be_used v_add_i421 51;
+split v_shr22_i tmp_v_add_i421_low51 v_add_i421 51;
 (*   %add25.i = add nuw nsw i128 %mul12.i419, %shr22.i *)
 add v_add25_i v_mul12_i419 v_shr22_i;
 (*   %conv26.i = trunc i128 %add.i421 to i64 *)
-split tmp_v_add_i421 v_conv26_i v_add_i421 64;
+split tmp_v_add_i421_high64 v_conv26_i v_add_i421 64;
 vpc v_conv26_i@uint64 v_conv26_i@uint128;
 (*   %and27.i = and i64 %conv26.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and27_i v_conv26_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and27_i tmp_to_be_used;
-assume eq v_and27_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and27_i 64 tmp_v_add_i421_low51;
+assume eq v_and27_i tmp_v_add_i421_low51 && true;
 (*   %shr28.i = lshr i128 %add19.i423, 51 *)
 (* You may need to modify here *)
-split v_shr28_i tmp_to_be_used v_add19_i423 51;
+split v_shr28_i tmp_v_add19_i423_low51 v_add19_i423 51;
 (*   %conv29.i = trunc i128 %shr28.i to i64 *)
-split tmp_v_shr28_i v_conv29_i v_shr28_i 64;
+split tmp_v_shr28_i_high64 v_conv29_i v_shr28_i 64;
 vpc v_conv29_i@uint64 v_conv29_i@uint128;
-(* modify*)
-assert true && eq tmp_v_shr28_i 0@128;
-assume eq tmp_v_shr28_i 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr28_i_high64 0@128;
+assume eq tmp_v_shr28_i_high64 0 && true;
 (*   %add30.i = add nuw nsw i64 %and.i422, %conv29.i *)
 add v_add30_i v_and_i422 v_conv29_i;
 (*   %conv31.i = trunc i128 %add19.i423 to i64 *)
-split tmp_v_add19_i423 v_conv31_i v_add19_i423 64;
+split tmp_v_add19_i423_high64 v_conv31_i v_add19_i423 64;
 vpc v_conv31_i@uint64 v_conv31_i@uint128;
 (*   %and32.i = and i64 %conv31.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and32_i v_conv31_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and32_i tmp_to_be_used;
-assume eq v_and32_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and32_i 64 tmp_v_add19_i423_low51;
+assume eq v_and32_i tmp_v_add19_i423_low51 && true;
 (*   %shr33.i = lshr i128 %add25.i, 51 *)
 (* You may need to modify here *)
-split v_shr33_i tmp_to_be_used v_add25_i 51;
+split v_shr33_i tmp_v_add25_i_low51 v_add25_i 51;
 (*   %conv34.i = trunc i128 %shr33.i to i64 *)
-split tmp_v_shr33_i v_conv34_i v_shr33_i 64;
+split tmp_v_shr33_i_high64 v_conv34_i v_shr33_i 64;
 vpc v_conv34_i@uint64 v_conv34_i@uint128;
-(* modify*)
-assert true && eq tmp_v_shr33_i 0@128;
-assume eq tmp_v_shr33_i 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr33_i_high64 0@128;
+assume eq tmp_v_shr33_i_high64 0 && true;
 (*   %mul35.i = mul nuw nsw i64 %conv34.i, 19 *)
 mul v_mul35_i v_conv34_i (19)@uint64;
 (*   %add36.i = add nuw nsw i64 %mul35.i, %and21.i *)
 add v_add36_i v_mul35_i v_and21_i;
 (*   %conv37.i = trunc i128 %add25.i to i64 *)
-split tmp_v_add25_i v_conv37_i v_add25_i 64;
+split tmp_v_add25_i_high64 v_conv37_i v_add25_i 64;
 vpc v_conv37_i@uint64 v_conv37_i@uint128;
 (*   %and38.i = and i64 %conv37.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and38_i v_conv37_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and38_i tmp_to_be_used;
-assume eq v_and38_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and38_i 64 tmp_v_add25_i_low51;
+assume eq v_and38_i tmp_v_add25_i_low51 && true;
 (*   %shr39.i = lshr i64 %add30.i, 51 *)
 (* You may need to modify here *)
-split v_shr39_i tmp_to_be_used v_add30_i 51;
+split v_shr39_i tmp_v_add30_i_low51 v_add30_i 51;
 (*   %add40.i = add nuw nsw i64 %and27.i, %shr39.i *)
 add v_add40_i v_and27_i v_shr39_i;
 (*   %and41.i = and i64 %add30.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and41_i v_add30_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and41_i tmp_to_be_used;
-assume eq v_and41_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and41_i tmp_v_add30_i_low51;
+assume eq v_and41_i tmp_v_add30_i_low51 && true;
 (*   %shr42.i = lshr i64 %add36.i, 51 *)
 (* You may need to modify here *)
-split v_shr42_i tmp_to_be_used v_add36_i 51;
+split v_shr42_i tmp_v_add36_i_low51 v_add36_i 51;
 (*   %add43.i = add nuw nsw i64 %shr42.i, %and32.i *)
 add v_add43_i v_shr42_i v_and32_i;
 (*   %and44.i = and i64 %add36.i, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and44_i v_add36_i (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-assert true && eq v_and44_i tmp_to_be_used;
-assume eq v_and44_i tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq v_and44_i tmp_v_add36_i_low51;
+assume eq v_and44_i tmp_v_add36_i_low51 && true;
 (*   store i64 %and44.i, i64* %arraydecay14, align 16, !tbaa !7 *)
+//mov arraydecay14_0 v_and44_i;
 mov L1_0 v_and44_i;
 (*   store i64 %add43.i, i64* %arrayidx1.i89, align 8, !tbaa !7 *)
+//mov arrayidx1_i89_0 v_add43_i;
 mov L2_0 v_add43_i;
 (*   store i64 %and41.i, i64* %arrayidx3.2.i103, align 16, !tbaa !7 *)
+//mov arrayidx3_2_i103_0 v_and41_i;
 mov L3_0 v_and41_i;
 (*   store i64 %add40.i, i64* %arrayidx3.3.i109, align 8, !tbaa !7 *)
+//mov arrayidx3_3_i109_0 v_add40_i;
 mov L4_0 v_add40_i;
 (*   store i64 %and38.i, i64* %arrayidx3.4.i115, align 16, !tbaa !7 *)
+//mov arrayidx3_4_i115_0 v_and38_i;
 mov L5_0 v_and38_i;
 (*   %conv.i428 = zext i64 %add.i266 to i128 *)
 cast v_conv_i428@uint128 v_add_i266@uint64;
@@ -1657,11 +1712,11 @@ mul v_mul61_i464 v_conv21_i441 v_conv55_i460;
 add v_add62_i465 v_add44_i453 v_mul61_i464;
 (*   %shr.i466 = lshr i128 %add49.i457, 51 *)
 (* You may need to modify here *)
-split v_shr_i466 tmp_to_be_used v_add49_i457 51;
+split v_shr_i466 tmp_v_add49_i457_low51 v_add49_i457 51;
 (*   %conv64.i467 = and i128 %shr.i466, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv64_i467 v_shr_i466 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv64_i467 v_shr_i466;
 assume eq v_conv64_i467 v_shr_i466 && true;
 (*   %add.i468 = add i128 %mul15.i437, %mul30.i447 *)
@@ -1671,43 +1726,41 @@ add v_add31_i469 v_add_i468 v_mul22_i442;
 (*   %add65.i470 = add i128 %add31.i469, %conv64.i467 *)
 add v_add65_i470 v_add31_i469 v_conv64_i467;
 (*   %conv66.i471 = trunc i128 %add49.i457 to i64 *)
-split tmp_v_add49_i457 v_conv66_i471 v_add49_i457 64;
+split tmp_v_add49_i457_high64 v_conv66_i471 v_add49_i457 64;
 vpc v_conv66_i471@uint64 v_conv66_i471@uint128;
 (*   %and.i472 = and i64 %conv66.i471, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and_i472 v_conv66_i471 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and_i472 tmp_to_be_used;
-assume eq v_and_i472 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and_i472 64 tmp_v_add49_i457_low51;
+assume eq v_and_i472 tmp_v_add49_i457_low51 && true;
 (*   %shr67.i473 = lshr i128 %add58.i463, 51 *)
 (* You may need to modify here *)
-split v_shr67_i473 tmp_to_be_used v_add58_i463 51;
+split v_shr67_i473 tmp_v_add58_i463_low51 v_add58_i463 51;
 (*   %conv69.i474 = and i128 %shr67.i473, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv69_i474 v_shr67_i473 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv69_i474 v_shr67_i473;
 assume eq v_conv69_i474 v_shr67_i473 && true;
 (*   %add70.i475 = add i128 %add62.i465, %conv69.i474 *)
 add v_add70_i475 v_add62_i465 v_conv69_i474;
 (*   %conv71.i476 = trunc i128 %add58.i463 to i64 *)
-split tmp_v_add58_i463 v_conv71_i476 v_add58_i463 64;
+split tmp_v_add58_i463_high64 v_conv71_i476 v_add58_i463 64;
 vpc v_conv71_i476@uint64 v_conv71_i476@uint128;
 (*   %and72.i477 = and i64 %conv71.i476, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and72_i477 v_conv71_i476 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used@uint64 tmp_to_be_used@uint128;
-assert true && eq v_and72_i477 tmp_to_be_used;
-assume eq v_and72_i477 tmp_to_be_used && true;
+(* Heuristics applied. *)
+assert true && eq uext v_and72_i477 64 tmp_v_add58_i463_low51;
+assume eq v_and72_i477 tmp_v_add58_i463_low51 && true;
 (*   %shr73.i478 = lshr i128 %add65.i470, 51 *)
 (* You may need to modify here *)
-split v_shr73_i478 tmp_to_be_used_2 v_add65_i470 51;
+split v_shr73_i478 tmp_v_add65_i470_low51 v_add65_i470 51;
 (*   %conv75.i479 = and i128 %shr73.i478, 18446744073709551615 *)
 (* You may need to modify here *)
 and uint128 v_conv75_i479 v_shr73_i478 (0xFFFFFFFFFFFFFFFF)@uint128;
-(* modify*)
+(* Heuristics applied. *)
 assert true && eq v_conv75_i479 v_shr73_i478;
 assume eq v_conv75_i479 v_shr73_i478 && true;
 (*   %add35.i480 = add i128 %mul34.i448, %mul52.i458 *)
@@ -1718,27 +1771,24 @@ add v_add53_i481 v_add35_i480 v_mul18_i439;
 add v_add76_i482 v_add53_i481 v_conv75_i479;
 (*   %shr79.i485 = lshr i128 %add70.i475, 51 *)
 (* You may need to modify here *)
-split v_shr79_i485 tmp_to_be_used_1 v_add70_i475 51;
+split v_shr79_i485 tmp_v_add70_i475_low51 v_add70_i475 51;
 (*   %conv80.i486 = trunc i128 %shr79.i485 to i64 *)
-split tmp_v_shr79_i485 v_conv80_i486 v_shr79_i485 64;
-(* modify*)
-assert true && eq v_conv80_i486 v_shr79_i485;
-assume eq v_conv80_i486 v_shr79_i485 && true;
+split tmp_v_shr79_i485_high64 v_conv80_i486 v_shr79_i485 64;
 vpc v_conv80_i486@uint64 v_conv80_i486@uint128;
-(* modify*)
-assert true && eq tmp_v_shr79_i485 0@128;
-assume eq tmp_v_shr79_i485 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr79_i485_high64 0@128;
+assume eq tmp_v_shr79_i485_high64 0 && true;
 (*   %add81.i487 = add i64 %and.i472, %conv80.i486 *)
 add v_add81_i487 v_and_i472 v_conv80_i486;
 (*   %shr84.i490 = lshr i128 %add76.i482, 51 *)
 (* You may need to modify here *)
-split v_shr84_i490 tmp_to_be_used_3 v_add76_i482 51;
+split v_shr84_i490 tmp_v_add76_i482_low51 v_add76_i482 51;
 (*   %conv85.i491 = trunc i128 %shr84.i490 to i64 *)
-split tmp_v_shr84_i490 v_conv85_i491 v_shr84_i490 64;
+split tmp_v_shr84_i490_high64 v_conv85_i491 v_shr84_i490 64;
 vpc v_conv85_i491@uint64 v_conv85_i491@uint128;
-(* modify*)
-assert true && eq tmp_v_shr84_i490 0@128;
-assume eq tmp_v_shr84_i490 0 && true;
+(*modify*)
+assert true && eq tmp_v_shr84_i490_high64 0@128;
+assume eq tmp_v_shr84_i490_high64 0 && true;
 (*   %mul86.i492 = mul i64 %conv85.i491, 19 *)
 mul v_mul86_i492 v_conv85_i491 (19)@uint64;
 (*   %add87.i493 = add i64 %mul86.i492, %and72.i477 *)
@@ -1746,32 +1796,69 @@ add v_add87_i493 v_mul86_i492 v_and72_i477;
 (*   %add.i506 = add i64 %and44.i, %114 *)
 add v_add_i506 v_and44_i v114;
 (*   store i64 %add.i506, i64* %arraydecay24, align 16, !tbaa !7 *)
+//mov arraydecay24_0 v_add_i506;
 mov L6_0 v_add_i506;
 (*   %add5.i509 = add i64 %add43.i, %115 *)
 add v_add5_i509 v_add43_i v115;
 (*   store i64 %add5.i509, i64* %arrayidx7.i123, align 8, !tbaa !7 *)
+//mov arrayidx7_i123_0 v_add5_i509;
 mov L7_0 v_add5_i509;
 (*   %add9.i513 = add i64 %and41.i, %116 *)
 add v_add9_i513 v_and41_i v116;
 (*   store i64 %add9.i513, i64* %arrayidx12.i, align 16, !tbaa !7 *)
+//mov arrayidx12_i_0 v_add9_i513;
 mov L8_0 v_add9_i513;
 (*   %add13.i517 = add i64 %add40.i, %117 *)
 add v_add13_i517 v_add40_i v117;
 (*   store i64 %add13.i517, i64* %arrayidx17.i, align 8, !tbaa !7 *)
+//mov arrayidx17_i_0 v_add13_i517;
 mov L9_0 v_add13_i517;
 (*   %add17.i521 = add i64 %and38.i, %118 *)
 add v_add17_i521 v_and38_i v118;
 (*   store i64 %add17.i521, i64* %arrayidx22.i125, align 16, !tbaa !7 *)
+//mov arrayidx22_i125_0 v_add17_i521;
 mov L10_0 v_add17_i521;
 (*   call fastcc void @fe51_mul(i64* noundef nonnull %arraydecay14, i64* noundef nonnull %arraydecay9, i64* noundef nonnull %arraydecay11) *)
-(* modify *)
+(*modify*)
 call fe51_mul(arraydecay_0, arraydecay_8, arraydecay_16, arraydecay_24, arraydecay_32, L21_0, L22_0, L23_0, L24_0, L25_0, L1_0, L2_0, L3_0, L4_0, L5_0);
 (*   call fastcc void @fe51_mul(i64* noundef nonnull %arraydecay11, i64* noundef nonnull %arraydecay27, i64* noundef nonnull %arraydecay24) *)
-(* modify *)
+(*modify*)
 call fe51_mul(L11_0, L12_0, L13_0, L14_0, L15_0, L6_0, L7_0, L8_0, L9_0, L10_0, L21_0, L22_0, L23_0, L24_0, L25_0);
 (*   %cmp.not = icmp eq i32 %pos.0597, 0 *)
 (*   br i1 %cmp.not, label %for.end, label %for.body.for.body_crit_edge, !llvm.loop !9 *)
 
+
+(* Outputs *)
+
+// mov arraydecay11_0_prime arraydecay11_0@uint64;
+// mov arraydecay14_0_prime arraydecay14_0@uint64;
+// mov arraydecay24_0_prime arraydecay24_0@uint64;
+// mov arraydecay27_0_prime arraydecay27_0@uint64;
+// mov arrayidx12_i_0_prime arrayidx12_i_0@uint64;
+// mov arrayidx12_i137_0_prime arrayidx12_i137_0@uint64;
+// mov arrayidx17_i_0_prime arrayidx17_i_0@uint64;
+// mov arrayidx17_i142_0_prime arrayidx17_i142_0@uint64;
+// mov arrayidx1_i_0_prime arrayidx1_i_0@uint64;
+// mov arrayidx1_i89_0_prime arrayidx1_i89_0@uint64;
+// mov arrayidx22_i125_0_prime arrayidx22_i125_0@uint64;
+// mov arrayidx22_i147_0_prime arrayidx22_i147_0@uint64;
+// mov arrayidx3_2_i103_0_prime arrayidx3_2_i103_0@uint64;
+// mov arrayidx3_3_i109_0_prime arrayidx3_3_i109_0@uint64;
+// mov arrayidx3_4_i115_0_prime arrayidx3_4_i115_0@uint64;
+// mov arrayidx7_i123_0_prime arrayidx7_i123_0@uint64;
+// mov arrayidx7_i132_0_prime arrayidx7_i132_0@uint64;
+// mov arrayidx_1_i96_0_prime arrayidx_1_i96_0@uint64;
+// mov arrayidx_2_i_0_prime arrayidx_2_i_0@uint64;
+// mov arrayidx_2_i102_0_prime arrayidx_2_i102_0@uint64;
+// mov arrayidx_3_i_0_prime arrayidx_3_i_0@uint64;
+// mov arrayidx_3_i108_0_prime arrayidx_3_i108_0@uint64;
+// mov arrayidx_4_i_0_prime arrayidx_4_i_0@uint64;
+// mov arrayidx_4_i114_0_prime arrayidx_4_i114_0@uint64;
+// mov v101_prime v101@uint64;
+// mov v_add81_i487_prime v_add81_i487@uint64;
+// mov v_add87_i493_prime v_add87_i493@uint64;
+// mov v_and18_prime v_and18@uint32;
+// mov v_conv17_prime v_conv17@uint32;
 
 (* == the following code is translated from the block == *)
 (* == for.body.for.body_crit_edge == *)
@@ -1783,20 +1870,19 @@ call fe51_mul(L11_0, L12_0, L13_0, L14_0, L15_0, L6_0, L7_0, L8_0, L9_0, L10_0, 
 and uint64 v_and95_i501 v_add87_i493 (0x7FFFFFFFFFFFF)@uint64;
 (*   %shr93.i499 = lshr i64 %add87.i493, 51 *)
 (* You may need to modify here *)
-split v_shr93_i499 tmp_to_be_used v_add87_i493 51;
-(* modify*)
-assert true && eq v_and95_i501 tmp_to_be_used;
-assume eq v_and95_i501 tmp_to_be_used && true;
+split v_shr93_i499 tmp_v_add87_i493_low51 v_add87_i493 51;
+(* Heuristics applied. *)
+assert true && eq tmp_v_add87_i493_low51 v_and95_i501;
+assume eq tmp_v_add87_i493_low51 v_and95_i501 && true;
 (*   %conv82.i488 = trunc i128 %add70.i475 to i64 *)
-split tmp_v_add70_i475 v_conv82_i488 v_add70_i475 64;
+split tmp_v_add70_i475_high64 v_conv82_i488 v_add70_i475 64;
 vpc v_conv82_i488@uint64 v_conv82_i488@uint128;
 (*   %and83.i489 = and i64 %conv82.i488, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and83_i489 v_conv82_i488 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used_1@uint64 tmp_to_be_used_1@uint128; 
-assert true && eq v_and83_i489 tmp_to_be_used_1;
-assume eq v_and83_i489 tmp_to_be_used_1 && true;
+(*modify*)
+assert true && eq (uext v_and83_i489 64) tmp_v_add70_i475_low51;
+assume eq v_and83_i489 tmp_v_add70_i475_low51 && true;
 (*   %add94.i500 = add nuw nsw i64 %shr93.i499, %and83.i489 *)
 add v_add94_i500 v_shr93_i499 v_and83_i489;
 (*   %and92.i498 = and i64 %add81.i487, 2251799813685247 *)
@@ -1804,35 +1890,30 @@ add v_add94_i500 v_shr93_i499 v_and83_i489;
 and uint64 v_and92_i498 v_add81_i487 (0x7FFFFFFFFFFFF)@uint64;
 (*   %shr90.i496 = lshr i64 %add81.i487, 51 *)
 (* You may need to modify here *)
-split v_shr90_i496 tmp_to_be_used v_add81_i487 51;
-(* modify*)
-assert true && eq v_and92_i498 tmp_to_be_used;
-assume eq v_and92_i498 tmp_to_be_used && true;
+split v_shr90_i496 tmp_v_add81_i487_low51 v_add81_i487 51;
+(* Heuristics applied. *)
+assert true && eq tmp_v_add81_i487_low51 v_and92_i498;
+assume eq tmp_v_add81_i487_low51 v_and92_i498 && true;
 (*   %conv77.i483 = trunc i128 %add65.i470 to i64 *)
-split tmp_v_add65_i470 v_conv77_i483 v_add65_i470 64;
+split tmp_v_add65_i470_high64 v_conv77_i483 v_add65_i470 64;
 vpc v_conv77_i483@uint64 v_conv77_i483@uint128;
 (*   %and78.i484 = and i64 %conv77.i483, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and78_i484 v_conv77_i483 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used_2@uint64 tmp_to_be_used_2@uint128; 
-assert true && eq v_and78_i484 tmp_to_be_used_2;
-assume eq v_and78_i484 tmp_to_be_used_2 && true;
+(*modify*)
+assert true && eq (uext v_and78_i484 64) tmp_v_add65_i470_low51;
+assume eq v_and78_i484 tmp_v_add65_i470_low51 && true;
 (*   %add91.i497 = add nuw nsw i64 %shr90.i496, %and78.i484 *)
 add v_add91_i497 v_shr90_i496 v_and78_i484;
 (*   %conv88.i494 = trunc i128 %add76.i482 to i64 *)
-split tmp_v_add76_i482 v_conv88_i494 v_add76_i482 64;
+split tmp_v_add76_i482_high64 v_conv88_i494 v_add76_i482 64;
 vpc v_conv88_i494@uint64 v_conv88_i494@uint128;
 (*   %and89.i495 = and i64 %conv88.i494, 2251799813685247 *)
 (* You may need to modify here *)
 and uint64 v_and89_i495 v_conv88_i494 (0x7FFFFFFFFFFFF)@uint64;
-(* modify*)
-vpc tmp_to_be_used_3@uint64 tmp_to_be_used_3@uint128; 
-assert true && eq v_and89_i495 tmp_to_be_used_3;
-assume eq v_and89_i495 tmp_to_be_used_3 && true;
-
-
-(* Outputs *)
+(*modify*)
+assert true && eq (uext v_and89_i495 64) tmp_v_add76_i482_low51;
+assume eq v_and89_i495 tmp_v_add76_i482_low51 && true;
 
 
 (* Z5 *)
@@ -1957,4 +2038,3 @@ mov X5_4 v_and89_i495@uint64;
   &&
   true
 }
-
