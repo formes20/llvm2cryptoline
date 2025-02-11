@@ -14,7 +14,6 @@
 //#include "LegacyTypes.h"
 //#include "LegacyTranslator.h"
 
-
 using namespace llvm;
 using namespace llvm2cryptoline;
 using namespace cryptoline;
@@ -115,24 +114,28 @@ int main(int argc, char* const* argv) {
         }
     }
 
+    std::string outputName = outPath + fileName.substr(0, fileName.find_last_of('.'))
+                              + "_" + functionName;
+    // unroll
+    std::string opt, optResultFileName;
+    optResultFileName = fileName.substr(0, fileName.find_last_of('.')) + "_mod.ll";
+    opt = "opt -S -unroll-threshold=100000 -loop-unroll -simplifycfg " + fileName + " -o " + optResultFileName;
+    const char* copt = opt.c_str();
+    system(copt);
+    if (inBlock) {
+        outputName += "_" + entry;
+    }
+
     //LLVMContext &context = getGlobalContext();
     LLVMContext context;
     SMDiagnostic err;
-    std::unique_ptr<llvm::Module> up_mod = parseIRFile(path.c_str(), err, context);
+    //std::unique_ptr<llvm::Module> up_mod = parseIRFile(path.c_str(), err, context);
+    std::unique_ptr<llvm::Module> up_mod = parseIRFile(optResultFileName.c_str(), err, context);
     if (up_mod == NULL) {
         std::cout << "IR file is corrupted or does not exist." << std::endl;
         exit(-1);
     }
     llvm::Module* module = up_mod.get();
-
-    //module->dump();
-
-    //bool inBlock = false;
-    //std::string entry = "";
-    // if (argc >= 4) {
-    //     inBlock = true;
-    //     entry = argv[3];
-    // }
 
     std::cout << "* Translating "
               << (inBlock ? "block [" + entry + "] of " : "")
@@ -141,7 +144,7 @@ int main(int argc, char* const* argv) {
 
     BasicBlock *block;
     Function *function = module->getFunction(functionName);
-
+  
     if (inBlock == true) {
         for (auto i = function->begin(); i != function->end(); i++) {
             if ((*i).hasName() && (*i).getName() == entry) {
@@ -154,13 +157,6 @@ int main(int argc, char* const* argv) {
         
     }
     BasicBlock::iterator inst = block->begin();
-    // std::string outputName = fileName.substr(0, fileName.find_last_of('.'))
-    //                          + "_" + functionName;
-    std::string outputName = outPath + fileName.substr(0, fileName.find_last_of('.'))
-                              + "_" + functionName;
-    if (inBlock) {
-        outputName += "_" + entry;
-    }
     
     t.tranlate({block, inst}, condition, outputName, inBlock, function);
 
@@ -170,26 +166,31 @@ int main(int argc, char* const* argv) {
     std::cout << "Translation done within " << cost << "s" << "!!!" << std::endl;
 
     std::string sys;
-    if(verbose){
-        sys = "cv -v -isafety -debug "+ outputName + ".cl";
-    }else{
-        sys = "cv -isafety -debug "+ outputName + ".cl";
-    }
-    const char* csys = sys.c_str();
-    if(cv){
-        std::cout << "* Verifing with CryptoLine:" << std::endl;
-        system(csys);
-        std::cout << std::endl;
-    }
-    //delete
-    if(saveCryptoLineProg){
-        return 0;
-    }else{
-        std::string rmfile = "rm "+ outputName + ".cl";
-        const char* rm = rmfile.c_str() ;
-        system(rm);
-        return 0;
+    for(int i = 1; i <= t.bbPathCount; i++){
+        std::string file = outputName + std::to_string(i);
+        if(verbose){
+            sys = "cv -v -isafety -debug "+ file + ".cl";
+        }else{
+            sys = "cv -isafety -debug "+ file + ".cl";
+        }
+
+        const char* csys = sys.c_str();
+        if(cv){
+            std::cout << "* Verifing with CryptoLine:" << std::endl;
+            system(csys);
+            std::cout << std::endl;
+        }
+        //delete
+        if(saveCryptoLineProg){
+            return 0;
+        }else{
+            std::string rmfile = "rm "+ file + ".cl";
+            const char* rm = rmfile.c_str() ;
+            system(rm);
+            return 0;
     } 
+
+    }
 }
 
 

@@ -467,6 +467,8 @@ std::map<CryptoLineOps, std::string> Statement::name = {
         {CryptoLineOps::Cast, "cast"},
         {CryptoLineOps::Vpc, "vpc"},
         {CryptoLineOps::Call, "call"},
+        {CryptoLineOps::Seteq, "seteq"},
+        {CryptoLineOps::Setne, "setne"},
         {CryptoLineOps::Assume, "assume"},
         {CryptoLineOps::Assert, "assert"}
 
@@ -716,6 +718,24 @@ Statement Statement::Call(std::string fn) {
     return s;
 }
 
+Statement Statement::Seteq(Argument dst, Argument src1, Argument src2) {
+    Statement s;
+    s.op = CryptoLineOps::Seteq;
+    s.args.push_back(dst);
+    s.args.push_back(src1);
+    s.args.push_back(src2);
+    return s;
+}
+
+Statement Statement::Setne(Argument dst, Argument src1, Argument src2) {
+    Statement s;
+    s.op = CryptoLineOps::Setne;
+    s.args.push_back(dst);
+    s.args.push_back(src1);
+    s.args.push_back(src2);
+    return s;
+}
+
 Statement Statement::Assume(Predicate alg, Predicate range) {
     Statement s;
     s.op = CryptoLineOps::Assume;
@@ -807,6 +827,14 @@ std::string Statement::toStr() {
         s += this->args[0].toSrc() + ");";
         break;
     // assume/assert
+    case CryptoLineOps::Seteq:
+        s = Statement::name[this->op] + " " + this->args[0].toDst()
+            + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
+        break;
+    case CryptoLineOps::Setne:
+        s = Statement::name[this->op] + " " + this->args[0].toDst()
+            + " " + this->args[1].toSrc() + " " + this->args[2].toSrc() + ";";
+        break;
     case CryptoLineOps::Assume:
     case CryptoLineOps::Assert:
         s = Statement::name[this->op] + " " + this->preds[0].toAlgPred()

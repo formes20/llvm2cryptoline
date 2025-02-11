@@ -36,7 +36,6 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
         inst++;
         return {pc.b, inst};
     }
-
     this->result.push_back(Statement::Comment(toString(&(*inst))));
 
     if (LoadInst* li = dyn_cast<LoadInst>(inst)) {
@@ -74,10 +73,12 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
         evalCall(ci);
     }else if (AllocaInst* ali = dyn_cast<AllocaInst>(inst)){
         evalAlloca(ali);
-    } 
+    }else if(ICmpInst* ici = dyn_cast<ICmpInst>(inst)) {
+        evalICmp(ici);
+    }
     else if (ReturnInst* ri = dyn_cast<ReturnInst>(inst)) {
         // return
-        // do nothing
+        evalRet(ri);
     } else {
         errs() << "No translation:" << *inst
                << "(instruction non-supported!)\n";
@@ -168,7 +169,6 @@ ProgramCounter Translator::evaluate(ProgramCounter pc) {
 bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string outputName, bool inBlock, Function *function) {
     std::error_code ec;
     //raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::OF_None);
-    raw_fd_ostream out(outputName + ".cl", ec, sys::fs::OpenFlags::OF_None);
 
     std::map<std::string, unsigned int> Inputvariable;
     
@@ -190,89 +190,7 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         }
 
     }
-    
-    //if (out.is_open()) {
-        BasicBlock *entry = pc.b;
-        BasicBlock *block = pc.b;
-        BasicBlock::iterator inst = pc.i;
 
-        if (inBlock == true) {
-            while ((block == entry) && (inst != block->end())) {
-                pc = this->evaluate(pc);
-                block = pc.b;
-                inst = pc.i;
-            }
-        } else {
-            while (inst != block->end()) {
-                pc = this->evaluate(pc);
-                block = pc.b;
-                inst = pc.i;
-            }
-        }
-
-        // compute the head
-
-        // compute input vars
-        VariableOrderedSet inputVars;
-        for (auto i = this->undefVars.begin(); i != this->undefVars.end(); i++) {
-            inputVars.insert(*i);
-        }
-
-        // compute (possible) output vars
-        VariableOrderedSet outputVars;
-        for (auto i = this->unusedVars.begin(); i != this->unusedVars.end(); i++) {
-            outputVars.insert(*i);
-        }
-
-        string head = "proc main (";
-        if (!inputVars.empty()) {
-            auto i = inputVars.begin();
-            head += (*i).toDecl();
-            for (i++; i != inputVars.end(); i++) {
-                head += ", " + (*i).toDecl();
-            }
-        }
-
-
-        /*
-        if (!outputVars.empty()) {
-            auto i = outputVars.begin();
-            cout << "output vars: " << (*i).val;
-            for (i++; i != outputVars.end(); i++) {
-                cout << ", " << (*i).val;
-            }
-        }
-        */
-
-        head += ") =\n";
-        /*
-        head += "{\n";
-        if (this->legacy) {
-            head += "  bveTrue\n";
-            head += "  |\n";
-            head += "  bvrTrue\n";
-        } else {
-            head += "  true\n";
-            head += "  &&\n";
-            head += "  true\n";
-        }
-        head += "}\n\n\n";
-
-        // compute the tail
-        string tail = "\n\n";
-        tail += "{\n";
-        if (this->legacy) {
-            tail += "  bveTrue\n";
-            tail += "  |\n";
-            tail += "  bvrTrue\n";
-        } else {
-            tail += "  true\n";
-            tail += "  &&\n";
-            tail += "  true\n";
-        }
-        tail += "}\n";
-        */
-        string tail = "\n\n";
         ANTLRFileStream input;
         input.loadFromFile(condition);
         conditionLexer lexer(&input);
@@ -284,66 +202,77 @@ bool Translator::tranlate(ProgramCounter pc, std::string condition, std::string 
         EvalVisitor eval = EvalVisitor(Inputvariable);
         eval.visit(tree);
         std::string precondition  = eval.var->containsKey("precondition");
-        head += precondition;
-        out << head << "\n\n";
         std::string postcondition  = eval.var->containsKey("postcondition");
-        tail += postcondition;
-        
 
-        if (!inputVars.empty()) {
-            string input = "\n\n";
-            input += "(* Initialize Inputs *)\n";
-            out << input << "\n";
-            for (auto i = inputVars.begin(); i != inputVars.end(); i++) {
-                out << "mov " << (*i).val << "_init " << (*i).val << ";\n";
+    BBList bbl;
+    construct_paths(pc.b, bbl, this->paths);
+
+    std::map<int, BBList>::iterator iter;
+    iter = this->paths.begin();
+    
+    while(iter != this->paths.end()) {
+        for (auto j = iter->second.begin(); j != iter->second.end(); j++) {
+               
+            BasicBlock* curBB = (*j); 
+            std::string BBName = curBB->getName().str();
+            this->result.push_back(Statement::Comment("Translate From " + BBName + " block."));
+
+            BasicBlock::iterator curInstIter = curBB->begin();
+            ProgramCounter curPc = {curBB,curInstIter};
+            BasicBlock *block = curPc.b;
+            BasicBlock::iterator inst = curPc.i;
+            while (inst != block->end()) {
+                curPc = evaluate(curPc);
+                block = curPc.b;
+                inst = curPc.i;
             }
-        }
-        out << "\n";
+            
+            if(BranchInst* br = dyn_cast<BranchInst>(curBB->getTerminator())){
+                if(br->isConditional()){
+                    Value* ad = br->getCondition();
+                    Var con = Var(this->defaultType, 1, getName(ad));
+                    Statement s;
+                    auto next_j = std::next(j);
+                    if( next_j != iter->second.end()){
+                        BasicBlock* nextBB = (*next_j);
+                        if(nextBB->getName() == br->getSuccessor(0)->getName()){
+                            s = Statement::Assume(Predicate::Eq(con, Arg::UConst(1, "1")),
+                                      Predicate::True());
+                            this->result.push_back(s);
+                        }else{
+                            s = Statement::Assume(Predicate::Eq(con, Arg::UConst(1, "0")),
+                                      Predicate::True());
+                            this->result.push_back(s);
+                        }
+                    }
+                }
+            }
 
+        }
+        raw_fd_ostream out(outputName + to_string(iter->first) + ".cl", ec, sys::fs::OpenFlags::OF_None);
+        string head = "proc main (";
+        head += computeInputVars();
+        head += ") =\n";
+        head += precondition + "\n\n";
+        head += preserveInputVars();
+    
+        std::string mainbb;
         for (auto j = this->result.begin(); j != this->result.end(); j++) {
-            out << (*j).toStr() << "\n";
+                    mainbb += (*j).toStr() + "\n";
         }
 
-        // output the possible output vars
-        if (!outputVars.empty()) {
-            string output = "\n\n";
-            output += "(* Outputs *)\n";
-            out << output << "\n";
-            for (auto i = outputVars.begin(); i != outputVars.end(); i++) {
-                //out << "mov _ "<< (*i).val << "@" << (*i).getType() << ";\n";
-                out << "mov " << (*i).val << "_prime " << (*i).val << "@" << (*i).getType() << ";\n";
-            }
-        }
-
-        /*
-        if (this->legacy) {
-            for (auto j = this->result.begin(); j != this->result.end(); j++) {
-                out << (*j).toStr_legacy() << "\n";
-            }
-        } else {
-            for (auto j = this->result.begin(); j != this->result.end(); j++) {
-                out << (*j).toStr() << "\n";
-            }
-        }
-        */
-
-        out << tail << "\n";
+        std::string tail = "\n";
+        tail += computeOnputVars();
+        tail += "\n";
+        tail += postcondition;
+        out << head << mainbb << tail ;
         out.close();
+        this->result.clear();
+        iter++;
+    }
         return true;
-        
-    //} else {
-        //return false;
-    //}
 }
-/*
-std::string Translator::replaceChar(std::string str, char target, char c) {
-  for (int i = 0; i < str.length(); i++) {
-    if (str[i] == target)
-      str[i] = c;
-  }
-  return str;
-}
-*/
+
 std::string Translator::getName(llvm::Value* v) {
     if (v->hasName()) {
         if (this->legacy) {
@@ -458,6 +387,118 @@ string Translator::toString(llvm::Instruction* inst) {
     llvm::raw_string_ostream os(s);
     inst->print(os);
     return os.str();
+}
+
+std::string Translator::computeInputVars(){
+    std::string ret;
+    VariableOrderedSet inputVars;
+        for (auto i = this->undefVars.begin(); i != this->undefVars.end(); i++) {
+            inputVars.insert(*i);
+        } 
+    if (!inputVars.empty()) {
+            auto i = inputVars.begin();
+            ret += (*i).toDecl();
+            for (i++; i != inputVars.end(); i++) {
+                ret += ", " + (*i).toDecl();
+            }
+        }
+    return ret;
+
+}
+
+std::string Translator::preserveInputVars(){
+    string initInput;
+    VariableOrderedSet inputVars;
+        for (auto i = this->undefVars.begin(); i != this->undefVars.end(); i++) {
+            inputVars.insert(*i);
+        }
+        if (!inputVars.empty()) {
+            
+            initInput += "(* Initialize Inputs *)\n\n";
+            //out << input << "\n";
+            for (auto i = inputVars.begin(); i != inputVars.end(); i++) {
+                //out << "mov " << (*i).val << "_init " << (*i).val << ";\n";
+                initInput += "mov " + (*i).val + "_init " + (*i).val + ";\n";
+            }
+            
+        }
+        initInput += "\n";
+        return initInput;
+}
+
+std::string Translator::computeOnputVars(){
+    std::string ret;
+    VariableOrderedSet outputVars;
+        for (auto i = this->unusedVars.begin(); i != this->unusedVars.end(); i++) {
+            outputVars.insert(*i);
+        }
+    if (!outputVars.empty()) {
+            string output = "\n\n";
+            output += "(* Outputs *)\n";
+            ret += output + "\n";
+            for (auto i = outputVars.begin(); i != outputVars.end(); i++) {
+                ret += "mov " + (*i).val + "_prime " + (*i).val + "@" + (*i).getType() + ";\n";
+            }
+        }
+    
+    return ret;
+
+}
+
+
+bool Translator::hasSuccessor(BasicBlock *BB) {
+  Instruction *Term = BB->getTerminator();
+  if (isa<ReturnInst>(Term)) {
+    return false;
+  }
+  if (BranchInst *BI = dyn_cast<BranchInst>(Term)) {
+    if (BI->isUnconditional() && BI->getSuccessor(0)) {
+      return true;
+    }
+  }
+  if (Term->getNumSuccessors() > 0) {
+    return true;
+  }
+  return false;
+}
+
+bool Translator::isExitBlock(BasicBlock *BB) {
+  Instruction *Term = BB->getTerminator();
+  if (isa<ReturnInst>(Term)) {
+    return true;
+  }
+  if (Term->getNumSuccessors() == 0) {
+    return true;
+  }
+  return false;
+}
+
+void Translator::construct_paths(BasicBlock *cur, std::list<BasicBlock*> path, std::map<int, BBList> paths) {
+// find all the path from entry to exit        
+        path.push_back(cur);
+        if(isExitBlock(cur)){
+            bbPathCount++;
+            this->paths[bbPathCount] = path;
+        }else{
+            Instruction *Term = cur->getTerminator();
+            if(BranchInst* bi = dyn_cast<BranchInst>(Term)){
+                if(bi->isConditional()){
+                    construct_paths(bi->getSuccessor(0),path, paths);
+                    construct_paths(bi->getSuccessor(1),path, paths);
+                }else{
+                    construct_paths(bi->getSuccessor(0),path, paths);
+                }
+            }else{
+                errs() << "A basic block that is not generated by branch inst" << "\n";
+            }
+        }
+
+    }
+
+std::string Translator::ConstantInt2XSystem(llvm::ConstantInt* c, int x, bool type){
+    SmallString<40> S;
+    c->getValue().toString(S, x, type, false);
+    return S.str().str();
 }
 
 void Translator::evalLoad(LoadInst* li) {
@@ -1862,7 +1903,7 @@ void Translator::evalBinaryOpOr(BinaryOperator* bo) {
         this->define(dst);
 
         // heuristic for P434
-        if (this->heuristcs) {
+        if (this->heuristcs && heuristcs_sound) {
         if (BinaryOperator* t1c = dyn_cast<BinaryOperator>(t1)) {
             if (BinaryOperator* t2c = dyn_cast<BinaryOperator>(t2)) {
                 if (t1c->getOpcode() != Instruction::BinaryOps::Xor
@@ -2619,34 +2660,87 @@ void Translator::evalBitCast(BitCastInst* bci) {
 void Translator::evalCall(CallInst* ci) {
     // Currently only tail call is converted
     if (ci->isTailCall()) {
-        Type *retType = ci->getFunctionType()->getReturnType();
-        if (retType->isIntegerTy()) { // only deal with returned integer for now
-            Var dst;
+        llvm::Function* calledFunction = ci->getCalledFunction();
+        if(calledFunction->getName() == "llvm.fshl.i32"){
+            Type *retType = ci->getFunctionType()->getReturnType();
+            if (retType->isIntegerTy()){
+                Statement s;
+                Value* t1 = ci->getOperand(0);
+                Value* t2 = ci->getOperand(1);
+                Value* t3 = ci->getOperand(2);
+                Type *ty1 = t1->getType();
+                IntegerType *ITy = cast<IntegerType>(ty1);
+                unsigned width = ITy->getBitWidth();
 
-            unsigned dstWidth = retType->getIntegerBitWidth();
-            if (ci->hasRetAttr(Attribute::AttrKind::SExt)) {
-                dst = Var::SVar(dstWidth, getName(ci));
+                Arg src1,src2,offset;
+                Var dsth = Var(this->defaultType, width, getName(ci));
+                Var dstl = Var(this->defaultType, width, getName(ci) + "_l");
+
+                if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+                    unsigned n1 = c1->getZExtValue();
+                    src1 = Arg::Num(n1);
+                } else {
+                    Var v = Var(this->defaultType, width, getName(t1));
+                    src1 = v;
+                    this->use(v);
+                }
+
+                if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+                    unsigned n2 = c2->getZExtValue();
+                    src2 = Arg::Num(n2);
+                } else {
+                    Var v = Var(this->defaultType, width, getName(t2));
+                    src2 = v;
+                    this->use(v);
+                }
+
+                if (ConstantInt* c3 = llvm::dyn_cast<llvm::ConstantInt>(t3)) {
+                    unsigned n3 = c3->getZExtValue()% width;
+                    offset = Arg::Num(n3);
+                } else {
+                    Var v = Var(this->defaultType, width, getName(t3));
+                    offset = v;
+                    this->use(v);
+                }
+
+                s = Statement::ConcatShl(dsth, dstl, src1, src2,offset);
+                this->result.push_back(s);
+                this->define(dsth);
+                this->define(dstl);
+                this->use(dstl);
+            }else {
+                errs() << "No translation:" << *ci << "\n";
+            }
+        }else{
+            Type *retType = ci->getFunctionType()->getReturnType();
+            if (retType->isIntegerTy()) { // only deal with returned integer for now
+                Var dst;
+
+                unsigned dstWidth = retType->getIntegerBitWidth();
+                if (ci->hasRetAttr(Attribute::AttrKind::SExt)) {
+                    dst = Var::SVar(dstWidth, getName(ci));
+                } else {
+                    dst = Var::UVar(dstWidth, getName(ci));
+                }
+
+                Statement s = Statement::Call(ci->getCalledFunction()->getName().str());
+                s.args.push_back(dst);
+                this->define(dst);
+
+                Value* t;
+                Var arg;
+                //for (int i = 0; i < ci->getNumArgOperands(); i++) {
+                for (int i = 0; i < ci->getNumOperands()-1; i++) {
+                    t = ci->getArgOperand(i);
+                    arg = Var(this->defaultType, t->getType()->getIntegerBitWidth(), getName(t));
+                    s.args.push_back(arg);
+                    this->use(arg);
+                }
+
+                this->result.push_back(s);
             } else {
-                dst = Var::UVar(dstWidth, getName(ci));
+                errs() << "No translation:" << *ci << "\n";
             }
-
-            Statement s = Statement::Call(ci->getCalledFunction()->getName().str());
-            s.args.push_back(dst);
-            this->define(dst);
-
-            Value* t;
-            Var arg;
-            //for (int i = 0; i < ci->getNumArgOperands(); i++) {
-            for (int i = 0; i < ci->getNumOperands()-1; i++) {
-                t = ci->getArgOperand(i);
-                arg = Var(this->defaultType, t->getType()->getIntegerBitWidth(), getName(t));
-                s.args.push_back(arg);
-                this->use(arg);
-            }
-
-            this->result.push_back(s);
-        } else {
-            errs() << "No translation:" << *ci << "\n";
         }
     } else { // Calls other than tail call are ignored.
         errs() << "No translation:" << *ci << "\n";
@@ -2655,6 +2749,101 @@ void Translator::evalCall(CallInst* ci) {
 
 void Translator::evalAlloca(AllocaInst* ali){
 
+}
+
+void Translator::evalICmp(ICmpInst* ici){
+    Statement s;
+    Value* t1 = ici->getOperand(0);
+    Value* t2 = ici->getOperand(1);
+    Type *type = ici->getType();
+
+    if (type->isIntegerTy()) {
+        Type *ty1 = t1->getType();
+        IntegerType *ITy = cast<IntegerType>(ty1);
+        unsigned width = ITy->getBitWidth();
+
+        Var dst = Var(this->defaultType, 1, getName(ici));
+        Arg src1,src2;
+
+        if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            if (this->defaultType == CryptoLineType::sint) {
+                src1 = Arg::SConst(width, "0x" + ConstantInt2XSystem(c1, 16, true));
+            } else {
+                src1 = Arg::UConst(width, "0x" + ConstantInt2XSystem(c1, 16, false));
+            }
+        } else {
+            Var v = Var(this->defaultType, width, getName(t1));
+            src1 = v;
+            this->use(v);
+        }
+
+        if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+            if (this->defaultType == CryptoLineType::sint) {
+                src2 = Arg::SConst(width, "0x" + ConstantInt2XSystem(c2, 16, true));
+            } else {
+                src2 = Arg::UConst(width, "0x" + ConstantInt2XSystem(c2, 16,false));
+            }
+        } else {
+            Var v = Var(this->defaultType, width, getName(t2));
+            src2 = v;
+            this->use(v);
+        }
+
+        ICmpInst::Predicate cmpOp = ici->getPredicate();
+        Var tmp = Var(this->defaultType, width, "dontcare");
+        switch (cmpOp) {
+            case ICmpInst::ICMP_EQ: 
+                s = Statement::Seteq(dst, src1, src2);
+                this->result.push_back(s);
+                break;
+            case ICmpInst::ICMP_NE: 
+                s = Statement::Setne(dst, src1, src2);
+                this->result.push_back(s);
+                break;
+            case ICmpInst::ICMP_UGT:
+                s = Statement::Subb(dst, tmp, src2, src1);
+                this->result.push_back(s);
+                break;
+            case ICmpInst::ICMP_ULT:
+                s = Statement::Subb(dst, tmp, src1, src2);
+                this->result.push_back(s);
+                break;
+            case ICmpInst::ICMP_UGE:
+                s = Statement::Subb(dst, tmp, src1, src2);
+                this->result.push_back(s);
+                break;
+            case ICmpInst::ICMP_ULE:
+                s = Statement::Subb(dst, tmp, src2, src1);
+                this->result.push_back(s);
+                break;
+            default:
+                errs() << "No translation:" << *ici << "\n";
+        }
+
+        this->define(dst);
+
+
+    }else{
+        errs() << "No translation:" << *ici << " (Unknown type!)\n";
+    }
+
+}
+
+void Translator::evalRet(ReturnInst* ri){
+    Statement s;
+    if(ri->getReturnValue()){
+        Value* t1 = ri->getReturnValue();
+        //Type *type = ri->getType();  //void type
+        t1->getType()->print (llvm::outs ());
+        if (t1->getType()->isIntegerTy()){
+            unsigned width = t1->getType()->getIntegerBitWidth();
+            Var dst = Var(this->defaultType, width, "ret");
+            Var src = Var(this->defaultType, width, getName(t1));
+            s = Statement::Mov(dst, src);
+            this->result.push_back(s);
+        }
+    }
+    
 }
 
 Derived_Variable* Translator::findSrc(Variable v){

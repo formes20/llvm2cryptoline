@@ -36,6 +36,8 @@ public:
     bool heuristcs_sound = false;
     bool heuristic_for_joint = true;
     bool immediateShl = false;
+    int bbPathCount = 0;
+    std::map<int, BBList> paths;
 
     ProgramCounter evaluate(ProgramCounter pc);
     bool tranlate(ProgramCounter pc, std::string condition, std::string outputName, bool inBlock, Function *function);
@@ -49,15 +51,21 @@ public:
     unsigned int getVarwidth(std::string s);
     void setType(std::string s);
     std::string toString(llvm::Instruction* inst);
+    std::string ConstantInt2XSystem(llvm::ConstantInt* c, int x, bool type);
     std::map<Variable, Derived_Variable> variableRelation; // storing the relations between the new variable and source variable 
-    
+    std::string computeInputVars();
+    std::string preserveInputVars();
+    std::string computeOnputVars();
+    bool hasSuccessor(BasicBlock *BB);
+    bool isExitBlock(BasicBlock *BB) ;
+    void construct_paths(BasicBlock *cur, std::list<BasicBlock*> path, std::map<int, BBList> paths);
 
 private:
     //std::string replaceChar(std::string str, char target, char c);
     bool legacy = false;
     CryptoLineType defaultType = CryptoLineType::uint;
-    bool safety = true;
-    //bool safety = false;
+    //bool safety = true;
+    bool safety = false;
     bool mulSafety = true;
     
 
@@ -80,6 +88,8 @@ private:
     void evalBitCast(BitCastInst* bci);
     void evalCall(CallInst* ci);
     void evalAlloca(AllocaInst* ali);
+    void evalICmp(ICmpInst* ici);
+    void evalRet(ReturnInst* ri);
 
     void evalBinaryOpArithmetic(BinaryOperator* bo);
     void evalBinaryOpShl(BinaryOperator* bo);
@@ -88,6 +98,7 @@ private:
     void evalBinaryOpAnd(BinaryOperator* bo);
     void evalBinaryOpOr(BinaryOperator* bo);
     void evalBinaryOpXor(BinaryOperator* bo);
+
     Derived_Variable* findSrc(Variable v);
     const Variable* findVar(Derived_Variable dv);
     void recordSplit(Variable h, Variable l ,Variable s, unsigned width, unsigned position, unsigned offset);

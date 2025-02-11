@@ -57,6 +57,8 @@ enum class CryptoLineOps {
     Cast,
     Vpc,
     Call,
+    Seteq,
+    Setne,
     // assume/assert
     Assume,
     Assert,
@@ -228,6 +230,8 @@ public:
     static Statement Cast(Argument dst, Argument src);
     static Statement Vpc(Argument dst, Argument src);
     static Statement Call(std::string fn);
+    static Statement Seteq(Argument dst, Argument src1, Argument src2);
+    static Statement Setne(Argument dst, Argument src1, Argument src2);
     static Statement Assume(Predicate alg, Predicate range);
     static Statement Assert(Predicate alg, Predicate range);
 
@@ -283,6 +287,8 @@ public:
 typedef std::list<std::string> InstructionList;
 
 typedef std::list<cryptoline::Statement> StatementList;
+
+typedef std::list<llvm::BasicBlock*> BBList;
 
 
 #endif /* SRC_TYPES_H_ */

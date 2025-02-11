@@ -857,8 +857,7 @@ std::any EvalVisitor::visitPost_a_var(conditionParser::Post_a_varContext *ctx){
             result.append(ctx->var()->VAR()->getText());
             result.append("_prime");
         }
-    }else{
-        if(ctx->var()->array()){
+    }else if(ctx->var()->array()){
             unsigned int i = stoi(ctx->var()->array()->INT()->getText());
             std::map<std::string, unsigned int>::iterator iter;
             iter = InVars.find(ctx->var()->VAR()->getText());
@@ -877,12 +876,13 @@ std::any EvalVisitor::visitPost_a_var(conditionParser::Post_a_varContext *ctx){
             if ( iter != InVars.end()){
                 result.append("v_");
                 result.append(ctx->var()->VAR()->getText());
+            }else if(ctx->var()->VAR()->getText() == "ret"){
+                result.append("ret");
             }else{
                 result.append(ctx->var()->VAR()->getText());
+                result.append("_init");
             }
-            result.append("_init");
         }
-    }
     
     return result;
 }
@@ -1204,8 +1204,7 @@ std::any EvalVisitor::visitPost_r_var(conditionParser::Post_r_varContext *ctx){
             result.append(ctx->var()->VAR()->getText());
             result.append("_prime");
         }
-    }else{
-        if(ctx->var()->array()){
+    }else if(ctx->var()->array()){
             unsigned int i = stoi(ctx->var()->array()->INT()->getText());
             std::map<std::string, unsigned int>::iterator iter;
             iter = InVars.find(ctx->var()->VAR()->getText());
@@ -1224,12 +1223,14 @@ std::any EvalVisitor::visitPost_r_var(conditionParser::Post_r_varContext *ctx){
             if ( iter != InVars.end()){
                 result.append("v_");
                 result.append(ctx->var()->VAR()->getText());
+            }else if(ctx->var()->VAR()->getText() == "ret"){
+                result.append("ret");
             }else{
                 result.append(ctx->var()->VAR()->getText());
+                result.append("_init");
             }
-            result.append("_init");
+            
         }
-    }
     
     return result;
 }
