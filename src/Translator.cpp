@@ -2664,58 +2664,108 @@ void Translator::evalCall(CallInst* ci) {
         if(calledFunction->getName() == "llvm.fshl.i32"){
             Type *retType = ci->getFunctionType()->getReturnType();
             if (retType->isIntegerTy()){
-                Statement s;
-                Value* t1 = ci->getOperand(0);
-                Value* t2 = ci->getOperand(1);
-                Value* t3 = ci->getOperand(2);
-                Type *ty1 = t1->getType();
-                IntegerType *ITy = cast<IntegerType>(ty1);
-                unsigned width = ITy->getBitWidth();
+            Statement s;
+            Value* t1 = ci->getOperand(0);
+            Value* t2 = ci->getOperand(1);
+            Value* t3 = ci->getOperand(2);
+            Type *ty1 = t1->getType();
+            IntegerType *ITy = cast<IntegerType>(ty1);
+            unsigned width = ITy->getBitWidth();
 
-                Arg src1,src2,offset;
-                Var dsth = Var(this->defaultType, width, getName(ci));
-                Var dstl = Var(this->defaultType, width, getName(ci) + "_l");
+            Arg src1,src2,offset;
+            Var dsth = Var(this->defaultType, width, getName(ci));
+            Var dstl = Var(this->defaultType, width, getName(ci) + "_l");
 
-                if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
-                    unsigned n1 = c1->getZExtValue();
-                    src1 = Arg::Num(n1);
-                } else {
-                    Var v = Var(this->defaultType, width, getName(t1));
-                    src1 = v;
-                    this->use(v);
-                }
-
-                if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
-                    unsigned n2 = c2->getZExtValue();
-                    src2 = Arg::Num(n2);
-                } else {
-                    Var v = Var(this->defaultType, width, getName(t2));
-                    src2 = v;
-                    this->use(v);
-                }
-
-                if (ConstantInt* c3 = llvm::dyn_cast<llvm::ConstantInt>(t3)) {
-                    unsigned n3 = c3->getZExtValue()% width;
-                    offset = Arg::Num(n3);
-                } else {
-                    Var v = Var(this->defaultType, width, getName(t3));
-                    offset = v;
-                    this->use(v);
-                }
-
-                s = Statement::ConcatShl(dsth, dstl, src1, src2,offset);
-                this->result.push_back(s);
-                this->define(dsth);
-                this->define(dstl);
-                this->use(dstl);
-            }else {
-                errs() << "No translation:" << *ci << "\n";
+            if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            unsigned n1 = c1->getZExtValue();
+                src1 = Arg::Num(n1);
+            } else {
+                Var v = Var(this->defaultType, width, getName(t1));
+                src1 = v;
+                this->use(v);
             }
+
+            if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+                unsigned n2 = c2->getZExtValue();
+                src2 = Arg::Num(n2);
+            } else {
+                Var v = Var(this->defaultType, width, getName(t2));
+                src2 = v;
+                this->use(v);
+            }
+
+            if (ConstantInt* c3 = llvm::dyn_cast<llvm::ConstantInt>(t3)) {
+                unsigned n3 = c3->getZExtValue()% width;
+                offset = Arg::Num(n3);
+            } else {
+                Var v = Var(this->defaultType, width, getName(t3));
+                offset = v;
+                this->use(v);
+            }
+
+            s = Statement::ConcatShl(dsth, dstl, src1, src2,offset);
+            this->result.push_back(s);
+            this->define(dsth);
+            this->define(dstl);
+            this->use(dstl);
+        }else {
+            errs() << "No translation:" << *ci << "\n";
+        }
+        }else if(calledFunction->getName() == "llvm.fshl.i64"){
+            Type *retType = ci->getFunctionType()->getReturnType();
+            if (retType->isIntegerTy()){
+            Statement s;
+            Value* t1 = ci->getOperand(0);
+            Value* t2 = ci->getOperand(1);
+            Value* t3 = ci->getOperand(2);
+            Type *ty1 = t1->getType();
+            IntegerType *ITy = cast<IntegerType>(ty1);
+            unsigned width = ITy->getBitWidth();
+            
+            Arg src1,src2,offset;
+            Var dsto = Var(this->defaultType, width, getName(ci) + "_o");
+            Var dsth = Var(this->defaultType, width, getName(ci));
+            Var dstl = Var(this->defaultType, width, getName(ci) + "_l");
+            
+            if (ConstantInt* c1 = llvm::dyn_cast<llvm::ConstantInt>(t1)) {
+            unsigned n1 = c1->getZExtValue();
+                src1 = Arg::Num(n1);
+            } else {
+                Var v = Var(this->defaultType, width, getName(t1));
+                src1 = v;
+                this->use(v);
+            }
+
+            if (ConstantInt* c2 = llvm::dyn_cast<llvm::ConstantInt>(t2)) {
+                unsigned n2 = c2->getZExtValue();
+                src2 = Arg::Num(n2);
+            } else {
+                Var v = Var(this->defaultType, width, getName(t2));
+                src2 = v;
+                this->use(v);
+            }
+
+            if (ConstantInt* c3 = llvm::dyn_cast<llvm::ConstantInt>(t3)) {
+                unsigned n3 = c3->getZExtValue()% width;
+                offset = Arg::Num(n3);
+            } else {
+                Var v = Var(this->defaultType, width, getName(t3));
+                offset = v;
+                this->use(v);
+            }
+            s = Statement::ConcatShls(dsto, dsth, dstl, src1, src2, offset);
+            this->result.push_back(s);
+            this->define(dsto);
+            this->define(dsth);
+            this->define(dstl);
+            this->use(dstl);
+        }else {
+            errs() << "No translation:" << *ci << "\n";
+        }        
         }else{
             Type *retType = ci->getFunctionType()->getReturnType();
             if (retType->isIntegerTy()) { // only deal with returned integer for now
                 Var dst;
-
                 unsigned dstWidth = retType->getIntegerBitWidth();
                 if (ci->hasRetAttr(Attribute::AttrKind::SExt)) {
                     dst = Var::SVar(dstWidth, getName(ci));
@@ -2726,13 +2776,16 @@ void Translator::evalCall(CallInst* ci) {
                 Statement s = Statement::Call(ci->getCalledFunction()->getName().str());
                 s.args.push_back(dst);
                 this->define(dst);
-
                 Value* t;
                 Var arg;
                 //for (int i = 0; i < ci->getNumArgOperands(); i++) {
                 for (int i = 0; i < ci->getNumOperands()-1; i++) {
                     t = ci->getArgOperand(i);
-                    arg = Var(this->defaultType, t->getType()->getIntegerBitWidth(), getName(t));
+                    if(t->getType()->isPointerTy()){
+                        arg = this->pointerTable.getSymAddr(t).toVariable(this->defaultType, sizeOf(t->getType()));
+                    }else{
+                        arg = Var(this->defaultType, t->getType()->getIntegerBitWidth(), getName(t));
+                    }
                     s.args.push_back(arg);
                     this->use(arg);
                 }

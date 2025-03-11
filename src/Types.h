@@ -47,6 +47,7 @@ enum class CryptoLineOps {
     Muls,
     Mulf,
     ConcatShl,
+    ConcatShls,
     Shl,
     Shls,
     Split,
@@ -220,6 +221,7 @@ public:
     static Statement Muls(Argument flag, Argument dst, Argument src1, Argument src2);
     static Statement Mulf(Argument dstH, Argument dstL, Argument src1, Argument src2);
     static Statement ConcatShl(Argument dstH, Argument dstL, Argument src1, Argument src2, Argument n);
+    static Statement ConcatShls(Argument dstO, Argument dstH, Argument dstL, Argument src1, Argument src2, Argument n);
     static Statement Shl(Argument dst, Argument src, Argument n);
     static Statement Shls(Argument flag, Argument dst, Argument src, Argument n);
     static Statement Split(Argument dstH, Argument dstL, Argument src, Argument n);

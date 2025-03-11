@@ -457,6 +457,7 @@ std::map<CryptoLineOps, std::string> Statement::name = {
         {CryptoLineOps::Muls, "muls"},
         {CryptoLineOps::Mulf, "mull"},
         {CryptoLineOps::ConcatShl, "cshl"},
+        {CryptoLineOps::ConcatShls, "cshls"},
         {CryptoLineOps::Shl, "shl"},
         {CryptoLineOps::Shls, "shls"},
         {CryptoLineOps::Split, "split"},
@@ -632,6 +633,18 @@ Statement Statement::ConcatShl(Argument dstH, Argument dstL, Argument src1, Argu
     return s;
 }
 
+Statement Statement::ConcatShls(Argument dstO, Argument dstH, Argument dstL, Argument src1, Argument src2, Argument n) {
+    Statement s;
+    s.op = CryptoLineOps::ConcatShls;
+    s.args.push_back(dstO);
+    s.args.push_back(dstH);
+    s.args.push_back(dstL);
+    s.args.push_back(src1);
+    s.args.push_back(src2);
+    s.args.push_back(n);
+    return s;
+}
+
 Statement Statement::Shl(Argument dst, Argument src, Argument n) {
     Statement s;
     s.op = CryptoLineOps::Shl;
@@ -782,6 +795,7 @@ std::string Statement::toStr() {
     case CryptoLineOps::Mulf:
     case CryptoLineOps::Shls:
     case CryptoLineOps::ConcatShl:
+    case CryptoLineOps::ConcatShls:
     case CryptoLineOps::Split:
         s = Statement::name[this->op] + " " + this->args[0].toDst()
             + " " + this->args[1].toDst();
